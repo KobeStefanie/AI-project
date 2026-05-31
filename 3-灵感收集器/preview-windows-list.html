@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>灵感收集器 - Windows 列表视图</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<style>
+  .row-hover:hover { background: #f9fafb; }
+  .row-active { background: #fff7ed; border-left: 3px solid #f97316; }
+  textarea { font-size: 16px; }
+</style>
+</head>
+<body class="bg-gray-100 h-screen flex flex-col">
+
+<!-- 顶部标题栏 -->
+<header class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between shadow-sm z-10">
+  <div class="flex items-center gap-4">
+    <h1 class="text-lg font-bold text-gray-900">灵感收集器</h1>
+    <div class="flex bg-gray-100 rounded-lg p-0.5">
+      <span class="px-3 py-1.5 text-xs text-gray-500">日历</span>
+      <span class="px-3 py-1.5 text-xs font-medium bg-white rounded-md shadow-sm text-orange-500">列表</span>
+      <span class="px-3 py-1.5 text-xs text-gray-500">时间线</span>
+    </div>
+  </div>
+  <div class="flex items-center gap-3">
+    <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
+      <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>已同步
+    </span>
+    <button class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition"><i class="fa fa-download mr-1"></i>导出</button>
+    <button class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition"><i class="fa fa-cog mr-1"></i>设置</button>
+  </div>
+</header>
+
+<!-- 主内容区：双栏 -->
+<div class="flex flex-1 overflow-hidden">
+
+  <!-- ========== 左栏：筛选 + 列表 ========== -->
+  <div class="w-[420px] bg-white border-r border-gray-200 flex flex-col">
+
+    <!-- 搜索 + 筛选区 -->
+    <div class="p-4 space-y-3 border-b border-gray-100">
+      <!-- 搜索 -->
+      <div class="flex items-center gap-2">
+        <div class="relative flex-1">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+          <input type="text" placeholder="搜索灵感..." class="w-full border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-sm outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-200 transition">
+        </div>
+        <div class="flex bg-gray-100 rounded-lg p-0.5 text-[10px]">
+          <span class="px-2 py-1 bg-white rounded shadow-sm font-medium text-gray-700">关键词</span>
+          <span class="px-2 py-1 text-gray-400">语义</span>
+        </div>
+      </div>
+
+      <!-- 筛选下拉 -->
+      <div class="flex gap-2 flex-wrap">
+        <select class="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-600 outline-none">
+          <option>全部状态</option><option>⚪ raw</option><option>🔵 expanded</option><option>✅ realized</option><option>📦 archived</option><option>✕ abandoned</option>
+        </select>
+        <select class="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-600 outline-none">
+          <option>全部标签</option><option>🎬 创作-视频</option><option>✍️ 创作-写作</option><option>💡 灵感</option><option>🏠 生活</option><option>📋 规划</option>
+        </select>
+        <select class="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-600 outline-none">
+          <option>全部心情</option><option>😄 兴奋</option><option>😐 平和</option><option>✨ 受启发</option><option>🤔 困惑</option>
+        </select>
+        <select class="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-600 outline-none">
+          <option>全部来源</option><option>文字</option><option>语音</option><option>图片</option><option>视频</option>
+        </select>
+      </div>
+
+      <!-- 计数 + 全选 -->
+      <div class="flex items-center justify-between text-xs text-gray-400">
+        <span>共 42 条</span>
+        <div class="flex items-center gap-3">
+          <label class="flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" class="rounded w-3.5 h-3.5"> 全选
+          </label>
+          <span class="text-gray-300">|</span>
+          <span class="text-gray-400"><i class="fa fa-random mr-1"></i>随机回顾</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 列表 -->
+    <div class="flex-1 overflow-y-auto">
+
+      <!-- 条目 1 - 已实现，选中 -->
+      <div class="row-active px-4 py-3 border-b border-gray-50 cursor-pointer">
+        <div class="flex items-center gap-3">
+          <input type="checkbox" class="rounded w-3.5 h-3.5" checked>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="text-lg leading-none">😄</span>
+              <span class="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">🎬 视频</span>
+              <span class="text-xs bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded">📡 播客</span>
+              <i class="fa fa-microphone text-purple-400 text-xs ml-0.5"></i>
+            </div>
+            <p class="text-sm text-gray-800 truncate">做一期关于AI编程工具对比的视频，Cursor vs...</p>
+            <p class="text-xs text-gray-400 mt-0.5">今天 14:32 · iPhone</p>
+          </div>
+          <span class="text-xs bg-green-50 text-green-600 px-1.5 py-0.5 rounded font-medium">✅</span>
+        </div>
+      </div>
+
+      <!-- 条目 2 -->
+      <div class="row-hover px-4 py-3 border-b border-gray-50 cursor-pointer">
+        <div class="flex items-center gap-3">
+          <input type="checkbox" class="rounded w-3.5 h-3.5">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="text-lg leading-none">✨</span>
+              <span class="text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">💡 灵感</span>
+              <i class="fa fa-keyboard-o text-gray-400 text-xs ml-0.5"></i>
+            </div>
+            <p class="text-sm text-gray-800 truncate">如果把时间管理工具做成游戏化的——每完成...</p>
+            <p class="text-xs text-gray-400 mt-0.5">昨天 23:45 · Windows</p>
+          </div>
+          <span class="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">🔵</span>
+        </div>
+      </div>
+
+      <!-- 条目 3 - 带图片 -->
+      <div class="row-hover px-4 py-3 border-b border-gray-50 cursor-pointer">
+        <div class="flex items-center gap-3">
+          <input type="checkbox" class="rounded w-3.5 h-3.5">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="text-lg leading-none">😐</span>
+              <span class="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">🏠 生活</span>
+              <i class="fa fa-camera text-blue-400 text-xs ml-0.5"></i>
+              <i class="fa fa-microphone text-purple-400 text-xs"></i>
+            </div>
+            <p class="text-sm text-gray-800 truncate">这个设计太妙了，拍下来参考...</p>
+            <p class="text-xs text-gray-400 mt-0.5">今天 09:08 · iPhone</p>
+          </div>
+          <span class="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">⚪</span>
+        </div>
+      </div>
+
+      <!-- 条目 4 - 视频 -->
+      <div class="row-hover px-4 py-3 border-b border-gray-50 cursor-pointer">
+        <div class="flex items-center gap-3">
+          <input type="checkbox" class="rounded w-3.5 h-3.5">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="text-lg leading-none">😄</span>
+              <span class="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">🎬 视频</span>
+              <i class="fa fa-video-camera text-purple-400 text-xs ml-0.5"></i>
+            </div>
+            <p class="text-sm text-gray-800 truncate">现场录了一段交互Demo，这个方式可以借鉴...</p>
+            <p class="text-xs text-gray-400 mt-0.5">昨天 22:10 · iPhone</p>
+          </div>
+          <span class="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">⚪</span>
+        </div>
+      </div>
+
+      <!-- 条目 5 -->
+      <div class="row-hover px-4 py-3 border-b border-gray-50 cursor-pointer">
+        <div class="flex items-center gap-3">
+          <input type="checkbox" class="rounded w-3.5 h-3.5">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="text-lg leading-none">🤔</span>
+              <span class="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">📋 规划</span>
+              <i class="fa fa-microphone text-purple-400 text-xs ml-0.5"></i>
+            </div>
+            <p class="text-sm text-gray-800 truncate">下周把灵感收集器后端和数据库方案定下来...</p>
+            <p class="text-xs text-gray-400 mt-0.5">昨天 18:20 · iPhone</p>
+          </div>
+          <span class="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">⚪</span>
+        </div>
+      </div>
+
+      <!-- 条目 6 - 归档 -->
+      <div class="row-hover px-4 py-3 border-b border-gray-50 cursor-pointer opacity-50">
+        <div class="flex items-center gap-3">
+          <input type="checkbox" class="rounded w-3.5 h-3.5">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="text-lg leading-none">😐</span>
+              <span class="text-xs bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded">🏠 生活</span>
+              <i class="fa fa-keyboard-o text-gray-300 text-xs ml-0.5"></i>
+            </div>
+            <p class="text-sm text-gray-400 truncate">周末超市采购清单：牛奶、鸡蛋、面包...</p>
+            <p class="text-xs text-gray-300 mt-0.5">3天前 · iPhone</p>
+          </div>
+          <span class="text-xs bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded font-medium">📦</span>
+        </div>
+      </div>
+
+      <!-- 条目 7 -->
+      <div class="row-hover px-4 py-3 border-b border-gray-50 cursor-pointer">
+        <div class="flex items-center gap-3">
+          <input type="checkbox" class="rounded w-3.5 h-3.5">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="text-lg leading-none">✨</span>
+              <span class="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">✍️ 写作</span>
+              <i class="fa fa-keyboard-o text-gray-400 text-xs ml-0.5"></i>
+            </div>
+            <p class="text-sm text-gray-800 truncate">关于个人品牌的思考：持续输出比内容质量...</p>
+            <p class="text-xs text-gray-400 mt-0.5">3天前 · Windows</p>
+          </div>
+          <span class="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-medium">🔵</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 批量操作栏（模拟选中后的状态） -->
+    <div class="bg-orange-50 border-t border-orange-200 px-4 py-2.5 flex items-center justify-between">
+      <span class="text-xs text-orange-700 font-medium">已选 1 条</span>
+      <div class="flex gap-2">
+        <button class="text-xs bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition">📦 批量归档</button>
+        <button class="text-xs bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition">✕ 批量放弃</button>
+        <button class="text-xs bg-orange-500 text-white px-3 py-1.5 rounded-lg hover:bg-orange-600 transition"><i class="fa fa-compress mr-1"></i>合并选中</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 右栏：详情编辑 ========== -->
+  <div class="flex-1 flex flex-col bg-white">
+
+    <!-- 详情标题栏 -->
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div>
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">🎬 创作-视频</span>
+          <span class="text-xs bg-blue-50 text-blue-500 px-2 py-0.5 rounded-full">📡 播客</span>
+          <span class="text-xs text-gray-400 flex items-center gap-1">
+            <i class="fa fa-microphone text-purple-400"></i> 语音
+          </span>
+        </div>
+        <div class="flex items-center gap-3 text-xs text-gray-400">
+          <span>今天 14:32</span>
+          <span>·</span>
+          <span>iPhone</span>
+          <span>·</span>
+          <span class="flex items-center gap-1">😄 兴奋</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <select class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-600 outline-none">
+          <option>⚪ raw</option><option>🔵 expanded</option><option selected>✅ realized</option><option>📦 archived</option><option>✕ abandoned</option>
+        </select>
+        <button class="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition">保存</button>
+        <button class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm hover:bg-gray-200 transition">删除</button>
+      </div>
+    </div>
+
+    <!-- 原始内容区 + 语音播放 -->
+    <div class="px-6 py-4 border-b border-gray-100 bg-orange-50/50">
+      <div class="flex items-center justify-between mb-2">
+        <label class="text-xs text-gray-500 font-medium">📝 原始捕获内容</label>
+        <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+          <i class="fa fa-exclamation-triangle"></i> 转写质量低
+        </span>
+      </div>
+      <p class="text-sm text-gray-700 mb-3">做一期关于AI编程工具对比的视频，Cursor vs Copilot vs Claude Code，从实际使用体验出发</p>
+      <!-- 音频播放器 -->
+      <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-2.5">
+        <button class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+          <i class="fa fa-play text-white text-xs ml-0.5"></i>
+        </button>
+        <div class="flex-1 h-1.5 bg-gray-200 rounded-full relative">
+          <div class="absolute left-0 top-0 h-1.5 bg-orange-400 rounded-full" style="width:35%"></div>
+          <div class="absolute left-[35%] -top-0.5 w-2.5 h-2.5 bg-orange-500 rounded-full"></div>
+        </div>
+        <span class="text-xs text-gray-400">0:23</span>
+        <button class="text-xs text-gray-400 hover:text-gray-600"><i class="fa fa-pencil"></i> 校对</button>
+      </div>
+    </div>
+
+    <!-- Markdown 编辑区 -->
+    <div class="flex-1 flex">
+      <!-- 编辑 -->
+      <div class="flex-1 flex flex-col border-r border-gray-100">
+        <label class="px-6 py-2 text-xs text-gray-500 font-medium bg-gray-50 border-b border-gray-100">Markdown 编辑</label>
+        <textarea class="flex-1 p-6 outline-none resize-none text-sm text-gray-800 leading-relaxed" placeholder="在这里扩展你的想法...&#10;&#10;支持 Markdown 语法">## 视频大纲
+
+### 三款工具对比维度
+- **易用性**：上手难度、配置复杂度
+- **能力**：代码补全、重构、项目级理解
+- **价格**：免费额度、付费方案
+- **生态**：插件、IDE 支持
+
+### 初步感受
+> Cursor 适合轻量开发
+> Copilot 生态最完善
+> Claude Code 项目级理解最佳
+
+需要每个工具实际使用 3 天以上再下结论。</textarea>
+      </div>
+      <!-- 预览 -->
+      <div class="flex-1 flex flex-col">
+        <label class="px-6 py-2 text-xs text-gray-500 font-medium bg-gray-50 border-b border-gray-100">预览</label>
+        <div class="flex-1 p-6 overflow-y-auto text-sm text-gray-800 leading-relaxed">
+          <h2 class="text-lg font-bold mb-3">视频大纲</h2>
+          <h3 class="text-base font-semibold mb-2">三款工具对比维度</h3>
+          <ul class="list-disc list-inside space-y-1 mb-4 ml-2">
+            <li><strong>易用性</strong>：上手难度、配置复杂度</li>
+            <li><strong>能力</strong>：代码补全、重构、项目级理解</li>
+            <li><strong>价格</strong>：免费额度、付费方案</li>
+            <li><strong>生态</strong>：插件、IDE 支持</li>
+          </ul>
+          <h3 class="text-base font-semibold mb-2">初步感受</h3>
+          <blockquote class="border-l-3 border-orange-300 pl-4 py-1 text-gray-600 mb-4">
+            Cursor 适合轻量开发<br>Copilot 生态最完善<br>Claude Code 项目级理解最佳
+          </blockquote>
+          <p class="text-gray-500 italic">需要每个工具实际使用 3 天以上再下结论。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 标签 / 心情 / 提醒 / 关联 -->
+    <div class="px-6 py-3 border-t border-gray-100 flex items-center gap-6 text-xs">
+      <div class="flex items-center gap-2">
+        <span class="text-gray-400">🏷</span>
+        <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">🎬 视频</span>
+        <span class="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">💡 灵感</span>
+        <span class="text-gray-300 cursor-pointer hover:text-gray-500">+ 添加</span>
+      </div>
+      <span class="text-gray-200">|</span>
+      <div class="flex items-center gap-2">
+        <span class="text-gray-400">心情</span>
+        <select class="text-xs border border-gray-200 rounded px-2 py-1 bg-white text-gray-600 outline-none">
+          <option>😄 兴奋</option><option>😐 平和</option><option>✨ 受启发</option>
+        </select>
+      </div>
+      <span class="text-gray-200">|</span>
+      <div class="flex items-center gap-2">
+        <i class="fa fa-bell-o text-gray-400"></i>
+        <span class="text-gray-400">提醒</span>
+        <input type="datetime-local" class="text-xs border border-gray-200 rounded px-2 py-1 outline-none text-gray-500" value="2026-06-01T09:00">
+      </div>
+      <span class="text-gray-200">|</span>
+      <div class="flex items-center gap-2">
+        <i class="fa fa-link text-gray-400"></i>
+        <span class="text-gray-500">关联: </span>
+        <span class="text-orange-500 cursor-pointer hover:underline">RPG游戏化设计</span>
+        <button class="text-gray-300 hover:text-gray-500">✕</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 底部状态栏 -->
+<footer class="bg-white border-t border-gray-200 px-6 py-2 flex items-center justify-between text-xs text-gray-500">
+  <span>共 42 条 | ⚪20 🔵12 ✅5 📦3 ✕2</span>
+  <span class="flex items-center gap-4">
+    <span>快捷键: <kbd class="bg-gray-100 px-1 rounded">Space</kbd> 预览 · <kbd class="bg-gray-100 px-1 rounded">E</kbd> 编辑 · <kbd class="bg-gray-100 px-1 rounded">Del</kbd> 归档 · <kbd class="bg-gray-100 px-1 rounded">↑↓</kbd> 导航</span>
+  </span>
+  <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>已同步</span>
+</footer>
+
+</body>
+</html>

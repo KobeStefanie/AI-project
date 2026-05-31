@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="utf-8"><title>配置诊断</title></head>
+<body style="font:15px monospace;max-width:700px;margin:20px auto;white-space:pre-wrap;line-height:1.6">
+  <h3>当前周配置诊断</h3>
+  <div id="out">读取中…</div>
+  <script>
+    var el = document.getElementById('out');
+    var PREFIX = 'tm_';
+    function sKey(y, w, part) { return PREFIX + y + '_w' + (w < 10 ? '0' : '') + w + '_' + part; }
+    function getISOWeek(d) {
+      var dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      dt.setUTCDate(dt.getUTCDate() + 4 - (dt.getUTCDay() || 7));
+      var ys = new Date(Date.UTC(dt.getUTCFullYear(), 0, 1));
+      return { year: dt.getUTCFullYear(), week: Math.ceil(((dt - ys) / 86400000 + 1) / 7) };
+    }
+    var today = new Date();
+    var iso = getISOWeek(today);
+    var key = sKey(iso.year, iso.week, 'config');
+    var raw = localStorage.getItem(key);
+    var lines = ['周: ' + iso.year + '-W' + iso.week, 'key: ' + key, ''];
+    if (!raw) {
+      lines.push('❌ localStorage 中没有该周的 config');
+    } else {
+      try {
+        var c = JSON.parse(raw);
+        lines.push('qwNames (' + c.qwNames.length + '项): ' + JSON.stringify(c.qwNames));
+        lines.push('gfpNames (' + c.gfpNames.length + '项): ' + JSON.stringify(c.gfpNames));
+        lines.push('procNames (' + c.procNames.length + '项): ' + JSON.stringify(c.procNames));
+        lines.push('standard: ' + c.standard);
+        lines.push('startTime: ' + c.startTime);
+        lines.push('');
+        lines.push(c.gfpNames.length === 5 ? '✅ gfpNames 长度正确(5)' : '❌ gfpNames 长度异常!');
+        lines.push(c.qwNames.length === 7 ? '✅ qwNames 长度正确(7)' : '❌ qwNames 长度异常!');
+      } catch(e) {
+        lines.push('解析失败: ' + e.message);
+      }
+    }
+    lines.push('');
+    lines.push('--- 所有 tm_ 开头的 key ---');
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k.indexOf('tm_') === 0) lines.push(k + ' (' + localStorage.getItem(k).length + ' bytes)');
+    }
+    el.textContent = lines.join('\n');
+
+    // 尝试修复
+    if (raw) {
+      try {
+        var cfg = JSON.parse(raw);
+        var fixed = false;
+        if (cfg.gfpNames && cfg.gfpNames.length !== 5) { cfg.gfpNames = ['演出','运动','约会','旅行','小资']; fixed = true; }
+        if (cfg.qwNames && cfg.qwNames.length !== 7) { cfg.qwNames = ['新媒体运营','心理咨询','注会变现','读书','投资','造音师','其他']; fixed = true; }
+        if (cfg.procNames && cfg.procNames.length !== 5) { cfg.procNames = ['睡懒觉','刷手机','拖延','无效/低效社交','其他']; fixed = true; }
+        if (fixed) {
+          localStorage.setItem(key, JSON.stringify(cfg));
+          el.textContent += '\n\n🔧 已自动修复config并写回localStorage，请刷新主页面。';
+        }
+      } catch(e) {}
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# 自签 TLS 证书与私钥 —— 永远不入库
+certs/
+*.pem
+*.key
+
+# 工具内 node_modules
+tools/**/node_modules/
+
+# 同步数据（按需）
+# sync-data/
+
+# 系统/编辑器
+.DS_Store
+Thumbs.db
+*.swp
+*.bak

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>勇者传说 - 打怪升级娶公主</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Microsoft YaHei", sans-serif;
+    background: linear-gradient(180deg, #1a1a3e 0%, #2d1b4e 50%, #4a1942 100%);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .game {
+    width: 100%;
+    max-width: 880px;
+    background: rgba(0,0,0,0.4);
+    border: 2px solid #6a4ca8;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 0 40px rgba(120, 80, 200, 0.5);
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 16px;
+    background: linear-gradient(90deg, #ffd700, #ff79c6, #ffd700);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-size: 28px;
+  }
+  .scene {
+    height: 260px;
+    background: linear-gradient(180deg, #87CEEB 0%, #98D8E8 60%, #6B8E23 60%, #556B2F 100%);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+    border: 2px solid #333;
+  }
+  .hero, .enemy {
+    position: absolute;
+    bottom: 30px;
+    font-size: 64px;
+    transition: transform 0.15s, left 0.6s;
+    user-select: none;
+  }
+  .hero { left: 60px; }
+  .enemy { right: 60px; }
+  .hero.attack { transform: translateX(40px) scale(1.15); }
+  .enemy.attack { transform: translateX(-40px) scale(1.15); }
+  .hero.hurt, .enemy.hurt { animation: shake 0.3s; filter: hue-rotate(-30deg) brightness(1.5); }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+  .floating-text {
+    position: absolute;
+    font-weight: bold;
+    font-size: 20px;
+    pointer-events: none;
+    animation: floatUp 1s ease-out forwards;
+    text-shadow: 2px 2px 0 #000;
+  }
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-60px); }
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .panel {
+    background: rgba(255,255,255,0.08);
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .panel h3 { margin-bottom: 8px; font-size: 16px; color: #ffd700; }
+  .bar {
+    height: 14px;
+    background: #222;
+    border-radius: 7px;
+    overflow: hidden;
+    margin: 4px 0 8px;
+    border: 1px solid #444;
+  }
+  .bar-fill { height: 100%; transition: width 0.3s; }
+  .hp .bar-fill { background: linear-gradient(90deg, #ff4757, #ff6b81); }
+  .exp .bar-fill { background: linear-gradient(90deg, #ffd700, #ffed4e); }
+  .enemy-hp .bar-fill { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+  .row { display: flex; justify-content: space-between; font-size: 13px; margin: 2px 0; }
+  .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  button {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: linear-gradient(180deg, #6a4ca8, #4a2c88);
+    color: #fff;
+    transition: transform 0.1s, box-shadow 0.2s;
+    border: 1px solid #8a6cc8;
+  }
+  button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(150, 100, 255, 0.5);
+  }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.attack-btn { background: linear-gradient(180deg, #e74c3c, #c0392b); border-color: #ff6b6b; }
+  button.heal-btn { background: linear-gradient(180deg, #27ae60, #1e8449); border-color: #2ecc71; }
+  button.skill-btn { background: linear-gradient(180deg, #f39c12, #d68910); border-color: #f4d03f; }
+  .log {
+    height: 130px;
+    overflow-y: auto;
+    background: rgba(0,0,0,0.5);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .log p { margin: 2px 0; line-height: 1.5; }
+  .log .good { color: #6dffb3; }
+  .log .bad { color: #ff7b7b; }
+  .log .lvl { color: #ffd700; font-weight: bold; }
+  .log .love { color: #ff79c6; font-weight: bold; }
+  .ending {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    padding: 20px;
+  }
+  .ending.show { display: flex; }
+  .ending-card {
+    max-width: 560px;
+    background: linear-gradient(135deg, #ff79c6, #bd93f9);
+    padding: 36px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(255, 121, 198, 0.6);
+  }
+  .ending-card h2 { font-size: 32px; margin-bottom: 16px; color: #fff; }
+  .ending-card p { font-size: 16px; line-height: 1.7; margin-bottom: 12px; }
+  .ending-card .couple { font-size: 80px; margin: 16px 0; }
+  .ending-card button { background: #fff; color: #6a4ca8; margin-top: 16px; }
+
+  /* 白马王子奔跑动画 */
+  .gallop-stage {
+    position: relative;
+    height: 140px;
+    margin: 12px 0;
+    background: linear-gradient(180deg, #ffd1dc 0%, #ffe5b4 50%, #c9b370 50%, #8b6914 100%);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+  }
+  .sun {
+    position: absolute;
+    right: 30px; top: 14px;
+    font-size: 32px;
+    filter: drop-shadow(0 0 10px gold);
+  }
+  .ground-line {
+    position: absolute;
+    bottom: 30px;
+    width: 200%;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, #6b4a14 0 30px, transparent 30px 60px);
+    animation: scroll 0.4s linear infinite;
+  }
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-60px); }
+  }
+  .prince {
+    position: absolute;
+    bottom: 18px;
+    left: -120px;
+    font-size: 56px;
+    white-space: nowrap;
+    animation: gallop 5s ease-in-out forwards, bob 0.35s ease-in-out infinite;
+  }
+  @keyframes gallop {
+    0%   { left: -120px; }
+    20%  { left: 30%; }
+    60%  { left: 45%; }
+    100% { left: 110%; }
+  }
+  @keyframes bob {
+    0%,100% { transform: translateY(0); }
+    50%    { transform: translateY(-6px); }
+  }
+  .heart-trail {
+    position: absolute;
+    bottom: 60px;
+    font-size: 20px;
+    opacity: 0;
+    animation: heartFloat 1.5s ease-out infinite;
+  }
+  @keyframes heartFloat {
+    0% { opacity: 0; transform: translateY(0) scale(0.5); }
+    30% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-50px) scale(1.2); }
+  }
+  .stage-info {
+    text-align: center;
+    font-size: 14px;
+    color: #bd93f9;
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="game">
+  <h1>⚔️ 勇者传说：打怪升级娶公主 👸</h1>
+  <div class="stage-info" id="stage-info">第 1 关 · 史莱姆森林</div>
+  <div class="scene" id="scene">
+    <div class="hero" id="hero">🧙‍♂️</div>
+    <div class="enemy" id="enemy">🟢</div>
+  </div>
+
+  <div class="stats">
+    <div class="panel">
+      <h3>🧙‍♂️ 勇者 <span id="hero-name">小明</span></h3>
+      <div class="row"><span>等级</span><span>Lv.<b id="hero-lv">1</b></span></div>
+      <div>HP <span id="hp-text">100/100</span></div>
+      <div class="bar hp"><div class="bar-fill" id="hp-bar" style="width:100%"></div></div>
+      <div>经验</div>
+      <div class="bar exp"><div class="bar-fill" id="exp-bar" style="width:0%"></div></div>
+      <div class="row"><span>攻击</span><b id="hero-atk">15</b></div>
+      <div class="row"><span>金币</span><b id="hero-gold">0</b> 💰</div>
+      <div class="row"><span>公主好感</span><b id="love">0</b> ❤️ / 100</div>
+    </div>
+    <div class="panel">
+      <h3 id="enemy-name">史莱姆</h3>
+      <div>HP <span id="enemy-hp-text">30/30</span></div>
+      <div class="bar enemy-hp"><div class="bar-fill" id="enemy-hp-bar" style="width:100%"></div></div>
+      <div class="row"><span>攻击</span><b id="enemy-atk">5</b></div>
+      <div class="row"><span>经验奖励</span><b id="enemy-exp">10</b></div>
+      <div class="row"><span>金币奖励</span><b id="enemy-gold">5</b></div>
+      <div class="log" id="log" style="margin-top:10px;height:80px;"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="attack-btn" id="btn-attack">⚔️ 攻击</button>
+    <button class="skill-btn" id="btn-skill">🔥 火球术 (10MP)</button>
+    <button class="heal-btn" id="btn-heal">🧪 喝药水 (20金)</button>
+    <button id="btn-gift">🌹 给公主送礼 (50金)</button>
+  </div>
+</div>
+
+<div class="ending" id="ending">
+  <div class="ending-card">
+    <h2 id="ending-title">🎉 大团圆结局 🎉</h2>
+    <div class="couple" id="ending-couple">🤵‍♂️💕👰‍♀️</div>
+    <div class="gallop-stage" id="gallop-stage" style="display:none;">
+      <div class="sun">☀️</div>
+      <div class="ground-line"></div>
+      <div class="heart-trail" style="left:20%; animation-delay:0s;">💖</div>
+      <div class="heart-trail" style="left:40%; animation-delay:0.4s;">💕</div>
+      <div class="heart-trail" style="left:60%; animation-delay:0.8s;">💗</div>
+      <div class="heart-trail" style="left:80%; animation-delay:1.2s;">💞</div>
+      <div class="prince">🤴💕👰‍♀️🐎💨</div>
+    </div>
+    <p id="ending-text">勇者击败了魔王，拯救了王国，与公主幸福地生活在一起！</p>
+    <button onclick="location.reload()">再玩一次</button>
+  </div>
+</div>
+
+<script>
+const enemies = [
+  { name: '史莱姆', emoji: '🟢', hp: 30, atk: 5, exp: 10, gold: 5, stage: '史莱姆森林' },
+  { name: '哥布林', emoji: '👺', hp: 60, atk: 10, exp: 25, gold: 12, stage: '幽暗洞窟' },
+  { name: '骷髅兵', emoji: '💀', hp: 100, atk: 16, exp: 45, gold: 25, stage: '诅咒墓地' },
+  { name: '兽人战士', emoji: '👹', hp: 160, atk: 24, exp: 75, gold: 45, stage: '兽人要塞' },
+  { name: '黑暗骑士', emoji: '🦹', hp: 240, atk: 34, exp: 120, gold: 70, stage: '黑暗城堡' },
+  { name: '巨龙', emoji: '🐉', hp: 360, atk: 48, exp: 200, gold: 120, stage: '火山巢穴' },
+  { name: '魔王', emoji: '😈', hp: 600, atk: 70, exp: 500, gold: 300, stage: '魔王殿堂' },
+];
+
+const hero = {
+  lv: 1, hp: 100, maxHp: 100, atk: 15, exp: 0, expNeed: 20,
+  gold: 0, mp: 30, maxMp: 30, love: 0,
+};
+
+let stage = 0;
+let enemy = { ...enemies[0], curHp: enemies[0].hp };
+let busy = false;
+
+const $ = id => document.getElementById(id);
+
+function log(msg, cls='') {
+  const p = document.createElement('p');
+  if (cls) p.className = cls;
+  p.innerHTML = msg;
+  $('log').appendChild(p);
+  $('log').scrollTop = $('log').scrollHeight;
+}
+
+function floatText(target, txt, color) {
+  const el = document.createElement('div');
+  el.className = 'floating-text';
+  el.style.color = color;
+  el.textContent = txt;
+  const rect = target.getBoundingClientRect();
+  const sceneRect = $('scene').getBoundingClientRect();
+  el.style.left = (rect.left - sceneRect.left + 20) + 'px';
+  el.style.top = (rect.top - sceneRect.top - 10) + 'px';
+  $('scene').appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+
+function render() {
+  $('hero-lv').textContent = hero.lv;
+  $('hp-text').textContent = `${hero.hp}/${hero.maxHp}`;
+  $('hp-bar').style.width = (hero.hp / hero.maxHp * 100) + '%';
+  $('exp-bar').style.width = (hero.exp / hero.expNeed * 100) + '%';
+  $('hero-atk').textContent = hero.atk;
+  $('hero-gold').textContent = hero.gold;
+  $('love').textContent = hero.love;
+
+  $('enemy-name').textContent = enemy.emoji + ' ' + enemy.name;
+  $('enemy').textContent = enemy.emoji;
+  $('enemy-hp-text').textContent = `${enemy.curHp}/${enemy.hp}`;
+  $('enemy-hp-bar').style.width = (enemy.curHp / enemy.hp * 100) + '%';
+  $('enemy-atk').textContent = enemy.atk;
+  $('enemy-exp').textContent = enemy.exp;
+  $('enemy-gold').textContent = enemy.gold;
+  $('stage-info').textContent = `第 ${stage+1} 关 · ${enemy.stage}`;
+  $('btn-skill').textContent = `🔥 火球术 (${hero.mp}/${hero.maxMp} MP)`;
+}
+
+function spawnEnemy() {
+  const e = enemies[Math.min(stage, enemies.length-1)];
+  enemy = { ...e, curHp: e.hp };
+  render();
+}
+
+function levelUp() {
+  while (hero.exp >= hero.expNeed) {
+    hero.exp -= hero.expNeed;
+    hero.lv++;
+    hero.expNeed = Math.floor(hero.expNeed * 1.5);
+    hero.maxHp += 20;
+    hero.hp = hero.maxHp;
+    hero.atk += 5;
+    hero.maxMp += 10;
+    hero.mp = hero.maxMp;
+    log(`✨ 升级！等级 Lv.${hero.lv}，属性全面提升！`, 'lvl');
+  }
+}
+
+async function playerAttack(damage, skill=false) {
+  if (busy) return;
+  busy = true;
+  $('hero').classList.add('attack');
+  setTimeout(() => $('hero').classList.remove('attack'), 200);
+  await sleep(180);
+  const dmg = Math.max(1, damage + Math.floor(Math.random()*5));
+  enemy.curHp = Math.max(0, enemy.curHp - dmg);
+  $('enemy').classList.add('hurt');
+  floatText($('enemy'), '-' + dmg, '#ff6b6b');
+  log(`你${skill?'施放火球术':'攻击'}，对${enemy.name}造成 ${dmg} 点伤害！`, 'good');
+  setTimeout(() => $('enemy').classList.remove('hurt'), 300);
+  render();
+
+  if (enemy.curHp <= 0) {
+    await sleep(400);
+    log(`🎯 击败了 ${enemy.name}！获得 ${enemy.exp} 经验，${enemy.gold} 金币。`, 'good');
+    hero.exp += enemy.exp;
+    hero.gold += enemy.gold;
+    hero.love += 5;
+    log(`公主听说了你的英勇事迹，好感度 +5 ❤️`, 'love');
+    levelUp();
+
+    if (stage >= enemies.length - 1) {
+      // 魔王已被击败
+      render();
+      await sleep(500);
+      checkEnding();
+      busy = false;
+      return;
+    }
+    stage++;
+    await sleep(600);
+    spawnEnemy();
+    log(`⚠️ 新的敌人出现：${enemy.name}！`);
+    busy = false;
+    return;
+  }
+
+  await sleep(400);
+  enemyAttack();
+}
+
+async function enemyAttack() {
+  $('enemy').classList.add('attack');
+  setTimeout(() => $('enemy').classList.remove('attack'), 200);
+  await sleep(180);
+  const dmg = Math.max(1, enemy.atk + Math.floor(Math.random()*4) - Math.floor(hero.lv/2));
+  hero.hp = Math.max(0, hero.hp - dmg);
+  $('hero').classList.add('hurt');
+  floatText($('hero'), '-' + dmg, '#ff4757');
+  log(`${enemy.name} 攻击你，造成 ${dmg} 点伤害。`, 'bad');
+  setTimeout(() => $('hero').classList.remove('hurt'), 300);
+  render();
+
+  if (hero.hp <= 0) {
+    await sleep(400);
+    gameOver();
+    return;
+  }
+  busy = false;
+}
+
+function checkEnding() {
+  if (hero.love >= 100) {
+    showEnding('🎉 真·完美结局 🎉',
+      `勇者 Lv.${hero.lv} 击败了魔王，赢得了公主的真心！<br>婚礼当日，他翻身跃上一匹纯白骏马，化身<b>白马王子</b>，<br>一把抱起身披婚纱的公主，迎着夕阳奔向远方……💨💕`, true);
+  } else if (hero.love >= 50) {
+    showEnding('💖 圆满结局 💖',
+      `你击败了魔王，公主对你心生爱慕（好感度 ${hero.love}）。<br>你跨上白马，载着新娘奔向远方的城堡，王国从此和平！`, true);
+  } else {
+    showEnding('👑 英雄结局',
+      `你击败了魔王，但公主对你了解尚浅（好感度 ${hero.love}）。<br>她感激地亲吻了你的脸颊，但还需要更多时间……<br><i>提示：多送礼物可以获得白马王子结局~</i>`, false);
+  }
+}
+
+function gameOver() {
+  $('ending-title').textContent = '💀 你倒下了 💀';
+  $('ending-text').innerHTML = `勇者在 ${enemy.name} 手中倒下……<br>公主还在等你救她！`;
+  $('ending').querySelector('.couple').textContent = '⚰️';
+  $('ending').classList.add('show');
+}
+
+function showEnding(title, text, gallop=false) {
+  $('ending-title').textContent = title;
+  $('ending-text').innerHTML = text;
+  if (gallop) {
+    $('ending-couple').style.display = 'none';
+    const stage = $('gallop-stage');
+    stage.style.display = 'block';
+    // 重启动画
+    const prince = stage.querySelector('.prince');
+    prince.style.animation = 'none';
+    void prince.offsetWidth;
+    prince.style.animation = '';
+  } else {
+    $('ending-couple').style.display = '';
+    $('gallop-stage').style.display = 'none';
+  }
+  $('ending').classList.add('show');
+}
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+$('btn-attack').onclick = () => playerAttack(hero.atk);
+$('btn-skill').onclick = () => {
+  if (busy) return;
+  if (hero.mp < 10) { log('MP 不足！', 'bad'); return; }
+  hero.mp -= 10;
+  playerAttack(Math.floor(hero.atk * 2.2), true);
+};
+$('btn-heal').onclick = () => {
+  if (busy) return;
+  if (hero.gold < 20) { log('金币不足！', 'bad'); return; }
+  if (hero.hp >= hero.maxHp) { log('HP 已满！'); return; }
+  hero.gold -= 20;
+  const heal = 50;
+  hero.hp = Math.min(hero.maxHp, hero.hp + heal);
+  hero.mp = Math.min(hero.maxMp, hero.mp + 10);
+  log(`💚 喝下药水，恢复 ${heal} HP 和 10 MP。`, 'good');
+  render();
+};
+$('btn-gift').onclick = () => {
+  if (busy) return;
+  if (hero.gold < 50) { log('金币不足，无法买礼物！', 'bad'); return; }
+  if (hero.love >= 100) { log('公主好感度已满！'); return; }
+  hero.gold -= 50;
+  const add = 10 + Math.floor(Math.random()*6);
+  hero.love = Math.min(100, hero.love + add);
+  log(`🌹 你送给公主一份礼物，好感度 +${add} ❤️（当前 ${hero.love}）`, 'love');
+  render();
+};
+
+render();
+log('冒险开始！打败所有敌人，赢得公主的芳心吧 💕');
+</script>
+</body>
+</html>

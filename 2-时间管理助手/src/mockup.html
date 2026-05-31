@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>时间管理助手 - 页面原型</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, 'Microsoft YaHei', sans-serif; font-size: 12px; background: #f8fafc; padding: 12px; }
+.header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.header h1 { font-size: 18px; }
+.header button { padding: 4px 12px; border: 1px solid #d1d5db; border-radius: 4px; background: #fff; cursor: pointer; font-size: 12px; }
+.header .btn-export { background: #2563eb; color: #fff; border: none; }
+.page-layout { display: flex; gap: 0; overflow-x: auto; }
+/* Code reference panel */
+.code-panel { min-width: 150px; max-width: 150px; border: 1px solid #d1d5db; border-right: none; background: #fff; font-size: 10px; height: fit-content; }
+.code-panel h4 { font-size: 11px; padding: 6px 8px; background: #e2e8f0; border-bottom: 1px solid #d1d5db; }
+.code-panel ul { list-style: none; padding: 4px 0; }
+.code-panel li { padding: 3px 8px; border-bottom: 1px solid #f1f5f9; }
+.code-panel .code-cat { font-weight: 700; padding: 4px 8px; margin-top: 4px; }
+.code-panel .cat-rest { background: #4ade80; }
+.code-panel .cat-qw { background: #16a34a; color: #fff; }
+.code-panel .cat-gfp { background: #2563eb; color: #fff; }
+.code-panel .cat-proc { background: #dc2626; color: #fff; }
+.code-panel .cat-mw { background: #ffff00; }
+.container { display: flex; gap: 12px; flex: 1; overflow-x: auto; }
+.main-table { border-collapse: collapse; font-size: 11px; min-width: 900px; }
+.main-table th, .main-table td { border: 1px solid #d1d5db; padding: 2px 4px; text-align: center; white-space: nowrap; }
+.main-table .cell-event { min-width: 70px; text-align: center; }
+.main-table .cell-code { min-width: 28px; width: 28px; font-size: 10px; font-weight: 600; }
+.cell-event.rest + .cell-code { background: #4ade80; }
+.cell-event.qw + .cell-code { background: #16a34a; color: #fff; }
+.cell-event.gfp + .cell-code { background: #2563eb; color: #fff; }
+.cell-event.mw + .cell-code { background: #ffff00; }
+.cell-event.proc + .cell-code { background: #dc2626; color: #fff; }
+.main-table th { background: #e2e8f0; font-weight: 600; }
+.col-label { min-width: 80px !important; max-width: 80px; text-align: left !important; background: #f1f5f9; font-weight: 500; }
+.main-table td:first-child { text-align: left; background: #f1f5f9; font-weight: 500; min-width: 80px; max-width: 80px; }
+/* Category colors - cells */
+.rest { background: #4ade80; }
+.qw { background: #16a34a; color: #fff; }
+.gfp { background: #2563eb; color: #fff; }
+.mw { background: #ffff00; }
+.proc { background: #dc2626; color: #fff; }
+/* Stats section */
+.stat-row td { font-weight: 600; background: #f8fafc !important; }
+.stat-row td:first-child { background: #e2e8f0 !important; font-weight: 700; }
+.section-sep td { border-top: 3px solid #64748b; }
+/* Five category stat rows - header has category bg + bold black, data has category bg */
+.stat-gfp td:first-child { background: #2563eb !important; color: #fff; }
+.stat-gfp td:not(:first-child) { background: #2563eb !important; color: #fff; }
+.stat-rest td:first-child { background: #4ade80 !important; color: #000; }
+.stat-rest td:not(:first-child) { background: #4ade80 !important; }
+.stat-mw td:first-child { background: #ffff00 !important; color: #000; }
+.stat-mw td:not(:first-child) { background: #ffff00 !important; }
+.stat-qw td:first-child { background: #16a34a !important; color: #fff; }
+.stat-qw td:not(:first-child) { background: #16a34a !important; color: #fff; }
+.stat-proc td:first-child { background: #dc2626 !important; color: #fff; }
+.stat-proc td:not(:first-child) { background: #dc2626 !important; color: #fff; }
+/* Earn/Lose rows */
+.stat-earn td:not(:first-child) { background: #16a34a !important; color: #fff; }
+.stat-lose td:not(:first-child) { background: #dc2626 !important; color: #fff; }
+/* Balance: positive=QW, negative=Proc */
+.bal-pos { background: #16a34a !important; color: #fff; }
+.bal-neg { background: #dc2626 !important; color: #fff; }
+/* Valid invest / Invalid waste summary rows */
+.stat-valid-invest td:not(:first-child) { background: #16a34a !important; color: #fff; }
+.stat-invalid-waste td:not(:first-child) { background: #dc2626 !important; color: #fff; }
+/* Potential row = Rest color, Standard row = MW color, Available = GFP color */
+.stat-potential td:not(:first-child) { background: #4ade80 !important; }
+.stat-standard td:not(:first-child) { background: #ffff00 !important; }
+.stat-available td:not(:first-child) { background: #2563eb !important; color: #fff; }
+/* Detail rows - header bold no color, data cells use lighter shade */
+.detail-qw td:first-child { background: #f8fafc !important; font-weight: 700; }
+.detail-gfp td:first-child { background: #f8fafc !important; font-weight: 700; }
+.detail-proc td:first-child { background: #f8fafc !important; font-weight: 700; }
+.detail-qw td:not(:first-child) { background: #bbf7d0 !important; }
+.detail-gfp td:not(:first-child) { background: #bfdbfe !important; }
+.detail-proc td:not(:first-child) { background: #fecaca !important; }
+/* Review panel */
+.review-panel { min-width: 200px; max-width: 220px; border: 1px solid #d1d5db; border-radius: 6px; padding: 10px; background: #fff; font-size: 11px; height: fit-content; }
+.review-panel h3 { font-size: 13px; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
+.review-item { margin-bottom: 8px; }
+.review-item label { font-weight: 600; color: #475569; display: block; margin-bottom: 2px; }
+.review-item .value { color: #1e293b; padding: 3px 0; min-height: 18px; border-bottom: 1px dashed #e2e8f0; }
+.warn { color: #dc2626; font-weight: 700; }
+.ok { color: #16a34a; }
+.total-col { background: #f0f9ff !important; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <button>◀</button>
+  <h1>2025年第49周</h1>
+  <button>▶</button>
+  <button>回到本周</button>
+  <div style="flex:1"></div>
+  <button class="btn-export">导出 Excel</button>
+</div>
+
+<div class="page-layout">
+
+<!-- Left: Code Reference Panel with Weekly Totals -->
+<div class="code-panel">
+  <h4>本周累计</h4>
+  <ul>
+    <li class="code-cat cat-qw">QW - Quality Work　<b>61</b></li>
+    <li>1.1-新媒体运营　<b>0</b></li>
+    <li>1.2-心理咨询　<b>0</b></li>
+    <li>1.3-注会变现　<b>52</b></li>
+    <li>1.4-读书　<b>1</b></li>
+    <li>1.5-投资　<b>8</b></li>
+    <li>1.6-造音师　<b>0</b></li>
+    <li>1.7-其他　<b>0</b></li>
+    <li class="code-cat cat-gfp">GFP - Guilt Free Play　<b>11</b></li>
+    <li>2.1-演出　<b>0</b></li>
+    <li>2.2-运动　<b>6</b></li>
+    <li>2.3-约会　<b>4</b></li>
+    <li>2.4-旅行　<b>0</b></li>
+    <li>2.5-小资　<b>1</b></li>
+    <li class="code-cat cat-proc">Proc - Procrastination　<b>84</b></li>
+    <li>3.1-睡懒觉　<b>0</b></li>
+    <li>3.2-刷手机　<b>67</b></li>
+    <li>3.3-拖延　<b>16</b></li>
+    <li>3.4-无效社交　<b>1</b></li>
+    <li>3.5-其他　<b>0</b></li>
+  </ul>
+</div>
+
+<div class="container">
+
+<!-- Main Table -->
+<table class="main-table">
+<thead>
+<tr>
+  <th rowspan="2">第49周</th><th colspan="2">周一</th><th colspan="2">周二</th><th colspan="2">周三</th><th colspan="2">周四</th><th colspan="2">周五</th><th colspan="2">周六</th><th colspan="2">周天</th>
+</tr>
+<tr>
+  <th colspan="2">2025/12/1</th><th colspan="2">2025/12/2</th><th colspan="2">2025/12/3</th><th colspan="2">2025/12/4</th><th colspan="2">2025/12/5</th><th colspan="2">2025/12/6</th><th colspan="2">2025/12/7</th>
+</tr>
+</thead>
+<tbody>
+<!-- 每日关键事项 -->
+<tr><td>第一件事</td><td colspan="2">汇报</td><td colspan="2">汇报</td><td colspan="2"></td><td colspan="2"></td><td colspan="2"></td><td colspan="2">两个报表</td><td colspan="2">两个报表</td></tr>
+<tr><td>第二件事</td><td colspan="2"></td><td colspan="2">读书</td><td colspan="2"></td><td colspan="2"></td><td colspan="2"></td><td colspan="2">12月预算</td><td colspan="2">读书笔记</td></tr>
+<tr><td>第三件事</td><td colspan="2"></td><td colspan="2">完善时间管理</td><td colspan="2"></td><td colspan="2"></td><td colspan="2"></td><td colspan="2">数据线</td><td colspan="2"></td></tr>
+<tr><td>小确幸</td><td colspan="2">给老六科普增值税</td><td colspan="2"></td><td colspan="2"></td><td colspan="2"></td><td colspan="2"></td><td colspan="2"></td><td colspan="2"></td></tr>
+<tr><td>关键词</td><td colspan="2"></td><td colspan="2"></td><td colspan="2"></td><td colspan="2"></td><td colspan="2"></td><td colspan="2"></td><td colspan="2"></td></tr>
+
+<!-- 半小时日程 - 事件名+编码 -->
+<tr class="section-sep"><td>7:00-7:30</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td></tr>
+<tr><td>7:30-8:00</td><td class="cell-event qw">采购报表</td><td class="cell-code">1.3</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td></tr>
+<tr><td>8:00-8:30</td><td class="cell-event qw">采购报表</td><td class="cell-code">1.3</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td></tr>
+<tr><td>8:30-9:00</td><td class="cell-event rest">上班</td><td class="cell-code">0</td><td class="cell-event rest">上班</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">上班</td><td class="cell-code">0</td><td class="cell-event rest">上班</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td></tr>
+<tr><td>9:00-9:30</td><td class="cell-event qw">讲解财务知识</td><td class="cell-code">1.3</td><td class="cell-event qw">财报汇报</td><td class="cell-code">1.3</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">去的路上</td><td class="cell-code">0</td><td class="cell-event rest">去的路上</td><td class="cell-code">0</td><td class="cell-event rest">去的路上</td><td class="cell-code">0</td><td class="cell-event rest">去的路上</td><td class="cell-code">0</td></tr>
+<tr><td>9:30-10:00</td><td class="cell-event qw">讲解财务知识</td><td class="cell-code">1.3</td><td class="cell-event qw">财报汇报</td><td class="cell-code">1.3</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event qw">办理合作社</td><td class="cell-code">1.3</td><td class="cell-event qw">办理合作社</td><td class="cell-code">1.3</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td><td class="cell-event qw">不良资产管理</td><td class="cell-code">1.5</td></tr>
+<tr><td>10:00-10:30</td><td class="cell-event qw">开会</td><td class="cell-code">1.3</td><td class="cell-event qw">财报汇报</td><td class="cell-code">1.3</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event qw">办理合作社</td><td class="cell-code">1.3</td><td class="cell-event rest">摸鱼买东西</td><td class="cell-code">0</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td><td class="cell-event qw">不良资产管理</td><td class="cell-code">1.5</td></tr>
+<tr><td>10:30-11:00</td><td class="cell-event qw">开会</td><td class="cell-code">1.3</td><td class="cell-event qw">财报汇报</td><td class="cell-code">1.3</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event qw">办理合作社</td><td class="cell-code">1.3</td><td class="cell-event rest">回的路上</td><td class="cell-code">0</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td></tr>
+<tr><td>11:00-11:30</td><td class="cell-event qw">流程图</td><td class="cell-code">1.3</td><td class="cell-event qw">财报汇报</td><td class="cell-code">1.3</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event qw">办理合作社</td><td class="cell-code">1.3</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td><td class="cell-event rest">搞网络</td><td class="cell-code">0</td><td class="cell-event qw">物料清单</td><td class="cell-code">1.3</td></tr>
+<tr><td>11:30-12:00</td><td class="cell-event qw">流程图</td><td class="cell-code">1.3</td><td class="cell-event qw">财报汇报</td><td class="cell-code">1.3</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event rest">回的路上</td><td class="cell-code">0</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td><td class="cell-event qw">物料清单</td><td class="cell-code">1.3</td><td class="cell-event qw">物料清单</td><td class="cell-code">1.3</td></tr>
+<tr><td>12:00-12:30</td><td class="cell-event rest">吃饭</td><td class="cell-code">0</td><td class="cell-event rest">吃饭</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event rest">休息</td><td class="cell-code">0</td><td class="cell-event rest">吃饭</td><td class="cell-code">0</td><td class="cell-event rest">社交</td><td class="cell-code">0</td><td class="cell-event rest">吃饭</td><td class="cell-code">0</td></tr>
+<tr><td>12:30-13:00</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event rest">吃饭</td><td class="cell-code">0</td><td class="cell-event rest">休息</td><td class="cell-code">0</td><td class="cell-event rest">休息</td><td class="cell-code">0</td><td class="cell-event rest">社交</td><td class="cell-code">0</td><td class="cell-event rest">休息</td><td class="cell-code">0</td></tr>
+<tr><td>13:00-13:30</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event rest">社交</td><td class="cell-code">0</td><td class="cell-event rest">休息</td><td class="cell-code">0</td></tr>
+<tr><td>13:30-14:00</td><td class="cell-event qw">完善报表</td><td class="cell-code">1.3</td><td class="cell-event rest">休息</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event rest">休息</td><td class="cell-code">0</td></tr>
+<tr><td>14:00-14:30</td><td class="cell-event qw">完善报表</td><td class="cell-code">1.3</td><td class="cell-event qw">财报汇报</td><td class="cell-code">1.3</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event qw">合作社注册</td><td class="cell-code">1.3</td><td class="cell-event qw">小程序认证</td><td class="cell-code">1.3</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td></tr>
+<tr><td>14:30-15:00</td><td class="cell-event qw">完善报表</td><td class="cell-code">1.3</td><td class="cell-event qw">财报汇报</td><td class="cell-code">1.3</td><td class="cell-event rest">洗衣服</td><td class="cell-code">0</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td><td class="cell-event qw">物料清单</td><td class="cell-code">1.3</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td></tr>
+<tr><td>15:00-15:30</td><td class="cell-event qw">完善报表</td><td class="cell-code">1.3</td><td class="cell-event qw">财报汇报</td><td class="cell-code">1.3</td><td class="cell-event gfp">散步太平湖</td><td class="cell-code">2.2</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td><td class="cell-event qw">物料清单</td><td class="cell-code">1.3</td><td class="cell-event qw">物料清单</td><td class="cell-code">1.3</td></tr>
+<tr><td>15:30-16:00</td><td class="cell-event qw">完善报表</td><td class="cell-code">1.3</td><td class="cell-event qw">财报汇报</td><td class="cell-code">1.3</td><td class="cell-event gfp">散步太平湖</td><td class="cell-code">2.2</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td><td class="cell-event qw">物料清单</td><td class="cell-code">1.3</td><td class="cell-event qw">物料清单</td><td class="cell-code">1.3</td></tr>
+<tr><td>16:00-16:30</td><td class="cell-event qw">完善报表</td><td class="cell-code">1.3</td><td class="cell-event qw">财报汇报</td><td class="cell-code">1.3</td><td class="cell-event gfp">散步太平湖</td><td class="cell-code">2.2</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td><td class="cell-event qw">处理余花</td><td class="cell-code">1.3</td><td class="cell-event gfp">与圆圆电话</td><td class="cell-code">2.3</td><td class="cell-event qw">物料清单</td><td class="cell-code">1.3</td></tr>
+<tr><td>16:30-17:00</td><td class="cell-event qw">完善报表</td><td class="cell-code">1.3</td><td class="cell-event qw">财报汇报</td><td class="cell-code">1.3</td><td class="cell-event gfp">散步太平湖</td><td class="cell-code">2.2</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td><td class="cell-event qw">时间管理</td><td class="cell-code">1.5</td><td class="cell-event gfp">与圆圆电话</td><td class="cell-code">2.3</td><td class="cell-event qw">物料清单</td><td class="cell-code">1.3</td></tr>
+<tr><td>17:00-17:30</td><td class="cell-event qw">完善报表</td><td class="cell-code">1.3</td><td class="cell-event rest">休息</td><td class="cell-code">0</td><td class="cell-event gfp">散步太平湖</td><td class="cell-code">2.2</td><td class="cell-event proc">拖延</td><td class="cell-code">3.3</td><td class="cell-event qw">时间管理</td><td class="cell-code">1.5</td><td class="cell-event gfp">与圆圆电话</td><td class="cell-code">2.3</td><td class="cell-event qw">物料清单</td><td class="cell-code">1.3</td></tr>
+<tr><td>17:30-18:00</td><td class="cell-event gfp">王者</td><td class="cell-code">2.5</td><td class="cell-event rest">去城上</td><td class="cell-code">0</td><td class="cell-event gfp">散步太平湖</td><td class="cell-code">2.2</td><td class="cell-event rest">吃饭</td><td class="cell-code">0</td><td class="cell-event qw">时间管理</td><td class="cell-code">1.5</td><td class="cell-event gfp">与圆圆电话</td><td class="cell-code">2.3</td><td class="cell-event rest">吃饭</td><td class="cell-code">0</td></tr>
+<tr><td>18:00-18:30</td><td class="cell-event rest">吃饭</td><td class="cell-code">0</td><td class="cell-event rest">打电话</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event rest">回家</td><td class="cell-code">0</td><td class="cell-event rest">吃饭</td><td class="cell-code">0</td><td class="cell-event rest">与老妈电话</td><td class="cell-code">0</td><td class="cell-event rest">回家</td><td class="cell-code">0</td></tr>
+<tr><td>18:30-19:00</td><td class="cell-event rest">回家</td><td class="cell-code">0</td><td class="cell-event rest">吃饭</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event rest">游戏</td><td class="cell-code">0</td><td class="cell-event rest">吃饭</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td></tr>
+<tr><td>19:00-19:30</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event rest">吃饭</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event rest">回家</td><td class="cell-code">0</td><td class="cell-event rest">回家</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td></tr>
+<tr><td>19:30-20:00</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event rest">散步</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td></tr>
+<tr><td>20:00-20:30</td><td class="cell-event rest">洗澡</td><td class="cell-code">0</td><td class="cell-event rest">回家</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event rest">洗澡</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td></tr>
+<tr><td>20:30-21:00</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event qw">派花</td><td class="cell-code">1.3</td><td class="cell-event rest">洗澡</td><td class="cell-code">0</td><td class="cell-event rest">洗澡</td><td class="cell-code">0</td></tr>
+<tr><td>21:00-21:30</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event qw">时间管理</td><td class="cell-code">1.5</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td></tr>
+<tr><td>21:30-22:00</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event qw">时间管理</td><td class="cell-code">1.5</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td></tr>
+<tr><td>22:00-22:30</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">吐槽</td><td class="cell-code">3.4</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event qw">物料清单</td><td class="cell-code">1.3</td></tr>
+<tr><td>22:30-23:00</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event qw">时间管理</td><td class="cell-code">1.5</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event qw">物料清单</td><td class="cell-code">1.3</td></tr>
+<tr><td>23:00-23:30</td><td class="cell-event rest">睡觉</td><td class="cell-code">0</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event qw">物料清单</td><td class="cell-code">1.3</td></tr>
+<tr><td>23:30-00:00</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event qw">读书</td><td class="cell-code">1.4</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event proc">短视频</td><td class="cell-code">3.2</td><td class="cell-event qw">物料清单</td><td class="cell-code">1.3</td></tr>
+
+<!-- 五大分类统计 -->
+<tr class="stat-row stat-gfp section-sep"><td>Guilt Free Play</td><td colspan="2">1</td><td colspan="2">-</td><td colspan="2">6</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">4</td><td colspan="2">-</td></tr>
+<tr class="stat-row stat-rest"><td>Rest</td><td colspan="2">9</td><td colspan="2">12</td><td colspan="2">9</td><td colspan="2">9</td><td colspan="2">13</td><td colspan="2">12</td><td colspan="2">11</td></tr>
+<tr class="stat-row stat-mw"><td>Mandatory Work</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td></tr>
+<tr class="stat-row stat-qw"><td>Quality Work</td><td colspan="2">16</td><td colspan="2">12</td><td colspan="2">-</td><td colspan="2">6</td><td colspan="2">10</td><td colspan="2">4</td><td colspan="2">13</td></tr>
+<tr class="stat-row stat-proc"><td>Procrastination</td><td colspan="2">7</td><td colspan="2">9</td><td colspan="2">18</td><td colspan="2">18</td><td colspan="2">10</td><td colspan="2">13</td><td colspan="2">9</td></tr>
+
+<!-- 赚/赔/结余 -->
+<tr class="stat-row stat-earn section-sep"><td>赚</td><td colspan="2">17</td><td colspan="2">12</td><td colspan="2">6</td><td colspan="2">6</td><td colspan="2">10</td><td colspan="2">8</td><td colspan="2">13</td></tr>
+<tr class="stat-row stat-lose"><td>赔</td><td colspan="2">7</td><td colspan="2">9</td><td colspan="2">18</td><td colspan="2">18</td><td colspan="2">10</td><td colspan="2">13</td><td colspan="2">9</td></tr>
+<tr class="stat-row"><td>结余</td><td colspan="2" class="bal-pos">3</td><td colspan="2" class="bal-neg">-6</td><td colspan="2" class="bal-neg">-30</td><td colspan="2" class="bal-neg">-30</td><td colspan="2" class="bal-neg">-10</td><td colspan="2" class="bal-neg">-18</td><td colspan="2" class="bal-neg">-5</td></tr>
+<!-- 结余公式：赚 - 赔*2，即 17-7*2=3, 12-9*2=-6, 6-18*2=-30, 6-18*2=-30, 10-10*2=-10, 8-13*2=-18, 13-9*2=-5 -->
+
+<!-- GFP 明细 -->
+<tr class="stat-row detail-gfp section-sep"><td>2.1-演出</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td></tr>
+<tr class="stat-row detail-gfp"><td>2.2-运动</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">6</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td></tr>
+<tr class="stat-row detail-gfp"><td>2.3-约会</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">4</td><td colspan="2">-</td></tr>
+<tr class="stat-row detail-gfp"><td>2.4-旅行</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td></tr>
+<tr class="stat-row detail-gfp"><td>2.5-小资</td><td colspan="2">1</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td></tr>
+
+<!-- 项目投入 -->
+<tr class="stat-row detail-qw section-sep"><td>1.1-新媒体运营</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td></tr>
+<tr class="stat-row detail-qw"><td>1.2-心理咨询</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td></tr>
+<tr class="stat-row detail-qw"><td>1.3-注会变现</td><td colspan="2">16</td><td colspan="2">12</td><td colspan="2">-</td><td colspan="2">5</td><td colspan="2">4</td><td colspan="2">4</td><td colspan="2">11</td></tr>
+<tr class="stat-row detail-qw"><td>1.4-读书</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">1</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td></tr>
+<tr class="stat-row detail-qw"><td>1.5-投资</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">6</td><td colspan="2">-</td><td colspan="2">2</td></tr>
+<tr class="stat-row detail-qw"><td>1.6-造音师</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td></tr>
+<tr class="stat-row detail-qw"><td>1.7-其他</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td></tr>
+
+<!-- 有效投资 / 无效浪费 -->
+<tr class="stat-row stat-valid-invest section-sep"><td>有效投资</td><td colspan="2">16</td><td colspan="2">12</td><td colspan="2">-</td><td colspan="2">6</td><td colspan="2">10</td><td colspan="2">4</td><td colspan="2">13</td></tr>
+<tr class="stat-row detail-proc"><td>3.1-睡懒觉</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td></tr>
+<tr class="stat-row detail-proc"><td>3.2-刷手机</td><td colspan="2">7</td><td colspan="2">9</td><td colspan="2">18</td><td colspan="2">12</td><td colspan="2">4</td><td colspan="2">10</td><td colspan="2">7</td></tr>
+<tr class="stat-row detail-proc"><td>3.3-拖延</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">6</td><td colspan="2">5</td><td colspan="2">3</td><td colspan="2">2</td></tr>
+<tr class="stat-row detail-proc"><td>3.4-无效社交</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">1</td><td colspan="2">-</td><td colspan="2">-</td></tr>
+<tr class="stat-row detail-proc"><td>3.5-其他</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td><td colspan="2">-</td></tr>
+<tr class="stat-row stat-invalid-waste"><td>无效浪费</td><td colspan="2">7</td><td colspan="2">9</td><td colspan="2">18</td><td colspan="2">18</td><td colspan="2">10</td><td colspan="2">13</td><td colspan="2">9</td></tr>
+
+<!-- 潜力/标准/可用 -->
+<tr class="stat-row stat-potential section-sep"><td>潜力总数</td><td colspan="2">9</td><td colspan="2">12</td><td colspan="2">9</td><td colspan="2">9</td><td colspan="2">13</td><td colspan="2">12</td><td colspan="2">11</td></tr>
+<tr class="stat-row stat-standard"><td>标准数</td><td colspan="2">12</td><td colspan="2">12</td><td colspan="2">12</td><td colspan="2">12</td><td colspan="2">12</td><td colspan="2">12</td><td colspan="2">12</td></tr>
+<tr class="stat-row stat-available"><td>可用数</td><td colspan="2">0</td><td colspan="2">0</td><td colspan="2">0</td><td colspan="2">0</td><td colspan="2">1</td><td colspan="2">0</td><td colspan="2">0</td></tr>
+
+<!-- 校验区 -->
+<tr class="stat-row section-sep"><td>校验总数</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td></tr>
+<tr class="stat-row"><td>校验亏损</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td></tr>
+<tr class="stat-row"><td>校验投资</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td><td colspan="2" class="ok">0</td></tr>
+</tbody>
+</table>
+
+</div><!-- end container -->
+
+<!-- 右侧周复盘栏 -->
+<div class="review-panel">
+  <h3>周复盘</h3>
+  <div class="review-item"><label>本周的关键词</label><div class="value">香格里拉规划</div></div>
+  <div class="review-item"><label>本周的自我打分</label><div class="value">3/10</div></div>
+  <div class="review-item"><label>本周的总体评价</label><div class="value">时间浪费太多</div></div>
+  <div class="review-item"><label>本周读的书</label><div class="value">《纳瓦尔宝典》</div></div>
+  <div class="review-item"><label>本周看的电影</label><div class="value">无</div></div>
+  <div class="review-item"><label>本周做的最有意义的5件工作</label><div class="value">1.财报汇报<br>2.物料清单<br>3.时间管理<br>4.合作社办理<br>5.不良资产</div></div>
+  <div class="review-item"><label>本周干的最傻的3件事儿</label><div class="value">1.刷太多短视频<br>2.拖延太久<br>3.吐槽浪费时间</div></div>
+  <div class="review-item"><label>本周听到或说的最牛的3句话</label><div class="value"></div></div>
+  <div class="review-item"><label>本周请吃饭的人（学习）</label><div class="value"></div></div>
+  <div class="review-item"><label>赢得的奖励自己的时间</label><div class="value warn">-96</div></div>
+</div>
+
+</div><!-- end page-layout -->
+</body>
+</html>

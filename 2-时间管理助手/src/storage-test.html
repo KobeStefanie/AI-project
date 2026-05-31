@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>存储测试</title>
+<style>body{font:16px system-ui;padding:20px;max-width:400px;margin:0 auto}input{padding:8px;width:100%;box-sizing:border-box;margin:8px 0;font-size:16px}button{padding:10px 20px;font-size:16px;margin:4px}.ok{color:green}.fail{color:red}</style></head>
+<body>
+<h3>localStorage 持久化测试</h3>
+<p>1. 在下面输入框写点内容</p>
+<p>2. 点「写入」</p>
+<p>3. 关闭这个标签页</p>
+<p>4. 重新打开本页</p>
+<p>5. 点「读取」看内容还在不在</p>
+<input id="val" placeholder="随便写点什么"><br>
+<button onclick="writeVal()">写入</button>
+<button onclick="readVal()">读取</button>
+<div id="result"></div>
+<script>
+var KEY='_storage_test_';
+function writeVal(){
+  var v=document.getElementById('val').value;
+  localStorage.setItem(KEY,v);
+  document.getElementById('result').innerHTML='<span class="ok">已写入: '+v+' ('+new Date().toLocaleTimeString()+')</span>';
+}
+function readVal(){
+  var v=localStorage.getItem(KEY);
+  if(v) document.getElementById('result').innerHTML='<span class="ok">✓ 读取成功: '+v+'</span>';
+  else document.getElementById('result').innerHTML='<span class="fail">✗ 数据丢失！localStorage 为空</span>';
+}
+(function(){var v=localStorage.getItem(KEY);if(v)document.getElementById('result').innerHTML='<span class="ok">页面加载时读到旧数据: '+v+'</span>';})();
+</script>
+</body>
+</html>

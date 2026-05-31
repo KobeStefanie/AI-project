@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="utf-8"><title>修复配置</title>
+<meta http-equiv="Cache-Control" content="no-store">
+</head>
+<body style="font:15px monospace;max-width:700px;margin:20px auto;white-space:pre-wrap;line-height:1.6">
+  <h3>强制修复 gfpNames</h3>
+  <div id="out"></div>
+  <script>
+var el = document.getElementById('out');
+el.textContent = '';
+
+// 绕过任何 SW 缓存：直接操作 localStorage
+var today = new Date();
+var d = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+var ys = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+var week = Math.ceil(((d - ys) / 86400000 + 1) / 7);
+var year = d.getUTCFullYear();
+var w = (week < 10 ? '0' : '') + week;
+var key = 'tm_' + year + '_w' + w + '_config';
+
+el.textContent += '当前周: ' + year + '-W' + week + '\n';
+el.textContent += 'key: ' + key + '\n\n';
+
+var raw = localStorage.getItem(key);
+if (!raw) {
+  el.textContent += '❌ 无配置\n';
+} else {
+  var cfg = JSON.parse(raw);
+  el.textContent += '修复前 gfpNames: ' + JSON.stringify(cfg.gfpNames) + ' (' + cfg.gfpNames.length + '项)\n';
+  el.textContent += '修复前 qwNames: ' + JSON.stringify(cfg.qwNames) + ' (' + cfg.qwNames.length + '项)\n\n';
+
+  cfg.gfpNames = ['演出','运动','约会','旅行','游戏','小资','其他'];
+  cfg.qwNames = ['当你','心理咨询','注会变现','读书','投资','造音师','其他'];
+  cfg.procNames = ['睡懒觉','刷手机','拖延','无效/低效社交','其他'];
+
+  localStorage.setItem(key, JSON.stringify(cfg));
+  el.textContent += '修复后 gfpNames: ' + JSON.stringify(cfg.gfpNames) + ' (' + cfg.gfpNames.length + '项)\n';
+  el.textContent += '修复后 qwNames: ' + JSON.stringify(cfg.qwNames) + ' (' + cfg.qwNames.length + '项)\n';
+  el.textContent += '\n✅ 已修复并写回 localStorage。\n';
+
+  // 验证
+  var verify = JSON.parse(localStorage.getItem(key));
+  el.textContent += '\n验证 gfpNames: ' + JSON.stringify(verify.gfpNames) + ' (' + verify.gfpNames.length + '项)';
+  if (verify.gfpNames.length === 7) {
+    el.textContent += ' ✅';
+  } else {
+    el.textContent += ' ❌ 写入失败?!';
+  }
+}
+el.textContent += '\n\n→ 现在刷新主页面即可。';
+  </script>
+</body>
+</html>

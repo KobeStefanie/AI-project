@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#f97316">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="灵感收集器">
+<link rel="manifest" href="/manifest.json">
+<title>碎碎念 - 灵感收集器</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{brand:{50:'#fff7ed',100:'#ffedd5',500:'#f97316',600:'#ea580c',700:'#c2410c'}}}}}</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<style>
+  [data-view] { display: none; }
+  [data-view].active { display: block; }
+  .sidebar-link { transition: all .15s; }
+  .sidebar-link:hover, .sidebar-link.active { background: #fff7ed; color: #ea580c; border-right: 3px solid #f97316; }
+  .tab-btn.active { color: #f97316; }
+  .toast { animation: slideUp .3s ease; }
+  @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .card-enter { animation: fadeIn .2s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 767px) {
+    #sidebar { display: none; }
+    #desktop-header { display: none; }
+    #bottom-tabs { display: flex; }
+  }
+  @media (min-width: 768px) {
+    #sidebar { display: flex; }
+    #desktop-header { display: flex; }
+    #bottom-tabs { display: none; }
+    #mobile-header { display: none; }
+  }
+</style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen">
+
+<!-- ===== 移动端顶部 ===== -->
+<header id="mobile-header" class="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+  <h1 class="font-bold text-lg text-brand-600"><i class="fa fa-bolt"></i> 碎碎念</h1>
+  <span id="mobile-header-action" class="text-gray-400"></span>
+</header>
+
+<!-- ===== 桌面端顶部 ===== -->
+<header id="desktop-header" class="bg-white border-b px-6 py-3 flex items-center justify-between sticky top-0 z-30">
+  <h1 class="font-bold text-xl text-brand-600"><i class="fa fa-bolt"></i> 碎碎念 · 灵感收集器</h1>
+  <div class="flex items-center gap-3 text-sm text-gray-500">
+    <span id="desktop-status">就绪</span>
+  </div>
+</header>
+
+<!-- ===== 桌面侧边栏 ===== -->
+<nav id="sidebar" class="fixed left-0 top-0 bottom-0 w-56 bg-white border-r flex flex-col z-20 pt-14">
+  <div class="flex-1 py-4 space-y-1">
+    <a href="#" data-nav="workspace" class="sidebar-link active flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600">
+      <i class="fa fa-th-large w-4 text-center"></i> 工作台
+    </a>
+    <a href="#" data-nav="inbox" class="sidebar-link flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600">
+      <i class="fa fa-inbox w-4 text-center"></i> Inbox
+      <span id="inbox-badge" class="ml-auto bg-brand-500 text-white text-xs rounded-full px-1.5 py-0.5 hidden">0</span>
+    </a>
+    <a href="#" data-nav="calendar" class="sidebar-link flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600">
+      <i class="fa fa-calendar w-4 text-center"></i> 日历
+    </a>
+    <a href="#" data-nav="themes" class="sidebar-link flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600">
+      <i class="fa fa-folder-o w-4 text-center"></i> 主题
+    </a>
+    <a href="#" data-nav="timeline" class="sidebar-link flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600">
+      <i class="fa fa-clock-o w-4 text-center"></i> 时间线
+    </a>
+    <a href="#" data-nav="media" class="sidebar-link flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600">
+      <i class="fa fa-file-image-o w-4 text-center"></i> 媒体
+    </a>
+    <a href="#" data-nav="settings" class="sidebar-link flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600">
+      <i class="fa fa-cog w-4 text-center"></i> 设置
+    </a>
+  </div>
+</nav>
+
+<!-- ===== 移动端底部 Tab ===== -->
+<nav id="bottom-tabs" class="fixed bottom-0 left-0 right-0 bg-white border-t flex z-30">
+  <button data-nav="capture" class="tab-btn active flex-1 flex flex-col items-center py-2 text-xs text-gray-500">
+    <i class="fa fa-plus-circle text-lg"></i> 捕获
+  </button>
+  <button data-nav="list" class="tab-btn flex-1 flex flex-col items-center py-2 text-xs text-gray-500">
+    <i class="fa fa-list text-lg"></i> 列表
+    <span id="mobile-inbox-badge" class="absolute mt-0 ml-8 bg-brand-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
+  </button>
+  <button data-nav="settings" class="tab-btn flex-1 flex flex-col items-center py-2 text-xs text-gray-500">
+    <i class="fa fa-cog text-lg"></i> 设置
+  </button>
+</nav>
+
+<!-- ===== 主内容区 ===== -->
+<main id="main-content" class="md:ml-56 pb-16 md:pb-0 min-h-screen">
+
+  <!-- 捕获视图 (移动端默认) -->
+  <section data-view="capture" class="active">
+    <div class="p-4 max-w-lg mx-auto">
+      <!-- 顶部快捷按钮 -->
+      <div class="flex gap-2 mb-4">
+        <button id="btn-voice" class="flex-1 flex items-center justify-center gap-1.5 py-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium hover:bg-red-100 transition">
+          <i class="fa fa-microphone"></i> 语音
+        </button>
+        <button id="btn-camera" class="flex-1 flex items-center justify-center gap-1.5 py-3 bg-blue-50 text-blue-600 rounded-xl text-sm font-medium hover:bg-blue-100 transition">
+          <i class="fa fa-camera"></i> 图片
+        </button>
+        <button id="btn-video" class="flex-1 flex items-center justify-center gap-1.5 py-3 bg-purple-50 text-purple-600 rounded-xl text-sm font-medium hover:bg-purple-100 transition">
+          <i class="fa fa-video-camera"></i> 视频
+        </button>
+      </div>
+
+      <!-- 文字输入区 -->
+      <textarea id="capture-content" rows="5" placeholder="一闪而过的念头…" class="w-full border border-gray-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none outline-none" autofocus></textarea>
+
+      <!-- 上下文标签 -->
+      <div class="mt-3">
+        <select id="capture-context" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 outline-none focus:ring-2 focus:ring-brand-500">
+          <option value="">上下文（可选）</option>
+          <option value="播客">播客</option>
+          <option value="聊天">聊天</option>
+          <option value="读书">读书</option>
+          <option value="做梦">做梦</option>
+          <option value="开会">开会</option>
+          <option value="路上">路上</option>
+          <option value="项目中">项目中</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+
+      <!-- 提交按钮 -->
+      <button id="btn-submit" class="w-full mt-3 py-3 bg-brand-500 text-white rounded-xl font-medium hover:bg-brand-600 transition flex items-center justify-center gap-2">
+        <i class="fa fa-paper-plane"></i> 保存灵感
+      </button>
+
+      <!-- 媒体预览 -->
+      <div id="capture-preview" class="mt-3 hidden">
+        <div class="flex flex-wrap gap-2" id="capture-preview-list"></div>
+        <button id="btn-clear-media" class="mt-2 text-xs text-red-500">清除媒体</button>
+      </div>
+
+      <!-- 录音状态 -->
+      <div id="recording-bar" class="hidden mt-3 bg-red-50 border border-red-200 rounded-xl p-3 flex items-center gap-3">
+        <span class="inline-block w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+        <span class="text-sm text-red-600 flex-1">正在录音…</span>
+        <span id="recording-timer" class="text-sm text-red-500 font-mono">00:00</span>
+        <button id="btn-stop-recording" class="text-red-600 font-bold text-sm">停止</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 列表视图 (Inbox) -->
+  <section data-view="list">
+    <div class="p-4 max-w-3xl mx-auto">
+      <!-- 搜索与筛选 -->
+      <div class="flex gap-2 mb-4">
+        <input id="list-search" type="text" placeholder="搜索关键词…" class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+        <select id="list-status-filter" class="border border-gray-200 rounded-lg px-2 py-2 text-sm text-gray-600 outline-none">
+          <option value="">全部状态</option>
+          <option value="raw">原始</option>
+          <option value="expanded">已扩展</option>
+          <option value="realized">已实现</option>
+          <option value="archived">已归档</option>
+          <option value="abandoned">已放弃</option>
+        </select>
+        <select id="list-mood-filter" class="border border-gray-200 rounded-lg px-2 py-2 text-sm text-gray-600 outline-none">
+          <option value="">全部心情</option>
+          <option value="excited">兴奋</option>
+          <option value="calm">平和</option>
+          <option value="low">低落</option>
+          <option value="confused">困惑</option>
+          <option value="anxious">焦虑</option>
+          <option value="inspired">受启发</option>
+          <option value="determined">坚定</option>
+        </select>
+      </div>
+
+      <!-- 批量操作栏 -->
+      <div id="batch-bar" class="hidden mb-3 bg-brand-50 border border-brand-200 rounded-lg px-3 py-2 flex items-center gap-2 text-sm">
+        <span>已选 <strong id="batch-count">0</strong> 条</span>
+        <button id="btn-batch-archive" class="px-2 py-1 bg-gray-100 rounded text-gray-700 text-xs hover:bg-gray-200">归档</button>
+        <button id="btn-batch-abandon" class="px-2 py-1 bg-gray-100 rounded text-gray-700 text-xs hover:bg-gray-200">放弃</button>
+        <button id="btn-batch-theme" class="px-2 py-1 bg-gray-100 rounded text-gray-700 text-xs hover:bg-gray-200">加入主题</button>
+        <button id="btn-batch-clear" class="ml-auto text-gray-400 text-xs">清除</button>
+      </div>
+
+      <!-- 卡片列表 -->
+      <div id="note-list" class="space-y-3"></div>
+      <div id="list-loading" class="text-center text-sm text-gray-400 py-8 hidden">加载中…</div>
+      <div id="list-empty" class="text-center text-sm text-gray-400 py-12 hidden">
+        <i class="fa fa-inbox text-4xl mb-2 block"></i> 暂无灵感
+      </div>
+      <button id="btn-load-more" class="hidden w-full py-3 text-sm text-brand-600 font-medium hover:bg-brand-50 rounded-lg transition mt-4">加载更多</button>
+    </div>
+  </section>
+
+  <!-- 工作台视图 (桌面端默认) -->
+  <section data-view="workspace">
+    <div class="p-6 max-w-6xl mx-auto">
+      <!-- 概览卡片 -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-xl p-4 border">
+          <div class="text-3xl font-bold text-brand-600" id="stat-today">0</div>
+          <div class="text-sm text-gray-500 mt-1">今日新增</div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border">
+          <div class="text-3xl font-bold text-red-500" id="stat-inbox">0</div>
+          <div class="text-sm text-gray-500 mt-1">Inbox 待处理</div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border">
+          <div class="text-3xl font-bold text-blue-500" id="stat-week">0</div>
+          <div class="text-sm text-gray-500 mt-1">本周新增</div>
+        </div>
+        <div class="bg-white rounded-xl p-4 border">
+          <div class="text-3xl font-bold text-green-500" id="stat-expanded">0</div>
+          <div class="text-sm text-gray-500 mt-1">本月已扩展</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- 最近 Inbox -->
+        <div class="md:col-span-2 bg-white rounded-xl border p-4">
+          <h2 class="font-bold text-sm text-gray-700 mb-3"><i class="fa fa-inbox text-brand-500 mr-1"></i> 待处理 Inbox</h2>
+          <div id="workspace-inbox-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
+          <div id="workspace-inbox-empty" class="text-center text-sm text-gray-400 py-6">Inbox 已清空，做得好</div>
+        </div>
+
+        <!-- 右侧面板 -->
+        <div class="space-y-4">
+          <!-- 迷你日历 -->
+          <div class="bg-white rounded-xl border p-4">
+            <h2 class="font-bold text-sm text-gray-700 mb-2"><i class="fa fa-calendar text-brand-500 mr-1"></i> 活跃日历</h2>
+            <div id="mini-calendar" class="grid grid-cols-7 gap-1 text-xs"></div>
+          </div>
+
+          <!-- 随机回顾 -->
+          <div class="bg-white rounded-xl border p-4">
+            <h2 class="font-bold text-sm text-gray-700 mb-2"><i class="fa fa-random text-brand-500 mr-1"></i> 随机漫步</h2>
+            <div id="random-card" class="text-sm"></div>
+            <button id="btn-random" class="mt-2 w-full py-2 bg-brand-50 text-brand-600 rounded-lg text-sm font-medium hover:bg-brand-100 transition">再来一条</button>
+          </div>
+
+          <!-- AI 主题推荐 -->
+          <div class="bg-white rounded-xl border p-4">
+            <h2 class="font-bold text-sm text-gray-700 mb-2"><i class="fa fa-magic text-brand-500 mr-1"></i> 主题推荐</h2>
+            <div id="theme-suggestions" class="text-xs text-gray-400">暂无推荐</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 日历视图 -->
+  <section data-view="calendar">
+    <div class="p-6 max-w-4xl mx-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold text-lg">日历热力图</h2>
+        <input type="month" id="calendar-month-picker" class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none">
+      </div>
+      <div id="heatmap" class="bg-white rounded-xl border p-4 overflow-x-auto"></div>
+      <div id="date-detail" class="mt-4 space-y-2"></div>
+    </div>
+  </section>
+
+  <!-- 时间线视图 -->
+  <section data-view="timeline">
+    <div class="p-6 max-w-3xl mx-auto">
+      <div class="flex gap-2 mb-4">
+        <select id="timeline-status-filter" class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none">
+          <option value="">全部状态</option>
+          <option value="raw">原始</option>
+          <option value="expanded">已扩展</option>
+          <option value="realized">已实现</option>
+          <option value="archived">已归档</option>
+          <option value="abandoned">已放弃</option>
+        </select>
+        <select id="timeline-media-filter" class="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none">
+          <option value="">全部类型</option>
+          <option value="text">文字</option>
+          <option value="audio">语音</option>
+          <option value="image">图片</option>
+          <option value="video">视频</option>
+        </select>
+      </div>
+      <div id="timeline-content" class="space-y-6"></div>
+      <div id="timeline-empty" class="text-center text-gray-400 py-12 hidden">暂无记录</div>
+    </div>
+  </section>
+
+  <!-- 主题视图 -->
+  <section data-view="themes">
+    <div class="p-6 max-w-5xl mx-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold text-lg">主题</h2>
+        <button id="btn-create-theme" class="px-4 py-2 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition">
+          <i class="fa fa-plus mr-1"></i> 创建主题
+        </button>
+      </div>
+      <div id="theme-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      <div id="theme-empty" class="text-center text-gray-400 py-12 hidden">暂无主题，创建第一个主题来聚合灵感</div>
+    </div>
+  </section>
+
+  <!-- 媒体视图 -->
+  <section data-view="media">
+    <div class="p-6 max-w-6xl mx-auto">
+      <div class="flex gap-2 mb-4" id="media-tabs">
+        <button data-media="all" class="media-tab active px-3 py-1.5 bg-brand-100 text-brand-700 rounded-lg text-sm font-medium">全部</button>
+        <button data-media="image" class="media-tab px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200">图片</button>
+        <button data-media="audio" class="media-tab px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200">语音</button>
+        <button data-media="video" class="media-tab px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200">视频</button>
+        <button data-media="failed" class="media-tab px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200">上传失败</button>
+      </div>
+      <div id="media-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+      <div id="media-empty" class="text-center text-gray-400 py-12 hidden">暂无媒体</div>
+    </div>
+  </section>
+
+  <!-- 设置视图 -->
+  <section data-view="settings">
+    <div class="p-6 max-w-lg mx-auto space-y-4">
+      <div class="bg-white rounded-xl border p-4">
+        <h3 class="font-bold text-sm mb-3">同步状态</h3>
+        <div id="settings-sync" class="text-sm text-gray-600">加载中…</div>
+      </div>
+      <div class="bg-white rounded-xl border p-4">
+        <h3 class="font-bold text-sm mb-3">AI 分析状态</h3>
+        <div id="settings-ai" class="text-sm text-gray-600">
+          <p id="ai-status-text">检查中…</p>
+          <button id="btn-check-ai" class="mt-2 px-3 py-1.5 bg-gray-100 rounded-lg text-xs hover:bg-gray-200 transition">测试连接</button>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border p-4">
+        <h3 class="font-bold text-sm mb-3">离线队列</h3>
+        <div id="settings-offline" class="text-sm text-gray-600">
+          <p>待同步：<strong id="offline-count">0</strong> 条</p>
+          <button id="btn-sync-now" class="mt-2 px-3 py-1.5 bg-brand-50 text-brand-600 rounded-lg text-xs hover:bg-brand-100 transition">立即同步</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 主题详情视图 -->
+  <section data-view="theme-detail">
+    <div class="p-6 max-w-3xl mx-auto">
+      <button data-nav="themes" class="text-brand-600 text-sm mb-4 block"><i class="fa fa-arrow-left mr-1"></i> 返回主题列表</button>
+      <div id="theme-detail-content"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- 详情弹窗 -->
+<div id="detail-modal" class="hidden fixed inset-0 bg-black/40 z-40 flex items-start justify-center pt-12 px-4 overflow-y-auto">
+  <div class="bg-white rounded-2xl w-full max-w-2xl mb-20 shadow-xl">
+    <div class="p-4 border-b flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
+      <h3 class="font-bold">灵感详情</h3>
+      <button id="btn-close-detail" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+    </div>
+    <div id="detail-body" class="p-4 space-y-3 max-h-[70vh] overflow-y-auto"></div>
+    <div class="p-3 border-t bg-gray-50 rounded-b-2xl flex gap-2">
+      <button id="btn-detail-archive" class="px-3 py-1.5 text-xs bg-gray-100 rounded-lg hover:bg-gray-200">归档</button>
+      <button id="btn-detail-expand" class="px-3 py-1.5 text-xs bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100">扩展</button>
+      <button id="btn-detail-realize" class="px-3 py-1.5 text-xs bg-green-50 text-green-600 rounded-lg hover:bg-green-100">标记实现</button>
+      <button id="btn-detail-abandon" class="px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-lg hover:bg-red-100">放弃</button>
+      <button id="btn-detail-delete" class="ml-auto px-3 py-1.5 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600">删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="hidden fixed bottom-20 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full text-sm z-50 toast shadow-lg"></div>
+
+<script src="/src/app-core.js"></script>
+<script src="/src/app.js"></script>
+</body>
+</html>

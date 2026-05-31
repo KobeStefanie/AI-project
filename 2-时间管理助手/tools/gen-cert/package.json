@@ -1,0 +1,15 @@
+{
+  "name": "tm-gen-cert",
+  "version": "2.0.0",
+  "private": true,
+  "description": "为时间管理助手生成本地 LAN CA + leaf 自签 TLS 证书（v2.11.0 起的两层架构）",
+  "main": "gen-all.js",
+  "scripts": {
+    "gen-ca": "node gen-ca.js",
+    "gen-leaf": "node gen-leaf.js",
+    "gen-all": "node gen-all.js"
+  },
+  "dependencies": {
+    "node-forge": "^1.3.1"
+  }
+}

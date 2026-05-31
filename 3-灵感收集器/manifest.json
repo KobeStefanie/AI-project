@@ -1,0 +1,22 @@
+{
+  "name": "碎碎念 - 灵感收集器",
+  "short_name": "灵感收集器",
+  "description": "想法捕手，不是备忘录。极低摩擦的灵感捕获工具。",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fafafa",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

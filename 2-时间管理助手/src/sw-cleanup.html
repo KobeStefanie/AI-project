@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="utf-8"><title>SW 清理</title></head>
+<body style="font:16px system-ui,sans-serif;max-width:500px;margin:40px auto;text-align:center">
+  <h2>Service Worker 清理</h2>
+  <p id="status">正在检测…</p>
+  <script>
+    (async function() {
+      var el = document.getElementById('status');
+      if (!('serviceWorker' in navigator)) {
+        el.textContent = '浏览器不支持 SW，无需清理。';
+        return;
+      }
+      var regs = await navigator.serviceWorker.getRegistrations();
+      if (regs.length === 0) {
+        el.textContent = '未找到已注册的 SW，无需清理。现在可回到应用页面刷新。';
+        return;
+      }
+      el.textContent = '找到 ' + regs.length + ' 个 SW，正在注销…';
+      for (var r of regs) {
+        var ok = await r.unregister();
+        el.textContent += '\n' + (ok ? '✓' : '✗') + ' ' + r.scope;
+      }
+      // 清除所有缓存
+      if ('caches' in window) {
+        var keys = await caches.keys();
+        for (var k of keys) {
+          await caches.delete(k);
+          el.textContent += '\n已清除缓存: ' + k;
+        }
+      }
+      el.textContent += '\n\n✅ 清理完成！';
+      // 3 秒后跳转回主应用
+      setTimeout(function() {
+        window.location.href = '/时间管理助手.html';
+      }, 2000);
+    })();
+  </script>
+</body>
+</html>

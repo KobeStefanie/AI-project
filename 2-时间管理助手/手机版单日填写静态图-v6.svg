@@ -1,0 +1,289 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="2510" viewBox="0 0 390 2510" font-family="-apple-system,Segoe UI,Microsoft YaHei,sans-serif">
+<style>
+.bg{fill:#f5f7fa}.card{fill:#fff;stroke:#e5e7eb}
+.h{font-size:13px;font-weight:700;fill:#0f172a}
+.h2{font-size:12px;font-weight:700;fill:#0f172a}
+.s{font-size:11px;fill:#475569}.m{font-size:10px;fill:#94a3b8}
+.qw{fill:#16a34a}.gfp{fill:#2563eb}.mw{fill:#ffff00}
+.rest{fill:#4ade80}.proc{fill:#dc2626}
+.lqw{fill:#bbf7d0}.lgfp{fill:#bfdbfe}.lproc{fill:#fecaca}
+.tOn{fill:#0f172a}.tOff{fill:#e2e8f0}
+.tOnT{fill:#fff;font-size:13px;font-weight:700}
+.tOffT{fill:#475569;font-size:13px;font-weight:600}
+.grid{stroke:#e5e7eb}.barbg{fill:#f1f5f9}
+.head{fill:#0f172a}
+.row{fill:#fff}.rowAlt{fill:#f8fafc}
+.red{stroke:#dc2626;stroke-width:1.5;fill:none;stroke-dasharray:4 3}
+.badge{fill:#fee2e2;stroke:#dc2626}
+.badgeT{font-size:10px;fill:#991b1b;font-weight:700}
+text{fill:#0f172a;font-size:11px}
+.b{font-weight:700}
+.headT{fill:#fff;font-size:14px;font-weight:700}
+</style>
+<rect width="390" height="2080" class="bg"/>
+<rect width="390" height="40" fill="#0f172a"/>
+<text x="195" y="26" text-anchor="middle" fill="#fff" class="b" font-size="12">9:41</text>
+
+<!-- 顶部切换 -->
+<rect x="12" y="50" width="366" height="40" rx="20" class="tOff"/>
+<rect x="12" y="50" width="183" height="40" rx="20" class="tOn"/>
+<text x="103" y="76" text-anchor="middle" class="tOnT">单日</text>
+<text x="287" y="76" text-anchor="middle" class="tOffT">本周累计</text>
+
+<!-- 日期 -->
+<rect x="12" y="100" width="366" height="50" rx="8" class="card"/>
+<text x="24" y="124" class="h">2025年 第49周 · 周一</text>
+<text x="24" y="142" class="s">日期 20251201   ·   同步：已连接</text>
+
+<!-- 关键事项 -->
+<rect x="12" y="160" width="366" height="160" rx="8" class="card"/>
+<text x="24" y="182" class="h">关键事项</text>
+<line x1="12" y1="190" x2="378" y2="190" class="grid"/>
+<text x="24" y="210">第一件事</text><text x="120" y="210" class="s">完成季度报告</text>
+<text x="24" y="232">第二件事</text><text x="120" y="232" class="s">健身 1 小时</text>
+<text x="24" y="254">第三件事</text><text x="120" y="254" class="s">读书 30 页</text>
+<text x="24" y="276">小确幸</text><text x="120" y="276" class="s">咖啡 + 阳光</text>
+<text x="24" y="298">关键词</text><text x="120" y="298" class="s">专注</text>
+<rect x="6" y="156" width="378" height="170" class="red"/>
+<rect x="316" y="160" width="60" height="18" rx="4" class="badge"/>
+<text x="346" y="173" text-anchor="middle" class="badgeT">可编辑</text>
+
+<!-- 日程填写区表头 -->
+<rect x="12" y="336" width="366" height="28" class="head"/>
+<text x="24" y="354" class="headT">7:00 - 00:00 日程填写（共 34 行）</text>
+
+<!-- 34 行日程，行高 24，起始 y=364 -->
+<rect x="12" y="364" width="366" height="816" class="card"/>
+<g>
+<!-- r1 07:00 Rest -->
+<rect x="12" y="364" width="366" height="24" class="row"/><text x="20" y="380">07:00-07:30</text>
+<rect x="116" y="368" width="200" height="16" class="rest"/><text x="124" y="380">起床 / 洗漱</text>
+<rect x="320" y="368" width="50" height="16" class="rest"/><text x="345" y="380" text-anchor="middle">0</text>
+
+<rect x="12" y="388" width="366" height="24" class="rowAlt"/><text x="20" y="404">07:30-08:00</text>
+<rect x="116" y="392" width="200" height="16" class="rest"/><text x="124" y="404">早餐</text>
+<rect x="320" y="392" width="50" height="16" class="rest"/><text x="345" y="404" text-anchor="middle">0</text>
+
+<rect x="12" y="412" width="366" height="24" class="row"/><text x="20" y="428">08:00-08:30</text>
+<rect x="116" y="416" width="200" height="16" class="mw"/><text x="124" y="428">通勤</text>
+<rect x="320" y="416" width="50" height="16" class="mw"/><text x="345" y="428" text-anchor="middle">4</text>
+
+<rect x="12" y="436" width="366" height="24" class="rowAlt"/><text x="20" y="452">08:30-09:00</text>
+<rect x="116" y="440" width="200" height="16" class="qw"/><text x="124" y="452" fill="#fff">注会变现 · 复习</text>
+<rect x="320" y="440" width="50" height="16" class="qw"/><text x="345" y="452" text-anchor="middle" fill="#fff">1.3</text>
+
+<rect x="12" y="460" width="366" height="24" class="row"/><text x="20" y="476">09:00-09:30</text>
+<rect x="116" y="464" width="200" height="16" class="qw"/><text x="124" y="476" fill="#fff">注会变现 · 做题</text>
+<rect x="320" y="464" width="50" height="16" class="qw"/><text x="345" y="476" text-anchor="middle" fill="#fff">1.3</text>
+
+<rect x="12" y="484" width="366" height="24" class="rowAlt"/><text x="20" y="500">09:30-10:00</text>
+<rect x="116" y="488" width="200" height="16" class="proc"/><text x="124" y="500" fill="#fff">刷手机</text>
+<rect x="320" y="488" width="50" height="16" class="proc"/><text x="345" y="500" text-anchor="middle" fill="#fff">3.2</text>
+
+<rect x="12" y="508" width="366" height="24" class="row"/><text x="20" y="524">10:00-10:30</text>
+<rect x="116" y="512" width="200" height="16" class="qw"/><text x="124" y="524" fill="#fff">读书</text>
+<rect x="320" y="512" width="50" height="16" class="qw"/><text x="345" y="524" text-anchor="middle" fill="#fff">1.4</text>
+
+<rect x="12" y="532" width="366" height="24" class="rowAlt"/><text x="20" y="548">10:30-11:00</text>
+<rect x="116" y="536" width="200" height="16" class="gfp"/><text x="124" y="548" fill="#fff">小资 · 咖啡</text>
+<rect x="320" y="536" width="50" height="16" class="gfp"/><text x="345" y="548" text-anchor="middle" fill="#fff">2.5</text>
+
+<rect x="12" y="556" width="366" height="24" class="row"/><text x="20" y="572">11:00-11:30</text>
+<rect x="116" y="560" width="200" height="16" class="qw"/><text x="124" y="572" fill="#fff">投资 · 复盘</text>
+<rect x="320" y="560" width="50" height="16" class="qw"/><text x="345" y="572" text-anchor="middle" fill="#fff">1.5</text>
+
+<rect x="12" y="580" width="366" height="24" class="rowAlt"/><text x="20" y="596">11:30-12:00</text>
+<rect x="116" y="584" width="200" height="16" class="qw"/><text x="124" y="596" fill="#fff">投资 · 复盘</text>
+<rect x="320" y="584" width="50" height="16" class="qw"/><text x="345" y="596" text-anchor="middle" fill="#fff">1.5</text>
+
+<rect x="12" y="604" width="366" height="24" class="row"/><text x="20" y="620">12:00-12:30</text>
+<rect x="116" y="608" width="200" height="16" class="rest"/><text x="124" y="620">午饭</text>
+<rect x="320" y="608" width="50" height="16" class="rest"/><text x="345" y="620" text-anchor="middle">0</text>
+
+<rect x="12" y="628" width="366" height="24" class="rowAlt"/><text x="20" y="644">12:30-13:00</text>
+<rect x="116" y="632" width="200" height="16" class="rest"/><text x="124" y="644">午休</text>
+<rect x="320" y="632" width="50" height="16" class="rest"/><text x="345" y="644" text-anchor="middle">0</text>
+
+<rect x="12" y="652" width="366" height="24" class="row"/><text x="20" y="668">13:00-13:30</text>
+<rect x="116" y="656" width="200" height="16" class="rest"/><text x="124" y="668">午休</text>
+<rect x="320" y="656" width="50" height="16" class="rest"/><text x="345" y="668" text-anchor="middle">0</text>
+
+<rect x="12" y="676" width="366" height="24" class="rowAlt"/><text x="20" y="692">13:30-14:00</text>
+<rect x="116" y="680" width="200" height="16" class="mw"/><text x="124" y="692">通勤</text>
+<rect x="320" y="680" width="50" height="16" class="mw"/><text x="345" y="692" text-anchor="middle">4</text>
+
+<rect x="12" y="700" width="366" height="24" class="row"/><text x="20" y="716">14:00-14:30</text>
+<rect x="116" y="704" width="200" height="16" class="qw"/><text x="124" y="716" fill="#fff">注会变现</text>
+<rect x="320" y="704" width="50" height="16" class="qw"/><text x="345" y="716" text-anchor="middle" fill="#fff">1.3</text>
+
+<rect x="12" y="724" width="366" height="24" class="rowAlt"/><text x="20" y="740">14:30-15:00</text>
+<rect x="116" y="728" width="200" height="16" class="qw"/><text x="124" y="740" fill="#fff">注会变现</text>
+<rect x="320" y="728" width="50" height="16" class="qw"/><text x="345" y="740" text-anchor="middle" fill="#fff">1.3</text>
+
+<rect x="12" y="748" width="366" height="24" class="row"/><text x="20" y="764">15:00-15:30</text>
+<rect x="116" y="752" width="200" height="16" class="qw"/><text x="124" y="764" fill="#fff">注会变现</text>
+<rect x="320" y="752" width="50" height="16" class="qw"/><text x="345" y="764" text-anchor="middle" fill="#fff">1.3</text>
+
+<rect x="12" y="772" width="366" height="24" class="rowAlt"/><text x="20" y="788">15:30-16:00</text>
+<rect x="116" y="776" width="200" height="16" class="qw"/><text x="124" y="788" fill="#fff">注会变现</text>
+<rect x="320" y="776" width="50" height="16" class="qw"/><text x="345" y="788" text-anchor="middle" fill="#fff">1.3</text>
+
+<rect x="12" y="796" width="366" height="24" class="row"/><text x="20" y="812">16:00-16:30</text>
+<rect x="116" y="800" width="200" height="16" class="qw"/><text x="124" y="812" fill="#fff">读书</text>
+<rect x="320" y="800" width="50" height="16" class="qw"/><text x="345" y="812" text-anchor="middle" fill="#fff">1.4</text>
+
+<rect x="12" y="820" width="366" height="24" class="rowAlt"/><text x="20" y="836">16:30-17:00</text>
+<rect x="116" y="824" width="200" height="16" class="qw"/><text x="124" y="836" fill="#fff">读书</text>
+<rect x="320" y="824" width="50" height="16" class="qw"/><text x="345" y="836" text-anchor="middle" fill="#fff">1.4</text>
+
+<rect x="12" y="844" width="366" height="24" class="row"/><text x="20" y="860">17:00-17:30</text>
+<rect x="116" y="848" width="200" height="16" class="mw"/><text x="124" y="860">通勤</text>
+<rect x="320" y="848" width="50" height="16" class="mw"/><text x="345" y="860" text-anchor="middle">4</text>
+
+<rect x="12" y="868" width="366" height="24" class="rowAlt"/><text x="20" y="884">17:30-18:00</text>
+<rect x="116" y="872" width="200" height="16" class="rest"/><text x="124" y="884">晚饭</text>
+<rect x="320" y="872" width="50" height="16" class="rest"/><text x="345" y="884" text-anchor="middle">0</text>
+
+<rect x="12" y="892" width="366" height="24" class="row"/><text x="20" y="908">18:00-18:30</text>
+<rect x="116" y="896" width="200" height="16" class="rest"/><text x="124" y="908">晚饭</text>
+<rect x="320" y="896" width="50" height="16" class="rest"/><text x="345" y="908" text-anchor="middle">0</text>
+
+<rect x="12" y="916" width="366" height="24" class="rowAlt"/><text x="20" y="932">18:30-19:00</text>
+<rect x="116" y="920" width="200" height="16" class="gfp"/><text x="124" y="932" fill="#fff">运动</text>
+<rect x="320" y="920" width="50" height="16" class="gfp"/><text x="345" y="932" text-anchor="middle" fill="#fff">2.2</text>
+
+<rect x="12" y="940" width="366" height="24" class="row"/><text x="20" y="956">19:00-19:30</text>
+<rect x="116" y="944" width="200" height="16" class="gfp"/><text x="124" y="956" fill="#fff">运动</text>
+<rect x="320" y="944" width="50" height="16" class="gfp"/><text x="345" y="956" text-anchor="middle" fill="#fff">2.2</text>
+
+<rect x="12" y="964" width="366" height="24" class="rowAlt"/><text x="20" y="980">19:30-20:00</text>
+<rect x="116" y="968" width="200" height="16" class="qw"/><text x="124" y="980" fill="#fff">心理咨询</text>
+<rect x="320" y="968" width="50" height="16" class="qw"/><text x="345" y="980" text-anchor="middle" fill="#fff">1.2</text>
+
+<rect x="12" y="988" width="366" height="24" class="row"/><text x="20" y="1004">20:00-20:30</text>
+<rect x="116" y="992" width="200" height="16" class="qw"/><text x="124" y="1004" fill="#fff">心理咨询</text>
+<rect x="320" y="992" width="50" height="16" class="qw"/><text x="345" y="1004" text-anchor="middle" fill="#fff">1.2</text>
+
+<rect x="12" y="1012" width="366" height="24" class="rowAlt"/><text x="20" y="1028">20:30-21:00</text>
+<rect x="116" y="1016" width="200" height="16" class="proc"/><text x="124" y="1028" fill="#fff">拖延</text>
+<rect x="320" y="1016" width="50" height="16" class="proc"/><text x="345" y="1028" text-anchor="middle" fill="#fff">3.3</text>
+
+<rect x="12" y="1036" width="366" height="24" class="row"/><text x="20" y="1052">21:00-21:30</text>
+<rect x="116" y="1040" width="200" height="16" class="qw"/><text x="124" y="1052" fill="#fff">新媒体运营</text>
+<rect x="320" y="1040" width="50" height="16" class="qw"/><text x="345" y="1052" text-anchor="middle" fill="#fff">1.1</text>
+
+<rect x="12" y="1060" width="366" height="24" class="rowAlt"/><text x="20" y="1076">21:30-22:00</text>
+<rect x="116" y="1064" width="200" height="16" class="qw"/><text x="124" y="1076" fill="#fff">新媒体运营</text>
+<rect x="320" y="1064" width="50" height="16" class="qw"/><text x="345" y="1076" text-anchor="middle" fill="#fff">1.1</text>
+
+<rect x="12" y="1084" width="366" height="24" class="row"/><text x="20" y="1100">22:00-22:30</text>
+<rect x="116" y="1088" width="200" height="16" class="qw"/><text x="124" y="1100" fill="#fff">读书</text>
+<rect x="320" y="1088" width="50" height="16" class="qw"/><text x="345" y="1100" text-anchor="middle" fill="#fff">1.4</text>
+
+<rect x="12" y="1108" width="366" height="24" class="rowAlt"/><text x="20" y="1124">22:30-23:00</text>
+<rect x="116" y="1112" width="200" height="16" class="rest"/><text x="124" y="1124">洗澡</text>
+<rect x="320" y="1112" width="50" height="16" class="rest"/><text x="345" y="1124" text-anchor="middle">0</text>
+
+<rect x="12" y="1132" width="366" height="24" class="row"/><text x="20" y="1148">23:00-23:30</text>
+<rect x="116" y="1136" width="200" height="16" class="rest"/><text x="124" y="1148">阅读</text>
+<rect x="320" y="1136" width="50" height="16" class="rest"/><text x="345" y="1148" text-anchor="middle">0</text>
+
+<rect x="12" y="1156" width="366" height="24" class="rowAlt"/><text x="20" y="1172">23:30-00:00</text>
+<rect x="116" y="1160" width="200" height="16" class="rest"/><text x="124" y="1172">睡前阅读</text>
+<rect x="320" y="1160" width="50" height="16" class="rest"/><text x="345" y="1172" text-anchor="middle">0</text>
+</g>
+<rect x="6" y="332" width="378" height="852" class="red"/>
+<rect x="316" y="338" width="60" height="18" rx="4" class="badge"/>
+<text x="346" y="351" text-anchor="middle" class="badgeT">可编辑</text>
+
+<!-- 当日统计 -->
+<rect x="12" y="1200" width="366" height="174" rx="8" class="card"/>
+<text x="24" y="1222" class="h">当日统计</text>
+<line x1="12" y1="1230" x2="378" y2="1230" class="grid"/>
+<rect x="20" y="1238" width="170" height="22" class="gfp"/><text x="28" y="1254" fill="#fff">Guilt Free Play</text>
+<rect x="200" y="1238" width="170" height="22" class="barbg"/><text x="362" y="1254" text-anchor="end">3</text>
+<rect x="20" y="1264" width="170" height="22" class="rest"/><text x="28" y="1280">Rest</text>
+<rect x="200" y="1264" width="170" height="22" class="barbg"/><text x="362" y="1280" text-anchor="end">10</text>
+<rect x="20" y="1290" width="170" height="22" class="mw"/><text x="28" y="1306">Mandatory Work</text>
+<rect x="200" y="1290" width="170" height="22" class="barbg"/><text x="362" y="1306" text-anchor="end">3</text>
+<rect x="20" y="1316" width="170" height="22" class="qw"/><text x="28" y="1332" fill="#fff">Quality Work</text>
+<rect x="200" y="1316" width="170" height="22" class="barbg"/><text x="362" y="1332" text-anchor="end">16</text>
+<rect x="20" y="1342" width="170" height="22" class="proc"/><text x="28" y="1358" fill="#fff">Procrastination</text>
+<rect x="200" y="1342" width="170" height="22" class="barbg"/><text x="362" y="1358" text-anchor="end">2</text>
+
+<!-- 当日收益 (新颜色规则) -->
+<rect x="12" y="1386" width="366" height="120" rx="8" class="card"/>
+<text x="24" y="1408" class="h">当日收益（赚 / 赔 / 结余）</text>
+<line x1="12" y1="1416" x2="378" y2="1416" class="grid"/>
+<rect x="20" y="1428" width="105" height="40" rx="6" class="qw"/>
+<text x="72" y="1446" text-anchor="middle" fill="#fff" class="b" font-size="11">赚</text>
+<text x="72" y="1464" text-anchor="middle" fill="#fff" class="b" font-size="14">19</text>
+<rect x="142" y="1428" width="105" height="40" rx="6" class="proc"/>
+<text x="194" y="1446" text-anchor="middle" fill="#fff" class="b" font-size="11">赔</text>
+<text x="194" y="1464" text-anchor="middle" fill="#fff" class="b" font-size="14">2</text>
+<rect x="264" y="1428" width="105" height="40" rx="6" class="qw"/>
+<text x="316" y="1446" text-anchor="middle" fill="#fff" class="b" font-size="11">结余</text>
+<text x="316" y="1464" text-anchor="middle" fill="#fff" class="b" font-size="14">15</text>
+<text x="24" y="1492" class="m">公式：结余 = 赚 - 2 × 赔  ·  结余 ≥ 0 用 QW 颜色，&lt; 0 用 Proc 颜色</text>
+
+<!-- 当日明细（按编码顺序全部展示） -->
+<rect x="12" y="1518" width="366" height="500" rx="8" class="card"/>
+<text x="24" y="1540" class="h">当日明细（按编码顺序全部展示）</text>
+<line x1="12" y1="1548" x2="378" y2="1548" class="grid"/>
+
+<text x="24" y="1568" class="b">QW 明细（小计 16）</text>
+<rect x="20" y="1574" width="350" height="22" class="lqw"/><text x="28" y="1590">1.1 新媒体运营</text><text x="362" y="1590" text-anchor="end">2</text>
+<rect x="20" y="1598" width="350" height="22" class="lqw"/><text x="28" y="1614">1.2 心理咨询</text><text x="362" y="1614" text-anchor="end">2</text>
+<rect x="20" y="1622" width="350" height="22" class="lqw"/><text x="28" y="1638">1.3 注会变现</text><text x="362" y="1638" text-anchor="end">6</text>
+<rect x="20" y="1646" width="350" height="22" class="lqw"/><text x="28" y="1662">1.4 读书</text><text x="362" y="1662" text-anchor="end">4</text>
+<rect x="20" y="1670" width="350" height="22" class="lqw"/><text x="28" y="1686">1.5 投资</text><text x="362" y="1686" text-anchor="end">2</text>
+<rect x="20" y="1694" width="350" height="22" class="lqw"/><text x="28" y="1710">1.6 造音师</text><text x="362" y="1710" text-anchor="end">0</text>
+<rect x="20" y="1718" width="350" height="22" class="lqw"/><text x="28" y="1734">1.7 其他</text><text x="362" y="1734" text-anchor="end">0</text>
+
+<text x="24" y="1758" class="b">GFP 明细（小计 3）</text>
+<rect x="20" y="1764" width="350" height="22" class="lgfp"/><text x="28" y="1780">2.1 演出</text><text x="362" y="1780" text-anchor="end">0</text>
+<rect x="20" y="1788" width="350" height="22" class="lgfp"/><text x="28" y="1804">2.2 运动</text><text x="362" y="1804" text-anchor="end">2</text>
+<rect x="20" y="1812" width="350" height="22" class="lgfp"/><text x="28" y="1828">2.3 约会</text><text x="362" y="1828" text-anchor="end">0</text>
+<rect x="20" y="1836" width="350" height="22" class="lgfp"/><text x="28" y="1852">2.4 旅行</text><text x="362" y="1852" text-anchor="end">0</text>
+<rect x="20" y="1860" width="350" height="22" class="lgfp"/><text x="28" y="1876">2.5 小资</text><text x="362" y="1876" text-anchor="end">1</text>
+
+<text x="24" y="1900" class="b">无效浪费明细（小计 2）</text>
+<rect x="20" y="1906" width="350" height="22" class="lproc"/><text x="28" y="1922">3.1 睡懒觉</text><text x="362" y="1922" text-anchor="end">0</text>
+<rect x="20" y="1930" width="350" height="22" class="lproc"/><text x="28" y="1946">3.2 刷手机</text><text x="362" y="1946" text-anchor="end">1</text>
+<rect x="20" y="1954" width="350" height="22" class="lproc"/><text x="28" y="1970">3.3 拖延</text><text x="362" y="1970" text-anchor="end">1</text>
+<rect x="20" y="1978" width="350" height="22" class="lproc"/><text x="28" y="1994">3.4 无效/低效社交</text><text x="362" y="1994" text-anchor="end">0</text>
+<rect x="20" y="2002" width="350" height="22" class="lproc"/><text x="28" y="2018">3.5 其他</text><text x="362" y="2018" text-anchor="end">0</text>
+
+<!-- 当日汇总（有效投资/无效浪费/潜力/标准/可用） -->
+<rect x="12" y="2034" width="366" height="180" rx="8" class="card"/>
+<text x="24" y="2056" class="h">当日汇总（公式同 Windows 版）</text>
+<line x1="12" y1="2064" x2="378" y2="2064" class="grid"/>
+<rect x="20" y="2074" width="170" height="22" class="qw"/><text x="28" y="2090" fill="#fff" class="b">有效投资</text>
+<rect x="200" y="2074" width="170" height="22" class="barbg"/><text x="362" y="2090" text-anchor="end">19</text>
+<rect x="20" y="2100" width="170" height="22" class="proc"/><text x="28" y="2116" fill="#fff" class="b">无效浪费</text>
+<rect x="200" y="2100" width="170" height="22" class="barbg"/><text x="362" y="2116" text-anchor="end">2</text>
+<rect x="20" y="2126" width="170" height="22" class="rest"/><text x="28" y="2142" class="b">潜力总数</text>
+<rect x="200" y="2126" width="170" height="22" class="barbg"/><text x="362" y="2142" text-anchor="end">13</text>
+<rect x="20" y="2152" width="170" height="22" class="mw"/><text x="28" y="2168" class="b">标准数</text>
+<rect x="200" y="2152" width="170" height="22" class="barbg"/><text x="362" y="2168" text-anchor="end">12</text>
+<rect x="20" y="2178" width="170" height="22" class="gfp"/><text x="28" y="2194" fill="#fff" class="b">可用数</text>
+<rect x="200" y="2178" width="170" height="22" class="barbg"/><text x="362" y="2194" text-anchor="end">1</text>
+
+<!-- 当日校验（仅 校验总数/校验亏损/校验投资） -->
+<rect x="12" y="2226" width="366" height="120" rx="8" class="card"/>
+<text x="24" y="2248" class="h">当日校验（公式同 Windows 版 §10）</text>
+<line x1="12" y1="2256" x2="378" y2="2256" class="grid"/>
+<text x="24" y="2276">校验总数 = 已填格数 - 34</text><text x="362" y="2276" text-anchor="end" fill="#16a34a" class="b">0 ✓</text>
+<text x="24" y="2298">校验亏损 = Proc - Σ3.x</text><text x="362" y="2298" text-anchor="end" fill="#16a34a" class="b">0 ✓</text>
+<text x="24" y="2320">校验投资 = (QW+GFP) - (Σ1.x+Σ2.x)</text><text x="362" y="2320" text-anchor="end" fill="#16a34a" class="b">0 ✓</text>
+
+<!-- 同步状态 -->
+<rect x="12" y="2358" width="366" height="60" rx="8" class="card"/>
+<text x="24" y="2380" class="h">同步状态</text>
+<text x="24" y="2402" class="s">已绑定 Windows 主机 · 已连接 · 自动同步中</text>
+
+<!-- 说明 -->
+<text x="195" y="2442" text-anchor="middle" class="m">红色虚线 = 手机端可编辑区（关键事项 + 全部 34 行日程）</text>
+<text x="195" y="2462" text-anchor="middle" class="m">赚=QW色 · 赔=Proc色 · 结余≥0=QW色 / &lt;0=Proc色</text>
+<text x="195" y="2482" text-anchor="middle" class="m">公式逻辑全部同 Windows 版（§10 + 附录）</text>
+</svg>

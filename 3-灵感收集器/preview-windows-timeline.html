@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>灵感收集器 - Windows 时间线视图</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<style>
+  .timeline-line { width: 2px; }
+</style>
+</head>
+<body class="bg-gray-100 h-screen flex flex-col">
+
+<header class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between shadow-sm z-10">
+  <div class="flex items-center gap-4">
+    <h1 class="text-lg font-bold text-gray-900">灵感收集器</h1>
+    <div class="flex bg-gray-100 rounded-lg p-0.5">
+      <span class="px-3 py-1.5 text-xs text-gray-500">日历</span>
+      <span class="px-3 py-1.5 text-xs text-gray-500">列表</span>
+      <span class="px-3 py-1.5 text-xs font-medium bg-white rounded-md shadow-sm text-orange-500">时间线</span>
+    </div>
+  </div>
+  <div class="flex items-center gap-3">
+    <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
+      <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>已同步
+    </span>
+    <button class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition"><i class="fa fa-download mr-1"></i>导出</button>
+    <button class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition"><i class="fa fa-cog mr-1"></i>设置</button>
+  </div>
+</header>
+
+<!-- 主内容 -->
+<div class="flex-1 overflow-y-auto">
+
+  <div class="max-w-3xl mx-auto py-8 px-6">
+
+    <!-- 标题区 -->
+    <div class="flex items-center justify-between mb-8">
+      <h2 class="text-xl font-bold text-gray-800">灵感时间线</h2>
+      <div class="flex items-center gap-3">
+        <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600 outline-none">
+          <option>全部状态</option><option>⚪ raw</option><option>🔵 expanded</option><option>✅ realized</option><option>📦 archived</option>
+        </select>
+        <select class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-600 outline-none">
+          <option>全部标签</option><option>🎬 创作-视频</option><option>✍️ 创作-写作</option><option>💡 灵感</option>
+        </select>
+        <span class="text-xs text-gray-400">滚动浏览历史</span>
+      </div>
+    </div>
+
+    <!-- 时间线 -->
+    <div class="relative pl-12">
+
+      <!-- 竖线 -->
+      <div class="absolute left-[19px] top-0 bottom-0 w-0.5 bg-gray-200"></div>
+
+      <!-- ====== 2026年5月 ====== -->
+      <div class="relative mb-10">
+        <!-- 月份标记 -->
+        <div class="absolute -left-12 top-0 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg z-10">
+          <span class="text-white text-xs font-bold">5月</span>
+        </div>
+
+        <!-- 条目 1 -->
+        <div class="ml-4 mb-6 relative">
+          <div class="absolute -left-[38px] top-5 w-3 h-3 bg-green-500 rounded-full border-2 border-white z-10"></div>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition cursor-pointer">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-medium">✅ realized</span>
+              <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">🎬 创作-视频</span>
+              <span class="text-xs bg-blue-50 text-blue-500 px-2 py-0.5 rounded-full">📡 播客</span>
+              <span class="flex-1"></span>
+              <span class="text-xs text-gray-400">5月28日 14:32</span>
+            </div>
+            <p class="text-sm text-gray-800 leading-relaxed mb-2">做一期关于AI编程工具对比的视频，Cursor vs Copilot vs Claude Code，从实际使用体验出发</p>
+            <div class="flex items-center gap-4 text-xs text-gray-400">
+              <span>😄 兴奋</span>
+              <span>·</span>
+              <span><i class="fa fa-microphone text-purple-400 mr-1"></i>语音</span>
+              <span>·</span>
+              <span>iPhone</span>
+              <span class="flex-1"></span>
+              <span class="text-orange-400 cursor-pointer hover:underline">展开 Markdown 笔记 →</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 条目 2 -->
+        <div class="ml-4 mb-6 relative">
+          <div class="absolute -left-[38px] top-5 w-3 h-3 bg-blue-500 rounded-full border-2 border-white z-10"></div>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition cursor-pointer">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">🔵 expanded</span>
+              <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">✍️ 创作-写作</span>
+              <span class="text-xs bg-blue-50 text-blue-500 px-2 py-0.5 rounded-full">📡 读书</span>
+              <span class="flex-1"></span>
+              <span class="text-xs text-gray-400">5月28日 11:15</span>
+            </div>
+            <p class="text-sm text-gray-800 leading-relaxed mb-2">想写一篇关于远程工作的文章，核心观点：自律不是靠意志力，而是靠环境设计</p>
+            <div class="flex items-center gap-4 text-xs text-gray-400">
+              <span>✨ 受启发</span>
+              <span>·</span>
+              <span><i class="fa fa-keyboard-o mr-1"></i>文字</span>
+              <span>·</span>
+              <span>Windows</span>
+              <span class="flex-1"></span>
+              <span class="text-orange-400 cursor-pointer hover:underline">展开 Markdown 笔记 →</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 条目 3 - 带图 -->
+        <div class="ml-4 mb-6 relative">
+          <div class="absolute -left-[38px] top-5 w-3 h-3 bg-gray-300 rounded-full border-2 border-white z-10"></div>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition cursor-pointer">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">⚪ raw</span>
+              <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">🏠 生活</span>
+              <span class="flex-1"></span>
+              <span class="text-xs text-gray-400">5月28日 09:08</span>
+            </div>
+            <div class="flex gap-2 mb-2">
+              <div class="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center">
+                <i class="fa fa-picture-o text-gray-400 text-2xl"></i>
+              </div>
+            </div>
+            <p class="text-sm text-gray-800 leading-relaxed mb-2">这个设计太妙了，拍下来参考</p>
+            <div class="flex items-center gap-4 text-xs text-gray-400">
+              <span>😐 平和</span>
+              <span>·</span>
+              <span><i class="fa fa-camera text-blue-400 mr-1"></i><i class="fa fa-microphone text-purple-400 mr-1"></i>图片+语音</span>
+              <span>·</span>
+              <span>iPhone</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 条目 4 - 视频 -->
+        <div class="ml-4 mb-6 relative">
+          <div class="absolute -left-[38px] top-5 w-3 h-3 bg-gray-300 rounded-full border-2 border-white z-10"></div>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition cursor-pointer">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">⚪ raw</span>
+              <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">🎬 创作-视频</span>
+              <span class="flex-1"></span>
+              <span class="text-xs text-gray-400">5月27日 22:10</span>
+            </div>
+            <div class="w-full h-32 bg-gray-900 rounded-lg flex items-center justify-center mb-2">
+              <i class="fa fa-play-circle-o text-white text-4xl"></i>
+            </div>
+            <p class="text-sm text-gray-800 leading-relaxed mb-2">现场录了一段交互Demo，这个交互方式可以借鉴</p>
+            <div class="flex items-center gap-4 text-xs text-gray-400">
+              <span>😄 兴奋</span>
+              <span>·</span>
+              <span><i class="fa fa-video-camera text-purple-400 mr-1"></i>视频</span>
+              <span>·</span>
+              <span>iPhone</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 条目 5 -->
+        <div class="ml-4 mb-6 relative">
+          <div class="absolute -left-[38px] top-5 w-3 h-3 bg-gray-300 rounded-full border-2 border-white z-10"></div>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition cursor-pointer">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">⚪ raw</span>
+              <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">📋 规划</span>
+              <span class="flex-1"></span>
+              <span class="text-xs text-gray-400">5月27日 18:20</span>
+            </div>
+            <p class="text-sm text-gray-800 leading-relaxed mb-2">下周把灵感收集器的后端架构定下来，数据库和部署一起看</p>
+            <div class="flex items-center gap-4 text-xs text-gray-400">
+              <span>🤔 困惑</span>
+              <span>·</span>
+              <span><i class="fa fa-microphone text-purple-400 mr-1"></i>语音</span>
+              <span>·</span>
+              <span>iPhone</span>
+              <span class="flex-1"></span>
+              <span class="flex items-center gap-1 text-orange-400"><i class="fa fa-bell-o"></i> 6月1日 09:00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 2026年4月 ====== -->
+      <div class="relative mb-10">
+        <div class="absolute -left-12 top-0 w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center shadow-lg z-10">
+          <span class="text-white text-xs font-bold">4月</span>
+        </div>
+
+        <!-- 条目 6 -->
+        <div class="ml-4 mb-6 relative">
+          <div class="absolute -left-[38px] top-5 w-3 h-3 bg-green-500 rounded-full border-2 border-white z-10"></div>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition cursor-pointer">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-medium">✅ realized</span>
+              <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">✍️ 创作-写作</span>
+              <span class="flex-1"></span>
+              <span class="text-xs text-gray-400">4月15日 16:45</span>
+            </div>
+            <p class="text-sm text-gray-800 leading-relaxed mb-2">完成了"时间管理助手 v2.8"的发布文章，反响不错</p>
+            <div class="flex items-center gap-4 text-xs text-gray-400">
+              <span>😄 兴奋</span>
+              <span>·</span>
+              <span><i class="fa fa-keyboard-o mr-1"></i>文字</span>
+              <span>·</span>
+              <span>Windows</span>
+              <span class="flex-1"></span>
+              <span class="text-gray-300 line-through">已实现，不再展开</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 条目 7 -->
+        <div class="ml-4 mb-6 relative">
+          <div class="absolute -left-[38px] top-5 w-3 h-3 bg-blue-500 rounded-full border-2 border-white z-10"></div>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition cursor-pointer">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">🔵 expanded</span>
+              <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">💡 灵感</span>
+              <span class="flex-1"></span>
+              <span class="text-xs text-gray-400">4月8日 23:30</span>
+            </div>
+            <p class="text-sm text-gray-800 leading-relaxed mb-2">关于个人品牌的长期思考：持续输出比内容质量更重要，先做 100 期再回头优化</p>
+            <div class="flex items-center gap-4 text-xs text-gray-400">
+              <span>✨ 受启发</span>
+              <span>·</span>
+              <span><i class="fa fa-keyboard-o mr-1"></i>文字</span>
+              <span>·</span>
+              <span>Windows</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 条目 8 - 放弃 -->
+        <div class="ml-4 relative opacity-40">
+          <div class="absolute -left-[38px] top-5 w-3 h-3 bg-red-400 rounded-full border-2 border-white z-10"></div>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-xs bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium">✕ abandoned</span>
+              <span class="text-xs bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">🏠 生活</span>
+              <span class="flex-1"></span>
+              <span class="text-xs text-gray-300">4月2日 08:15</span>
+            </div>
+            <p class="text-sm text-gray-400 leading-relaxed">早上想到的一个健身计划，后来发现不切实际</p>
+            <div class="flex items-center gap-4 text-xs text-gray-300">
+              <span>已经放弃了</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== 2026年3月 ====== -->
+      <div class="relative">
+        <div class="absolute -left-12 top-0 w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center shadow-lg z-10">
+          <span class="text-white text-xs font-bold">3月</span>
+        </div>
+
+        <!-- 条目 9 -->
+        <div class="ml-4 mb-6 relative">
+          <div class="absolute -left-[38px] top-5 w-3 h-3 bg-green-500 rounded-full border-2 border-white z-10"></div>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition cursor-pointer">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-medium">✅ realized</span>
+              <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">🎬 创作-视频</span>
+              <span class="flex-1"></span>
+              <span class="text-xs text-gray-400">3月20日 14:00</span>
+            </div>
+            <p class="text-sm text-gray-800 leading-relaxed mb-2">做完了 Claude Code 深度体验视频，播放量破万</p>
+            <div class="flex items-center gap-4 text-xs text-gray-400">
+              <span>😄 兴奋</span>
+              <span>·</span>
+              <span><i class="fa fa-video-camera text-purple-400 mr-1"></i>视频</span>
+              <span>·</span>
+              <span>iPhone</span>
+              <span class="flex-1"></span>
+              <span class="text-gray-300 line-through">已完成视频制作</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 条目 10 - 归档 -->
+        <div class="ml-4 relative opacity-50">
+          <div class="absolute -left-[38px] top-5 w-3 h-3 bg-gray-300 rounded-full border-2 border-white z-10"></div>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-xs bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full font-medium">📦 archived</span>
+              <span class="text-xs bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">🏠 生活</span>
+              <span class="flex-1"></span>
+              <span class="text-xs text-gray-300">3月5日 12:00</span>
+            </div>
+            <p class="text-sm text-gray-400 leading-relaxed">春天的周末出游计划，北京周边</p>
+            <div class="flex items-center gap-4 text-xs text-gray-300">
+              <span>已归档</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /时间线 -->
+
+  </div>
+</div>
+
+<footer class="bg-white border-t border-gray-200 px-6 py-2 flex items-center justify-between text-xs text-gray-500">
+  <span>共 42 条 | 2026年3月 → 5月</span>
+  <span>筛选: 全部状态 · 全部标签</span>
+  <span>滚动查看更多历史 →</span>
+</footer>
+
+</body>
+</html>

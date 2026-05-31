@@ -1,0 +1,26 @@
+{
+  "name": "时间管理助手",
+  "short_name": "时间管理",
+  "description": "按周规划、每日五件事、30 分钟时间块管理的 PWA 应用。",
+  "id": "/",
+  "scope": "./",
+  "start_url": "./",
+  "display": "browser",
+  "background_color": "#f4f7fb",
+  "theme_color": "#2563eb",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

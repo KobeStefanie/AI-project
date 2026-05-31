@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>灵感收集器 - iPhone 预览 v5</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<style>
+  .phone-frame { width: 390px; border-radius: 44px; }
+  .touch-target { min-height: 44px; min-width: 44px; }
+  .input-text { font-size: 16px; }
+  .card-tap:active { background: #f3f4f6; }
+</style>
+</head>
+<body class="bg-gray-200 flex items-center justify-center min-h-screen p-4">
+<div class="phone-frame bg-black p-3 shadow-2xl mx-auto">
+  <div class="bg-white rounded-[32px] overflow-hidden h-[844px] flex flex-col relative">
+
+    <!-- 状态栏 -->
+    <div class="bg-white pt-3 px-6 flex justify-between items-center text-xs font-semibold text-gray-900">
+      <span>9:41</span>
+      <span class="flex gap-1">████ <i class="fa fa-wifi"></i> <i class="fa fa-battery-full"></i></span>
+    </div>
+
+    <!-- 顶部标题 -->
+    <div class="px-5 pt-2 pb-2 flex items-center justify-between">
+      <h1 class="text-xl font-bold text-gray-900">灵感收集器</h1>
+      <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
+        <span class="w-2 h-2 bg-green-500 rounded-full"></span>已同步
+      </span>
+    </div>
+
+    <!-- 媒体按钮组 -->
+    <div class="px-5 pb-2 flex gap-3">
+      <button class="touch-target flex-1 bg-red-50 border border-red-200 rounded-2xl py-3 flex flex-col items-center gap-1 active:scale-95 transition">
+        <i class="fa fa-microphone text-red-500 text-xl"></i>
+        <span class="text-xs text-red-600 font-medium">语音</span>
+      </button>
+      <button class="touch-target flex-1 bg-blue-50 border border-blue-200 rounded-2xl py-3 flex flex-col items-center gap-1 active:scale-95 transition">
+        <i class="fa fa-camera text-blue-500 text-xl"></i>
+        <span class="text-xs text-blue-600 font-medium">拍照</span>
+      </button>
+      <button class="touch-target flex-1 bg-purple-50 border border-purple-200 rounded-2xl py-3 flex flex-col items-center gap-1 active:scale-95 transition">
+        <i class="fa fa-video-camera text-purple-500 text-xl"></i>
+        <span class="text-xs text-purple-600 font-medium">录像</span>
+      </button>
+    </div>
+
+    <!-- 文字输入区 -->
+    <div class="px-5 pb-2">
+      <div class="flex gap-2">
+        <input type="text" placeholder="写点什么..." class="input-text flex-1 border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-200 transition">
+        <button class="touch-target w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center active:scale-95 transition shadow-lg shadow-orange-200">
+          <i class="fa fa-send text-white"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- 上下文快捷标签 -->
+    <div class="px-5 pb-3 flex gap-2 overflow-x-auto">
+      <span class="text-xs text-gray-400 py-1">📡</span>
+      <span class="bg-gray-100 text-gray-500 text-xs px-3 py-1 rounded-full whitespace-nowrap">播客</span>
+      <span class="bg-gray-100 text-gray-500 text-xs px-3 py-1 rounded-full whitespace-nowrap">聊天</span>
+      <span class="bg-gray-100 text-gray-500 text-xs px-3 py-1 rounded-full whitespace-nowrap">读书</span>
+      <span class="bg-gray-100 text-gray-500 text-xs px-3 py-1 rounded-full whitespace-nowrap">做梦</span>
+      <span class="bg-gray-100 text-gray-500 text-xs px-3 py-1 rounded-full whitespace-nowrap">开会</span>
+      <span class="bg-gray-100 text-gray-500 text-xs px-3 py-1 rounded-full whitespace-nowrap">路上</span>
+    </div>
+
+    <!-- 状态筛选 -->
+    <div class="px-5 pb-2 flex gap-2 overflow-x-auto">
+      <span class="bg-orange-500 text-white text-xs px-4 py-1.5 rounded-full whitespace-nowrap font-medium">全部</span>
+      <span class="bg-gray-100 text-gray-500 text-xs px-4 py-1.5 rounded-full whitespace-nowrap">⚪ 原始</span>
+      <span class="bg-gray-100 text-gray-500 text-xs px-4 py-1.5 rounded-full whitespace-nowrap">🔵 已扩展</span>
+      <span class="bg-gray-100 text-gray-500 text-xs px-4 py-1.5 rounded-full whitespace-nowrap">✅ 已实现</span>
+    </div>
+
+    <!-- 卡片列表 -->
+    <div class="flex-1 overflow-y-auto px-5 pb-2 space-y-3">
+
+      <!-- 卡片 1 - 语音 + 上下文 -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm card-tap">
+        <div class="flex items-start justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">🎬 创作-视频</span>
+            <span class="text-xs bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded-full">📡 播客</span>
+          </div>
+          <span class="flex items-center gap-1 text-xs text-gray-400">
+            <i class="fa fa-microphone text-purple-400"></i> 语音
+          </span>
+        </div>
+        <p class="text-sm text-gray-800 leading-relaxed">做一期关于AI编程工具对比的视频，Cursor vs Copilot vs Claude Code</p>
+        <div class="flex items-center justify-between mt-2">
+          <p class="text-xs text-gray-400">今天 14:32</p>
+          <span class="text-xs bg-green-50 text-green-600 px-1.5 py-0.5 rounded">✅ realized</span>
+        </div>
+      </div>
+
+      <!-- 卡片 2 -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm card-tap">
+        <div class="flex items-start justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">✍️ 创作-写作</span>
+            <span class="text-xs bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded-full">📡 读书</span>
+          </div>
+          <span class="text-xs text-gray-400">
+            <i class="fa fa-keyboard-o"></i> 文字
+          </span>
+        </div>
+        <p class="text-sm text-gray-800 leading-relaxed">想写一篇关于远程工作的文章，核心观点：自律不是靠意志力</p>
+        <div class="flex items-center justify-between mt-2">
+          <p class="text-xs text-gray-400">今天 11:15</p>
+          <span class="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">🔵 expanded</span>
+        </div>
+      </div>
+
+      <!-- 卡片 3 - 带图片 + 语音 -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm card-tap">
+        <div class="flex items-start justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">🏠 生活</span>
+          </div>
+          <span class="flex items-center gap-2 text-xs text-gray-400">
+            <i class="fa fa-camera text-blue-400"></i>
+            <i class="fa fa-microphone text-purple-400"></i>
+          </span>
+        </div>
+        <!-- 缩略图 -->
+        <div class="flex gap-1 mb-2">
+          <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+            <i class="fa fa-picture-o text-gray-400 text-lg"></i>
+          </div>
+        </div>
+        <p class="text-sm text-gray-800 leading-relaxed">这个设计太妙了，拍下来参考</p>
+        <div class="flex items-center justify-between mt-2">
+          <p class="text-xs text-gray-400">今天 09:08</p>
+          <span class="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">⚪ raw</span>
+        </div>
+      </div>
+
+      <!-- 卡片 4 - 视频 -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm card-tap">
+        <div class="flex items-start justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">💡 灵感</span>
+          </div>
+          <span class="flex items-center gap-1 text-xs text-gray-400">
+            <i class="fa fa-video-camera text-purple-400"></i> 视频
+          </span>
+        </div>
+        <!-- 视频缩略图 -->
+        <div class="w-full h-24 bg-gray-900 rounded-lg flex items-center justify-center mb-2">
+          <i class="fa fa-play-circle-o text-white text-3xl"></i>
+        </div>
+        <p class="text-sm text-gray-800 leading-relaxed">现场录了一段，这个交互方式可以借鉴</p>
+        <div class="flex items-center justify-between mt-2">
+          <p class="text-xs text-gray-400">昨天 23:45</p>
+          <span class="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">⚪ raw</span>
+        </div>
+      </div>
+
+      <!-- 卡片 5 -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm card-tap">
+        <div class="flex items-start justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">📋 规划</span>
+          </div>
+          <span class="flex items-center gap-1 text-xs text-gray-400">
+            <i class="fa fa-microphone text-purple-400"></i> 语音
+          </span>
+        </div>
+        <p class="text-sm text-gray-800 leading-relaxed">下周把灵感收集器的后端架构定下来，数据库和部署一起看</p>
+        <div class="flex items-center justify-between mt-2">
+          <p class="text-xs text-gray-400">昨天 18:20</p>
+          <span class="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">⚪ raw</span>
+        </div>
+      </div>
+
+      <!-- 卡片 6 - 已归档 -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm card-tap opacity-60">
+        <div class="flex items-start justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">🏠 生活</span>
+          </div>
+          <span class="text-xs text-gray-400">
+            <i class="fa fa-keyboard-o"></i> 文字
+          </span>
+        </div>
+        <p class="text-sm text-gray-800 leading-relaxed">周末超市采购清单：牛奶、鸡蛋、面包</p>
+        <div class="flex items-center justify-between mt-2">
+          <p class="text-xs text-gray-400">3天前</p>
+          <span class="text-xs bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded">📦 archived</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 浮动随机回顾按钮 -->
+    <div class="absolute bottom-20 right-4">
+      <button class="touch-target w-12 h-12 bg-white border border-gray-200 rounded-full shadow-lg flex items-center justify-center active:scale-95 transition">
+        <i class="fa fa-random text-orange-400 text-lg"></i>
+      </button>
+    </div>
+
+    <!-- 底部导航 -->
+    <div class="bg-white border-t border-gray-100 px-5 py-2 flex justify-around items-center">
+      <button class="flex flex-col items-center gap-0.5 text-orange-500 touch-target">
+        <i class="fa fa-pencil-square-o text-xl"></i>
+        <span class="text-xs font-medium">捕获</span>
+      </button>
+      <button class="flex flex-col items-center gap-0.5 text-gray-400 touch-target">
+        <i class="fa fa-list text-xl"></i>
+        <span class="text-xs">列表</span>
+      </button>
+      <button class="flex flex-col items-center gap-0.5 text-gray-400 touch-target">
+        <i class="fa fa-cog text-xl"></i>
+        <span class="text-xs">设置</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

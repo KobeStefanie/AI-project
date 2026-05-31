@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>灵感收集器 - Windows 预览 v5</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<style>
+  .row-hover:hover { background: #f9fafb; }
+  .row-active { background: #fff7ed; border-left: 3px solid #f97316; }
+  .heat-cell { width: 36px; height: 36px; border-radius: 4px; cursor: pointer; }
+  .heat-0 { background: #ebedf0; }
+  .heat-1 { background: #ffd4a8; }
+  .heat-2 { background: #fb923c; }
+  .heat-3 { background: #f97316; }
+  .heat-4 { background: #c2410c; }
+</style>
+</head>
+<body class="bg-gray-100 h-screen flex flex-col">
+
+<!-- 顶部标题栏 -->
+<header class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between shadow-sm">
+  <div class="flex items-center gap-4">
+    <h1 class="text-lg font-bold text-gray-900">灵感收集器</h1>
+    <!-- 视图切换 -->
+    <div class="flex bg-gray-100 rounded-lg p-0.5">
+      <span class="px-3 py-1.5 text-xs font-medium bg-white rounded-md shadow-sm text-orange-500">日历</span>
+      <span class="px-3 py-1.5 text-xs text-gray-500">列表</span>
+      <span class="px-3 py-1.5 text-xs text-gray-500">时间线</span>
+    </div>
+  </div>
+  <div class="flex items-center gap-3">
+    <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
+      <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>已同步
+    </span>
+    <button class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition">
+      <i class="fa fa-download mr-1"></i>导出
+    </button>
+    <button class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition">
+      <i class="fa fa-cog mr-1"></i>设置
+    </button>
+  </div>
+</header>
+
+<!-- 主内容：日历视图 -->
+<div class="flex flex-1 overflow-hidden">
+
+  <!-- 日历主区 -->
+  <div class="flex-1 flex flex-col items-center justify-center p-6">
+
+    <!-- 月份导航 -->
+    <div class="flex items-center gap-4 mb-6">
+      <button class="text-gray-400 hover:text-gray-600"><i class="fa fa-chevron-left"></i></button>
+      <span class="text-lg font-bold text-gray-800">2026 年 5 月</span>
+      <button class="text-gray-400 hover:text-gray-600"><i class="fa fa-chevron-right"></i></button>
+    </div>
+
+    <!-- 周标题 -->
+    <div class="flex gap-1 mb-2 text-xs text-gray-400 font-medium">
+      <span class="w-9 text-center">一</span><span class="w-9 text-center">二</span><span class="w-9 text-center">三</span>
+      <span class="w-9 text-center">四</span><span class="w-9 text-center">五</span><span class="w-9 text-center">六</span><span class="w-9 text-center">日</span>
+    </div>
+
+    <!-- 日历格子 -->
+    <div class="space-y-1">
+      <div class="flex gap-1"> <!-- 周1 -->
+        <span class="w-9"></span><span class="w-9"></span><span class="w-9"></span><span class="w-9"></span>
+        <div class="heat-cell heat-1 flex items-center justify-center text-xs text-gray-600 font-medium">1</div>
+        <div class="heat-cell heat-0 flex items-center justify-center text-xs text-gray-600 font-medium">2</div>
+        <div class="heat-cell heat-2 flex items-center justify-center text-xs text-gray-600 font-medium">3</div>
+      </div>
+      <div class="flex gap-1"> <!-- 周2 -->
+        <div class="heat-cell heat-0 flex items-center justify-center text-xs text-gray-600 font-medium">4</div>
+        <div class="heat-cell heat-1 flex items-center justify-center text-xs text-gray-600 font-medium">5</div>
+        <div class="heat-cell heat-4 flex items-center justify-center text-xs text-white font-medium">6</div>
+        <div class="heat-cell heat-1 flex items-center justify-center text-xs text-gray-600 font-medium">7</div>
+        <div class="heat-cell heat-2 flex items-center justify-center text-xs text-gray-600 font-medium">8</div>
+        <div class="heat-cell heat-1 flex items-center justify-center text-xs text-gray-600 font-medium">9</div>
+        <div class="heat-cell heat-3 flex items-center justify-center text-xs text-white font-medium">10</div>
+      </div>
+      <div class="flex gap-1"> <!-- 周3 -->
+        <div class="heat-cell heat-0 flex items-center justify-center text-xs text-gray-600 font-medium">11</div>
+        <div class="heat-cell heat-1 flex items-center justify-center text-xs text-gray-600 font-medium">12</div>
+        <div class="heat-cell heat-2 flex items-center justify-center text-xs text-gray-600 font-medium">13</div>
+        <div class="heat-cell heat-4 flex items-center justify-center text-xs text-white font-medium ring-2 ring-orange-400">14</div>
+        <div class="heat-cell heat-1 flex items-center justify-center text-xs text-gray-600 font-medium">15</div>
+        <div class="heat-cell heat-0 flex items-center justify-center text-xs text-gray-600 font-medium">16</div>
+        <div class="heat-cell heat-0 flex items-center justify-center text-xs text-gray-600 font-medium">17</div>
+      </div>
+      <div class="flex gap-1"> <!-- 周4 -->
+        <div class="heat-cell heat-3 flex items-center justify-center text-xs text-white font-medium">18</div>
+        <div class="heat-cell heat-2 flex items-center justify-center text-xs text-gray-600 font-medium">19</div>
+        <div class="heat-cell heat-1 flex items-center justify-center text-xs text-gray-600 font-medium">20</div>
+        <div class="heat-cell heat-1 flex items-center justify-center text-xs text-gray-600 font-medium">21</div>
+        <div class="heat-cell heat-0 flex items-center justify-center text-xs text-gray-600 font-medium">22</div>
+        <div class="heat-cell heat-0 flex items-center justify-center text-xs text-gray-600 font-medium">23</div>
+        <div class="heat-cell heat-1 flex items-center justify-center text-xs text-gray-600 font-medium">24</div>
+      </div>
+      <div class="flex gap-1"> <!-- 周5 -->
+        <div class="heat-cell heat-2 flex items-center justify-center text-xs text-gray-600 font-medium">25</div>
+        <div class="heat-cell heat-1 flex items-center justify-center text-xs text-gray-600 font-medium">26</div>
+        <div class="heat-cell heat-0 flex items-center justify-center text-xs text-gray-600 font-medium">27</div>
+        <div class="heat-cell heat-1 flex items-center justify-center text-xs text-gray-600 font-medium">28</div>
+        <div class="heat-cell heat-1 flex items-center justify-center text-xs text-white font-medium bg-orange-500/80">29</div>
+        <div class="w-9"></div><div class="w-9"></div>
+      </div>
+    </div>
+
+    <!-- 选中日期展开 -->
+    <div class="w-full max-w-xl mt-6 bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-sm font-bold text-gray-800">5月14日 · 4 条灵感</span>
+        <span class="text-xs text-gray-400">点击条目查看详情</span>
+      </div>
+      <div class="space-y-2">
+        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+          <span class="text-lg">😄</span>
+          <span class="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">🎬 视频</span>
+          <span class="flex-1 text-sm text-gray-700 truncate">做一期AI编程工具对比视频...</span>
+          <span class="text-xs text-gray-400"><i class="fa fa-microphone text-purple-400"></i></span>
+          <span class="text-xs bg-green-50 text-green-600 px-1.5 py-0.5 rounded">✅</span>
+          <span class="text-xs text-gray-400">14:32</span>
+        </div>
+        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+          <span class="text-lg">✨</span>
+          <span class="text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">💡 灵感</span>
+          <span class="flex-1 text-sm text-gray-700 truncate">番茄钟做成RPG游戏机制...</span>
+          <span class="text-xs text-gray-400"><i class="fa fa-keyboard-o"></i></span>
+          <span class="text-xs bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">🔵</span>
+          <span class="text-xs text-gray-400">23:45</span>
+        </div>
+        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+          <span class="text-lg">😐</span>
+          <span class="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">🏠 生活</span>
+          <span class="flex-1 text-sm text-gray-700 truncate">超市采购清单...</span>
+          <span class="text-xs text-gray-400"><i class="fa fa-camera text-blue-400 mr-1"></i><i class="fa fa-microphone text-purple-400"></i></span>
+          <span class="text-xs bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded">📦</span>
+          <span class="text-xs text-gray-400">09:08</span>
+        </div>
+        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+          <span class="text-lg">🤔</span>
+          <span class="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">📋 规划</span>
+          <span class="flex-1 text-sm text-gray-700 truncate">后端的数据库方案确定...</span>
+          <span class="text-xs text-gray-400"><i class="fa fa-microphone text-purple-400"></i></span>
+          <span class="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">⚪</span>
+          <span class="text-xs text-gray-400">08:15</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部统计 -->
+    <div class="flex items-center gap-6 mt-4 text-xs text-gray-500">
+      <span>本月 42 条</span>
+      <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+      <span>⚪ raw: 20</span>
+      <span>🔵 expanded: 12</span>
+      <span>✅ realized: 5</span>
+      <span>📦 archived: 3</span>
+      <span>✕ abandoned: 2</span>
+    </div>
+  </div>
+
+  <!-- 右侧面板 -->
+  <div class="w-72 bg-white border-l border-gray-200 p-4 flex flex-col gap-5 overflow-y-auto">
+
+    <!-- 搜索 -->
+    <div>
+      <div class="flex items-center gap-1 mb-2">
+        <span class="text-xs font-medium text-gray-600">搜索</span>
+        <span class="text-[10px] bg-gray-100 text-gray-400 px-1 rounded">关键词</span>
+      </div>
+      <div class="relative">
+        <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+        <input type="text" placeholder="搜索..." class="w-full border border-gray-200 rounded-lg pl-8 pr-3 py-1.5 text-xs outline-none focus:border-orange-400">
+      </div>
+    </div>
+
+    <!-- 筛选 -->
+    <div>
+      <span class="text-xs font-medium text-gray-600 block mb-2">筛选</span>
+      <div class="space-y-1.5">
+        <select class="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-600">
+          <option>全部状态</option><option>⚪ raw</option><option>🔵 expanded</option><option>✅ realized</option><option>📦 archived</option><option>✕ abandoned</option>
+        </select>
+        <select class="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-600">
+          <option>全部标签</option><option>🎬 创作-视频</option><option>✍️ 创作-写作</option><option>💡 灵感</option><option>🏠 生活</option><option>📋 规划</option>
+        </select>
+        <select class="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-600">
+          <option>全部心情</option><option>😄 兴奋</option><option>😐 平和</option><option>😔 低落</option><option>✨ 受启发</option><option>🤔 困惑</option>
+        </select>
+        <select class="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-600">
+          <option>全部来源</option><option>文字</option><option>语音</option><option>图片</option><option>视频</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 心情分布 -->
+    <div>
+      <span class="text-xs font-medium text-gray-600 block mb-2">心情分布</span>
+      <div class="space-y-1.5">
+        <div class="flex items-center gap-2 text-xs"><span>😄</span><div class="flex-1 bg-gray-100 rounded-full h-2"><div class="bg-orange-400 h-2 rounded-full" style="width:40%"></div></div><span class="text-gray-400 w-6">12</span></div>
+        <div class="flex items-center gap-2 text-xs"><span>😐</span><div class="flex-1 bg-gray-100 rounded-full h-2"><div class="bg-gray-400 h-2 rounded-full" style="width:30%"></div></div><span class="text-gray-400 w-6">9</span></div>
+        <div class="flex items-center gap-2 text-xs"><span>✨</span><div class="flex-1 bg-gray-100 rounded-full h-2"><div class="bg-yellow-400 h-2 rounded-full" style="width:20%"></div></div><span class="text-gray-400 w-6">6</span></div>
+        <div class="flex items-center gap-2 text-xs"><span>🤔</span><div class="flex-1 bg-gray-100 rounded-full h-2"><div class="bg-purple-400 h-2 rounded-full" style="width:10%"></div></div><span class="text-gray-400 w-6">3</span></div>
+        <div class="flex items-center gap-2 text-xs"><span>😔</span><div class="flex-1 bg-gray-100 rounded-full h-2"><div class="bg-blue-400 h-2 rounded-full" style="width:7%"></div></div><span class="text-gray-400 w-6">2</span></div>
+      </div>
+    </div>
+
+    <!-- 高频关键词 -->
+    <div>
+      <span class="text-xs font-medium text-gray-600 block mb-2">高频关键词</span>
+      <div class="flex flex-wrap gap-1">
+        <span class="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">AI</span>
+        <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">视频</span>
+        <span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">写作</span>
+        <span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">创作</span>
+        <span class="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">灵感</span>
+        <span class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full">工具</span>
+      </div>
+    </div>
+
+    <!-- AI 摘要 -->
+    <div class="bg-orange-50 rounded-xl p-3">
+      <span class="text-xs font-medium text-orange-600 block mb-1">AI 洞察</span>
+      <p class="text-xs text-gray-600 leading-relaxed">你最近在想"内容创作"（5条），转化率 40%。其中 3 条已实现，2 条仍在扩展中。</p>
+    </div>
+
+    <!-- 主题聚类 -->
+    <div>
+      <span class="text-xs font-medium text-gray-600 block mb-2">主题聚类</span>
+      <div class="space-y-1.5 text-xs text-gray-600">
+        <div class="flex items-center gap-2"><span class="w-2 h-2 bg-orange-400 rounded-full"></span> 内容创作 <span class="text-gray-400">5条</span></div>
+        <div class="flex items-center gap-2"><span class="w-2 h-2 bg-blue-400 rounded-full"></span> 效率工具 <span class="text-gray-400">4条</span></div>
+        <div class="flex items-center gap-2"><span class="w-2 h-2 bg-green-400 rounded-full"></span> 生活日常 <span class="text-gray-400">3条</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 底部状态栏 -->
+<footer class="bg-white border-t border-gray-200 px-6 py-2 flex items-center justify-between text-xs text-gray-500">
+  <span>共 42 条 | ⚪20 🔵12 ✅5 📦3 ✕2</span>
+  <span>快捷键: Space 预览 · E 编辑 · Delete 归档 · ↑↓ 导航</span>
+  <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>已全部同步</span>
+</footer>
+
+</body>
+</html>

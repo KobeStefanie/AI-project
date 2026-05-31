@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>时间管理助手 - 配置页</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, 'Microsoft YaHei', sans-serif; font-size: 13px; background: #f8fafc; padding: 20px; max-width: 700px; margin: 0 auto; }
+h1 { font-size: 20px; margin-bottom: 20px; }
+.tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; }
+.tabs button { padding: 8px 20px; border: none; background: none; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+.tabs button.active { border-bottom-color: #2563eb; color: #2563eb; font-weight: 600; }
+.section { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.section h3 { font-size: 14px; margin-bottom: 12px; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+.form-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.form-row label { min-width: 100px; font-weight: 500; color: #475569; }
+.form-row input { flex: 1; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; }
+.form-row input:focus { outline: none; border-color: #2563eb; }
+.color-dot { width: 14px; height: 14px; border-radius: 3px; display: inline-block; margin-right: 6px; }
+.code-label { color: #6b7280; font-size: 11px; min-width: 30px; }
+table.config-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+table.config-table th, table.config-table td { border: 1px solid #e2e8f0; padding: 6px 10px; text-align: left; }
+table.config-table th { background: #f8fafc; font-weight: 600; }
+table.config-table input { width: 100%; border: none; padding: 4px; font-size: 12px; background: transparent; }
+table.config-table input:focus { outline: none; background: #eff6ff; }
+.hint { color: #94a3b8; font-size: 11px; margin-top: 4px; }
+.btn-back { padding: 6px 16px; border: 1px solid #d1d5db; border-radius: 4px; background: #fff; cursor: pointer; font-size: 12px; }
+.nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.badge { background: #e2e8f0; padding: 2px 8px; border-radius: 10px; font-size: 10px; color: #64748b; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <h1>⚙️ 配置</h1>
+  <button class="btn-back">← 返回呈现页</button>
+</div>
+
+<div class="tabs">
+  <button class="active">项目名称</button>
+  <button>GFP 子类</button>
+  <button>系统参数</button>
+</div>
+
+<!-- QW 项目名称配置 -->
+<div class="section">
+  <h3><span class="color-dot" style="background:#4ade80"></span>Quality Work 项目名称 <span class="badge">按周可编辑</span></h3>
+  <p class="hint">本周的 7 个项目名称，切换到新一周时默认继承上周配置。</p>
+  <table class="config-table" style="margin-top: 12px;">
+    <thead>
+      <tr><th>代码</th><th>项目名称</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="code-label">1.1</td><td><input value="新媒体运营"></td><td><input placeholder="可选备注"></td></tr>
+      <tr><td class="code-label">1.2</td><td><input value="心理咨询"></td><td><input placeholder="可选备注"></td></tr>
+      <tr><td class="code-label">1.3</td><td><input value="注会变现"></td><td><input placeholder="可选备注"></td></tr>
+      <tr><td class="code-label">1.4</td><td><input value="读书"></td><td><input placeholder="可选备注"></td></tr>
+      <tr><td class="code-label">1.5</td><td><input value="投资"></td><td><input placeholder="可选备注"></td></tr>
+      <tr><td class="code-label">1.6</td><td><input value="造音师"></td><td><input placeholder="可选备注"></td></tr>
+      <tr><td class="code-label">1.7</td><td><input value="其他"></td><td><input placeholder="可选备注"></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- GFP 子类配置 -->
+<div class="section">
+  <h3><span class="color-dot" style="background:#bfdbfe"></span>Guilt Free Play 子类名称 <span class="badge">按周可编辑</span></h3>
+  <p class="hint">本周的 5 个 GFP 子类名称，切换到新一周时默认继承上周配置。</p>
+  <table class="config-table" style="margin-top: 12px;">
+    <thead>
+      <tr><th>代码</th><th>子类名称</th><th>举例</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="code-label">2.1</td><td><input value="演出"></td><td><input placeholder="如：音乐会、话剧"></td></tr>
+      <tr><td class="code-label">2.2</td><td><input value="运动"></td><td><input placeholder="如：跑步、游泳"></td></tr>
+      <tr><td class="code-label">2.3</td><td><input value="约会"></td><td><input placeholder="如：朋友聚餐"></td></tr>
+      <tr><td class="code-label">2.4</td><td><input value="旅行"></td><td><input placeholder="如：周末短途"></td></tr>
+      <tr><td class="code-label">2.5</td><td><input value="小资"></td><td><input placeholder="如：咖啡、游戏"></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 系统参数 -->
+<div class="section">
+  <h3>系统参数</h3>
+  <div class="form-row">
+    <label>标准数</label>
+    <input type="number" value="12" style="max-width: 80px;">
+    <span class="hint">每天标准休息格数（默认12 = 6小时）</span>
+  </div>
+  <div class="form-row" style="margin-top: 16px;">
+    <label>Proc 子类</label>
+    <span class="hint">（固定 5 项，不可修改名称）</span>
+  </div>
+  <table class="config-table" style="margin-top: 8px;">
+    <tbody>
+      <tr><td class="code-label">3.1</td><td>睡懒觉</td></tr>
+      <tr><td class="code-label">3.2</td><td>刷手机</td></tr>
+      <tr><td class="code-label">3.3</td><td>拖延</td></tr>
+      <tr><td class="code-label">3.4</td><td>无效/低效社交</td></tr>
+      <tr><td class="code-label">3.5</td><td>其他</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Rest / MW 说明 -->
+<div class="section">
+  <h3>分类说明（不可配置）</h3>
+  <div class="form-row">
+    <span class="color-dot" style="background:#d1fae5"></span>
+    <label>0 - Rest</label>
+    <span>睡觉、吃饭、上班、回家、洗澡、休息等中性活动</span>
+  </div>
+  <div class="form-row">
+    <span class="color-dot" style="background:#fef9c3"></span>
+    <label>4 - MW</label>
+    <span>打印文档、上班赶车等强制性工作</span>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,103 @@
+# A-Skills 存储配置规则
+
+## 根目录
+
+```
+D:\AI-项目\A-skills\
+```
+
+## 目录结构规范
+
+- 每个技能在根目录下拥有独立的同名文件夹
+- 文件夹名称与技能名称完全一致
+- 每个技能文件夹内至少包含一个标记文件，命名格式：`1-{技能名}储存文件`
+- 编号从 1 开始递增，如有多个存储文件则依次编号
+
+## 文件命名格式
+
+```
+{序号}-{技能名}储存文件
+```
+
+示例：
+- `1-accessibility储存文件`
+- `2-accessibility缓存数据`
+
+## 存储内容分类
+
+| 类别 | 说明 | 命名示例 |
+|------|------|----------|
+| 主存储文件 | 技能核心持久化数据 | `1-{技能名}储存文件` |
+| 缓存文件 | 运行时产生的缓存 | `2-{技能名}缓存数据` |
+| 临时文件 | 一次性使用的临时数据 | `3-{技能名}临时文件` |
+| 日志文件 | 运行日志记录 | `4-{技能名}运行日志` |
+
+## 已安装技能清单（共 23 个）
+
+### 前端框架
+| 序号 | 技能名 | 存储路径 |
+|------|--------|----------|
+| 1 | react-nextjs-development | `A-skills\react-nextjs-development\` |
+| 2 | react-nextjs-patterns | `A-skills\react-nextjs-patterns\` |
+
+### 状态管理
+| 序号 | 技能名 | 存储路径 |
+|------|--------|----------|
+| 3 | react-state-management | `A-skills\react-state-management\` |
+| 4 | zustand-state-management | `A-skills\zustand-state-management\` |
+
+### UI & 设计
+| 序号 | 技能名 | 存储路径 |
+|------|--------|----------|
+| 5 | tailwind-design-system | `A-skills\tailwind-design-system\` |
+| 6 | framer-motion-animator | `A-skills\framer-motion-animator\` |
+
+### 表单 & PWA
+| 序号 | 技能名 | 存储路径 |
+|------|--------|----------|
+| 7 | react-hook-form-zod | `A-skills\react-hook-form-zod\` |
+| 8 | pwa-development | `A-skills\pwa-development\` |
+
+### 后端 & 认证
+| 序号 | 技能名 | 存储路径 |
+|------|--------|----------|
+| 9 | nodejs-express-server | `A-skills\nodejs-express-server\` |
+| 10 | auth0-quickstart | `A-skills\auth0-quickstart\` |
+
+### 业务功能
+| 序号 | 技能名 | 存储路径 |
+|------|--------|----------|
+| 11 | google-calendar | `A-skills\google-calendar\` |
+| 12 | schedule-manager | `A-skills\schedule-manager\` |
+| 13 | chart-visualization | `A-skills\chart-visualization\` |
+| 14 | push-notification-setup | `A-skills\push-notification-setup\` |
+| 15 | pomodoro | `A-skills\pomodoro\` |
+
+### 工程支撑
+| 序号 | 技能名 | 存储路径 |
+|------|--------|----------|
+| 16 | frontend-testing-best-practices | `A-skills\frontend-testing-best-practices\` |
+| 17 | typescript-e2e-testing | `A-skills\typescript-e2e-testing\` |
+| 18 | accessibility | `A-skills\accessibility\` |
+| 19 | internationalization-i18n | `A-skills\internationalization-i18n\` |
+| 20 | git-advanced-workflows | `A-skills\git-advanced-workflows\` |
+
+### 部署 & 工具
+| 序号 | 技能名 | 存储路径 |
+|------|--------|----------|
+| 21 | firebase-hosting-basics | `A-skills\firebase-hosting-basics\` |
+| 22 | project-scaffolder | `A-skills\project-scaffolder\` |
+| 23 | find-skills | `A-skills\find-skills\` |
+
+## 新增技能规则
+
+1. 新安装的技能必须在 `D:\AI-项目\A-skills\` 下创建同名文件夹
+2. 必须创建 `1-{技能名}储存文件` 作为存储标记
+3. 必须在本文件中更新技能清单
+4. 文件编码统一使用 UTF-8
+
+## 维护记录
+
+| 日期 | 操作 | 说明 |
+|------|------|------|
+| 2026-05-28 | 初始化 | 创建 23 个技能存储目录及本配置文件 |

@@ -1,0 +1,10 @@
+- [用户档案](user-profile.md) — 角色、技术栈偏好、项目组织规范、当前主要项目
+- [协作风格](collaboration-style.md) — 沟通方式、代码编写习惯、版本与文档同步规则、工具使用偏好
+- [Memory 默认存储位置](memory-default-location.md) — 所有 memory 权威源为 D:\AI-项目\0-config，不得擅自变更
+- [项目目录规范](project-rules.md) — 项目存放位置、命名格式、内部结构、新建流程
+- [技能存储规范](skills-storage-rules.md) — 技能安装后存储位置、文件命名、0-config规则维护
+- [自动打开预览](auto-open-preview.md) — 静态 HTML 预览文件生成后自动浏览器打开
+- [灵感收集器](inspiration-collector.md) — 跨端灵感捕获与整理项目，PLAN 阶段，执行前需确认
+- [iOS PWA 限制与应对](ios-pwa-limitations.md) — iOS 18.2 自签 HTTPS + 私网的书签存储隔离、HTTP 数据不持久化、默认浏览器陷阱及完整应对方案
+- [心理咨询-S1](psych-counseling-s1.md) — D:\AI-项目\4-心理咨询-S1\，初始搭建阶段
+- [几米创作](jimmy-creation.md) — D:\AI-项目\5-几米创作\，初始搭建阶段
