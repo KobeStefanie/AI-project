@@ -32,7 +32,7 @@ D:\AI-项目\A-skills\
 | 临时文件 | 一次性使用的临时数据 | `3-{技能名}临时文件` |
 | 日志文件 | 运行日志记录 | `4-{技能名}运行日志` |
 
-## 已安装技能清单（共 23 个）
+## 已安装技能清单（共 33 个）
 
 ### 前端框架
 | 序号 | 技能名 | 存储路径 |
@@ -89,6 +89,25 @@ D:\AI-项目\A-skills\
 | 22 | project-scaffolder | `A-skills\project-scaffolder\` |
 | 23 | find-skills | `A-skills\find-skills\` |
 
+### 语音与文本处理
+| 序号 | 技能名 | 存储路径 |
+|------|--------|----------|
+| 24 | voice-input | `A-skills\voice-input\` |
+| 25 | text-cleanup | `A-skills\text-cleanup\` |
+| 26 | faster-whisper | `A-skills\faster-whisper\` |
+| 27 | openai-whisper-api | `A-skills\openai-whisper-api\` |
+| 28 | elevenlabs-stt | `A-skills\elevenlabs-stt\` |
+| 29 | transcription-automation | `A-skills\transcription-automation\` |
+| 30 | openless-voice-input | `A-skills\openless-voice-input\` |
+| 31 | process-meeting-transcript | `A-skills\process-meeting-transcript\` |
+| 32 | text-optimizer | `A-skills\text-optimizer\` |
+| 33 | de-slop | `A-skills\de-slop\` |
+
+### 文档处理
+| 序号 | 技能名 | 存储路径 |
+|------|--------|----------|
+| 34 | md2pdf | `A-skills\md2pdf\` |
+
 ## 新增技能规则
 
 1. 新安装的技能必须在 `D:\AI-项目\A-skills\` 下创建同名文件夹
@@ -101,3 +120,6 @@ D:\AI-项目\A-skills\
 | 日期 | 操作 | 说明 |
 |------|------|------|
 | 2026-05-28 | 初始化 | 创建 23 个技能存储目录及本配置文件 |
+| 2026-06-04 | 新增 | 安装 voice-input、text-cleanup 2 个手动创建技能 |
+| 2026-06-04 | 新增 | 安装 faster-whisper、openai-whisper-api、elevenlabs-stt、transcription-automation、openless-voice-input、process-meeting-transcript、text-optimizer、de-slop 8 个 GitHub 技能 |
+| 2026-06-05 | 新增 | 手动创建 md2pdf 技能——Markdown 转 PDF，基于 Node.js + Chrome 无头渲染 |

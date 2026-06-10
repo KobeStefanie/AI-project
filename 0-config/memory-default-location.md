@@ -11,15 +11,16 @@ metadata:
 
 ## 规则
 
-所有项目的 memory 文件，默认储存位置均为 `D:\AI-项目\0-config\`。该目录是 memory 的权威源（source of truth）。
+1. 所有项目的 memory 文件，默认储存位置均为 `D:\AI-项目\0-config\`。该目录是 memory 的权威源（source of truth）。
+2. **每次全局 `.claude` memory 有更新（新增/修改/删除），必须同步更新 `D:\AI-项目\0-config\` 中对应文件，保持两端内容完全一致。**
 
 **Why:** 用户要求统一管理，避免记忆散落在各处，防止系统重装或用户目录清空导致记忆丢失。
 
 **How to apply:**
-- 新建或修改 memory 时，必须在 `D:\AI-项目\0-config\` 下写入/更新对应文件
-- 同步更新 `~/.claude/projects/C--Users-Administrator/memory/` 下的副本（Claude 运行时读取需要）
+- 修改 memory 后立即执行同步：`cp` 覆盖到 `D:\AI-项目\0-config\`
+- 同步后校验 MD5 一致，确保文件数量和内容完全匹配
 - `D:\AI-项目\0-config\` 为权威源，不得擅自变更为其他位置
-- 该目录下的 MEMORY.md 索引也应保持同步
+- 该目录下的 MEMORY.md 索引也必须保持同步
 
 ## 关联记忆
 

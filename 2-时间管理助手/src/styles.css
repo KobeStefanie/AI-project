@@ -94,6 +94,7 @@ body { font-family: -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif; ba
 
 /* ===== Key Items Rows ===== */
 .row-keyitem td.cell-event { font-weight: 600; cursor: pointer; text-align: left; }
+.row-keyitem td.cell-ki-center { text-align: center; }  /* v2.13.1：小确幸/关键词居中 */
 
 /* ===== 冻结窗格 ===== */
 body.frozen .main-table { border-collapse: separate; }
@@ -427,13 +428,13 @@ body[data-view-mode="huawei"] #page-config { display: none !important; }
 .sync-hint code { background: #e2e8f0; padding: 1px 4px; border-radius: 3px; }
 
 .sync-log {
-  max-height: 160px; overflow-y: auto; background: #0f172a; color: #e2e8f0;
+  min-height: 72px; max-height: 300px; overflow-y: auto; background: #0f172a; color: #e2e8f0;
   padding: 8px 10px; border-radius: 4px; font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
-  font-size: 11px; line-height: 1.5; white-space: pre-wrap;
+  font-size: 12px; line-height: 1.5; white-space: pre-wrap;
 }
 .sync-log:empty { display: none; }
 .sync-log .log-ok { color: #4ade80; }
-.sync-log .log-err { color: #f87171; }
+.sync-log .log-err, .sync-log .log-error { color: #f87171; }
 .sync-log .log-info { color: #93c5fd; }
 
 /* v2.10.1：同步面板「高级设置」折叠区 */

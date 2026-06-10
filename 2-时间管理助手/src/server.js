@@ -93,8 +93,8 @@ function requestHandler(req, res) {
     const ext = path.extname(filePath).toLowerCase();
     res.writeHead(200, {
       'Content-Type': MIME[ext] || 'application/octet-stream',
-      // 浏览器层禁缓存，把缓存权完全交给 Service Worker
-      'Cache-Control': 'no-store'
+      // 允许 Service Worker Cache API 缓存（no-store 会导致 iOS Safari Cache API 拒绝存储）
+      'Cache-Control': 'public, max-age=0'
     });
     res.end(data);
     console.log('200', pathname);

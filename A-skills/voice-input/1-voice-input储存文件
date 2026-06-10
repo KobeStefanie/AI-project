@@ -1,0 +1,17 @@
+# voice-input 技能存储标记
+
+技能名称：voice-input（语音输入助手）
+安装日期：2026-06-04
+工具路径：D:\AI-项目\5-语音输入助手\voice-input-tool.html
+技能类型：本地 HTML 工具（基于 Web Speech API）
+依赖：无（浏览器原生能力）
+
+## 功能清单
+- [x] 实时语音转文字（Web Speech API）
+- [x] 中文填充词/感叹词自动过滤
+- [x] 多语言支持（中/英/日/韩）
+- [x] 连续录音模式
+- [x] 一键复制清洗后文本
+- [x] 导出 TXT/Markdown
+- [x] 发送到 Claude 格式化
+- [x] 全局快捷键（Ctrl+Shift+M/X）

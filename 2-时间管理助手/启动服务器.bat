@@ -1,33 +1,41 @@
 @echo off
 chcp 65001 >nul
-title 时间管理助手 · 静态服务器（6371）
+title TimePlanner Server Start
+set "ROOT=%~dp0"
 
 where node >nul 2>nul
 if errorlevel 1 (
-    echo [错误] 没找到 node 命令。请先安装 Node.js: https://nodejs.org/
-    echo.
+    echo [ERROR] Node.js not found. Please install: https://nodejs.org/
     pause
     exit /b 1
 )
 
-REM 在新窗口启动同步服务（端口 6372），日志独立，互不干扰
-start "时间管理助手 · 同步服务（6372）" cmd /k "cd /d "%~dp0" && node sync-server.js"
-
-REM 当前窗口启动静态服务（端口 6371）
-cd /d "%~dp0src"
-
 echo ================================================
-echo  时间管理助手 · 静态服务器（端口 6371）
-echo  目录: %CD%
-echo  另一个窗口已启动同步服务（端口 6372）
+echo  TimePlanner - Starting Services
 echo ================================================
 echo.
 
-node server.js
+:: Clean old processes
+echo [1/2] Cleaning old processes...
+taskkill /F /IM node.exe >nul 2>&1
+powershell -WindowStyle Hidden -Command "Get-Process powershell -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -like '*daemon.ps1*' } | Stop-Process -Force" 2>nul
+timeout /t 2 /nobreak >nul
+echo        Done.
+
+:: Start silent daemon
+echo [2/2] Starting silent daemon (no windows)...
+start "TimePlanner-Daemon" /MIN powershell -WindowStyle Hidden -ExecutionPolicy Bypass -File "%ROOT%daemon.ps1"
+timeout /t 5 /nobreak >nul
+
+:: Verify
+echo.
+powershell -Command "try{$r=Invoke-WebRequest 'http://127.0.0.1:6371/' -UseBasicParsing -TimeoutSec 3;Write-Host 'Static 6371: OK'}catch{Write-Host 'Static 6371: WAITING...'}"
+powershell -Command "try{$r=Invoke-WebRequest 'http://127.0.0.1:6372/' -UseBasicParsing -TimeoutSec 3;Write-Host 'Sync  6372: OK'}catch{Write-Host 'Sync  6372: WAITING...'}"
 
 echo.
 echo ================================================
-echo  静态服务器已停止。同步服务窗口仍在运行，需手动关闭。
-echo  按任意键关闭本窗口...
+echo  Services running. Open http://127.0.0.1:6371/
+echo  Daemon auto-restarts on crash. No windows.
+echo  Close this window safely.
 echo ================================================
-pause >nul
+pause

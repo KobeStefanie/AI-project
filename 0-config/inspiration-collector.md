@@ -1,46 +1,43 @@
 ---
 name: inspiration-collector
-description: 灵感收集器（碎碎念）项目状态——跨端灵感捕获与整理工具，当前在 PLAN 阶段
+description: 灵感收集器（碎碎念）项目状态——跨端灵感捕获与整理工具，v1 后端+前端已编码完成
 metadata: 
   node_type: memory
   type: project
-  originSessionId: 09401a78-3a4f-4c9c-ac1d-bac3c6df653d
+  originSessionId: 1e4885ed-9aa7-4cf8-92e0-07154d31bac6
 ---
 
 # 灵感收集器
 
 - **路径**: `D:\AI-项目\3-灵感收集器\`
-- **状态**: PLANNING — 执行前需经用户同意
-- **版本**: v1.0.0 / 计划 v6
-- **技术**: PWA + Express + Claude AI
+- **状态**: 编码中 — v1 后端完整，前端已构建，待深入测试
+- **版本**: v1.0.0
+- **技术**: PWA + Express + SQLite + Claude AI
 
-## 项目定位
+## v1 实现进度（2026-05-29）
 
-想法捕手，不是备忘录。iPhone 快速捕获（语音/文字/图片/视频），Windows 日历回顾 + 主题整理。AI 自动分类/关键词/心情/主题聚合。
+### 后端（全部完成）
+- Express 入口 + 9 个路由模块（notes, themes, media, calendar, timeline, dashboard, review, analyze）
+- SQLite 数据库 + 4 表迁移（inspirations, media_assets, themes, theme_inspirations）
+- Claude AI 服务 + 本地回退
+- 媒体存储 (multer + 磁盘)
+- 所有 API 端点已测试通过
 
-## 核心概念
+### 前端（已完成）
+- `index.html` — 单页应用，响应式双端布局（移动端底部 Tab + 桌面端侧边栏）
+- `src/app-core.js` — API 客户端、状态管理、工具函数
+- `src/app.js` — 全部视图逻辑（捕获/列表/工作台/日历/时间线/主题/媒体/设置）
+- `manifest.json` + `sw.js` — PWA 支持
+- 7 个视图全部实现，详情弹窗，批量操作，离线回退
 
-- **灵感碎片**——单条捕获，独立保存（时间戳/心情/上下文）
-- **主题**——非破坏性上层容器，碎片保持独立，AI 自动推荐 + 手动管理
-- **状态流转**: raw → expanded → realized / archived / abandoned
-- **心情**: 7 档（兴奋/平和/低落/困惑/焦虑/受启发/坚定）
-
-## 当前进度
-
-- 需求文档 v6（完整）
-- 计划文档 v6（完整）
-- 静态预览 4 张（iPhone、Windows日历、列表、时间线）
-- 未开始编码
-
-## 下次会话待讨论
-
-- 数据库选型（Turso / SQLite / Supabase）
-- 后端部署位置
-- 音频/视频存储方案
-- 需求文档中 §6.0 待确认事项
+### 待做
+- AI 分析触发流程端到端测试
+- 语音转写（Web Speech API）前端集成
+- iPhone 端离线队列完善
+- 部署配置
 
 ## 关联记忆
 
-- [[skills-storage-rules]] — 技能存储规范
-- [[auto-open-preview]] — 静态预览自动打开规则
-- [[project-rules]] — 项目目录规范
+- [[skills-storage-rules]]
+- [[auto-open-preview]]
+- [[project-rules]]

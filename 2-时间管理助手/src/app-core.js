@@ -105,10 +105,12 @@ function getConfig(year, week) {
   if (raw) {
     try { config = JSON.parse(raw); } catch (e) {}
   }
+  var inherited = false;
   if (!config) {
     var prev = getPrevWeek(year, week);
     var prevRaw = localStorage.getItem(sKey(prev.year, prev.week, 'config'));
     if (prevRaw) { try { config = JSON.parse(prevRaw); } catch (e) {} }
+    inherited = true;
   }
   if (!config) {
     config = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
@@ -128,6 +130,11 @@ function getConfig(year, week) {
   }
   if (typeof config.startTime !== 'string' || !config.startTime) {
     config.startTime = DEFAULT_CONFIG.startTime;
+  }
+  // v2.13.1：继承上一周配置时自动保存到当前周，确保同步到服务端
+  if (inherited && raw === null) {
+    var autoCfg = JSON.parse(JSON.stringify(config));
+    localStorage.setItem(sKey(year, week, 'config'), JSON.stringify(autoCfg));
   }
   return config;
 }
@@ -443,6 +450,18 @@ var syncClient = (function() {
     if (merged.enabled) _startHealthCheck(); else _stopHealthCheck();
     // v2.12.0：同步启用时连接 WebSocket；关闭时断开
     if (merged.enabled) _wsConnect(); else _wsDisconnect();
+    // v2.13.1：启用同步时若无令牌则桌面自注册（修复：init 中只在启动时注册一次，此处补充用户手动启用场景）
+    if (merged.enabled && !getDeviceToken()) {
+      setTimeout(function() {
+        registerDesktop().then(function(r) {
+          if (r && r.token && typeof console !== 'undefined') {
+            console.log('[sync] 桌面设备已注册（saveSyncConfig 触发）');
+          }
+        }).catch(function(err) {
+          if (typeof console !== 'undefined') console.warn('[sync] 桌面自注册失败:', err.message);
+        });
+      }, 500);
+    }
     return merged;
   }
 
@@ -494,6 +513,7 @@ var syncClient = (function() {
 
   // v2.11.0：协议自适应。autoHost=true 时 protocol 跟随 window.location.protocol；
   // 否则用手动 protocol（默认 'http:'）。端口默认值按协议挑选。
+  // v2.13.2：iOS 跟随页面协议——sync-server HTTPS 6444 已可用，CA 已信任
   function getEffectiveProtocol(cfg) {
     cfg = cfg || getSyncConfig();
     if (cfg.autoHost !== false) {
@@ -638,9 +658,9 @@ var syncClient = (function() {
   function pullWeek(year, week) {
     _setState({ status: 'connecting', lastError: null });
     return _fetchJson('/weeks/' + year + '/' + week).then(function(r) {
-      _applyServerWeekToLocal(year, week, r.json);
+      var applied = _applyServerWeekToLocal(year, week, r.json);
       _setState({ status: 'connected', lastPullAt: Date.now(), lastError: null });
-      return { ok: true, applied: true };
+      return { ok: true, applied: applied };
     }).catch(function(err) {
       // 404 = 服务器还没该周的数据，不算错误
       if (/^HTTP 404/.test(err.message)) {
@@ -744,10 +764,18 @@ var syncClient = (function() {
   // ----- 应用服务器整周到本地（pull） -----
 
   function _applyServerWeekToLocal(year, week, serverData) {
-    if (!serverData) return;
+    if (!serverData) return false;
     _state.applyingPullForWeek = { year: year, week: week };
+    var changed = false;  // v2.13.1：追踪是否有实际变更
     try {
       var meta = _getMeta(year, week);
+      // 快速判断：若 serverWeekUpdatedAt 未变，跳过所有比较
+      var newWeekTs = serverData.weekUpdatedAt || 0;
+      if (newWeekTs && newWeekTs === (meta.serverWeekUpdatedAt || 0)) {
+        meta.lastPullAt = Date.now();
+        _saveMeta(year, week, meta);
+        return false;
+      }
 
       // cells（v2.11.1：逐 cell 按 updatedAt 合并，不再全量替换）
       if (serverData.cells && typeof serverData.cells === 'object') {
@@ -761,49 +789,54 @@ var syncClient = (function() {
           var emptyCode = (c.code === '' || c.code == null);
           if (emptyTitle && emptyCode) {
             // 服务端该格已清空：仅当服务端版本更新时才删除本地
-            if (serverTs >= localTs) { delete localCells[k]; meta.cells[k] = serverTs; }
-          } else if (serverTs >= localTs) {
-            // 服务端版本更新或同等：以服务端为准
+            if (serverTs > localTs) { delete localCells[k]; meta.cells[k] = serverTs; changed = true; }
+          } else if (serverTs > localTs) {
+            // 服务端版本更新：以服务端为准
             localCells[k] = { title: c.title || '', code: c.code };
             meta.cells[k] = serverTs;
+            changed = true;
           }
           // 本地版本更新 → 保留本地，不写 meta（等 push 时更新服务端）
         }
-        saveCells(year, week, localCells);
+        if (changed) saveCells(year, week, localCells);
       }
 
       // keyitems（v2.11.1：逐项按 updatedAt 合并）
       if (serverData.keyitems && typeof serverData.keyitems === 'object') {
         var localItems = getKeyItems(year, week);
+        var kiChanged = false;
         for (var ki in serverData.keyitems) {
           var it = serverData.keyitems[ki];
           if (!it) continue;
           var serverTsI = it.updatedAt || 0;
           var localTsI = meta.keyitems[ki] || 0;
-          if (serverTsI >= localTsI) {
+          if (serverTsI > localTsI) {
             if (it.value && it.value !== '') { localItems[ki] = it.value; }
             else { delete localItems[ki]; }
             meta.keyitems[ki] = serverTsI;
+            kiChanged = true;
           }
         }
-        saveKeyItems(year, week, localItems);
+        if (kiChanged) { saveKeyItems(year, week, localItems); changed = true; }
       }
 
       // v2.13.1：keyitemStatus 逐项按 updatedAt 合并（同 keyitems 策略）
       if (serverData.keyitemStatus && typeof serverData.keyitemStatus === 'object') {
         var localSt = getKeyItemStatus(year, week);
+        var stChanged = false;
         for (var stk in serverData.keyitemStatus) {
           var st = serverData.keyitemStatus[stk];
           if (!st) continue;
           var serverStTs = st.updatedAt || 0;
           var localStTs = meta.keyitemStatus[stk] || 0;
-          if (serverStTs >= localStTs) {
+          if (serverStTs > localStTs) {
             if (st.value && st.value !== '') { localSt[stk] = st.value; }
             else { delete localSt[stk]; }
             meta.keyitemStatus[stk] = serverStTs;
+            stChanged = true;
           }
         }
-        saveKeyItemStatus(year, week, localSt);
+        if (stChanged) { saveKeyItemStatus(year, week, localSt); changed = true; }
       }
 
       // review（v2.11.1：按 updatedAt 比较，本地较新则保留）
@@ -811,9 +844,10 @@ var syncClient = (function() {
         var rev = _assign({}, serverData.review);
         var revAt = rev.updatedAt || 0;
         delete rev.updatedAt; delete rev.updatedBy;
-        if (revAt >= (meta.review || 0)) {
+        if (revAt > (meta.review || 0)) {
           saveReview(year, week, rev);
           meta.review = revAt;
+          changed = true;
         }
       }
 
@@ -822,16 +856,23 @@ var syncClient = (function() {
         var cfg = _assign({}, serverData.config);
         var cfgAt = cfg.updatedAt || 0;
         delete cfg.updatedAt; delete cfg.updatedBy;
-        saveConfig(year, week, cfg);
-        meta.config = cfgAt;
+        if (cfgAt > (meta.config || 0)) {
+          saveConfig(year, week, cfg);
+          meta.config = cfgAt;
+          changed = true;
+        }
       }
 
       // archived
-      if (serverData.archived === true) setArchived(year, week);
+      if (serverData.archived === true && !isArchived(year, week)) {
+        setArchived(year, week);
+        changed = true;
+      }
 
       meta.serverWeekUpdatedAt = serverData.weekUpdatedAt || 0;
       meta.lastPullAt = Date.now();
       _saveMeta(year, week, meta);
+      return changed;
     } finally {
       _state.applyingPullForWeek = null;
     }
@@ -1050,6 +1091,27 @@ var syncClient = (function() {
         saveSyncConfig({ lastIP: info.lanIPs[0].ip });
       }
       _setState({ status: 'connected', lastInfo: info, lastError: null });
+
+      // v2.13.1：心跳成功后拉取当前周，确保 WebSocket 断开时也能同步远端变更
+      var cur = _state.currentWeek;
+      var cfg = getSyncConfig();
+      if (cur && cfg.autoPull !== false && !_state.applyingPullForWeek) {
+        var prePullStatus = _state.status;
+        pullWeek(cur.year, cur.week).then(function(r) {
+          if (r && r.applied) {
+            if (typeof console !== 'undefined') console.log('[sync] 心跳检测到远程更新，已自动拉取 W' + cur.week);
+            if (typeof window !== 'undefined' && window.dispatchEvent) {
+              window.dispatchEvent(new CustomEvent('sync-remote-change', { detail: { year: cur.year, week: cur.week } }));
+            }
+          }
+        }).catch(function(err) {
+          // 拉取失败恢复为心跳成功时的状态，避免误报错误
+          if (!/^HTTP 404/.test(err.message)) {
+            _setState({ status: prePullStatus, lastError: null });
+            if (typeof console !== 'undefined') console.warn('[sync] 心跳期间的拉取失败:', err.message);
+          }
+        });
+      }
     }).catch(function(err) {
       _setState({ status: 'error', lastError: '心跳失败: ' + (err.message || String(err)) });
     });

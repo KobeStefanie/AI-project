@@ -1,0 +1,61 @@
+# 角色-小孩-A-方脸-v1
+
+## 图片
+- **文件**：角色-小孩-A-方脸-v1.png
+- **尺寸**：1024×1536
+- **格式**：PNG
+
+## 生成参数
+- **模型**：gpt-image-2
+- **接口**：CLIProxyAPI `/v1/images/generations`
+- **质量**：默认
+- **生成数量**：n=1
+- **生成日期**：2026-06-06
+- **实际传参**：英文提示词
+
+## 完整提示词（中文·给人看）
+
+水彩手绘插画，几米绘本风格。松散墨线勾勒轮廓——线条有颤抖、断笔、墨色浓淡变化。彩铅细密排线叠加在水彩湿画法晕染之上，水彩在轮廓线外微微洇开，纸纹可见，手工笔触。浅米色纯色背景，背景水彩淡淡扫过留有水痕边缘。角色设定图，三视图——正面、侧面、背面，三组并排排列。
+
+一个七八岁的小男孩。头略大，身体瘦小，头身比约1:3.5。四肢细长，肩膀窄，整个人轻飘飘的。
+
+脸型（方形）：方脸。额头是宽的，但不是饱满圆弧——是平的宽。两腮接近直线往下，下颌角明显——不是成年人的硬朗下颌，是小孩那种还没完全定型的方，像一块没打磨的石头的轮廓。下巴是宽的平底，中间微微有一道极淡的墨线暗示下巴窝。整张脸看起来像一个小号的 bulldog——不凶，是憨。方脸放在小孩身上，可爱没了，笨拙出来了。
+
+五官：两个小墨点眼睛，非常小，眼距很宽——将近一个半眼位。方脸配宽眼距，呆和憨同时成立。鼻子一个淡墨小团。嘴巴一条极淡细墨线，嘴角微微上翘0.5毫米。
+
+头发：深灰蓝色，水彩湿画法打底不规则晕开。齐刘海但长长短短不齐。头顶一撮微翘。干净，像洗过自然干了没梳的样子。
+
+服装：亮橘色短袖圆领T恤，水彩晕染，偏大一号松松垮垮，领口微歪，下摆一半塞一半露。深蓝色短裤，侧边细白线，一只裤腿微卷。白袜子一只滑到脚踝。红色帆布鞋，一根鞋带松了。
+
+皮肤：水彩极淡暖灰黄底色，干净。
+
+整体：方脸让这个小孩从"可爱"变成了"憨"——不是讨好的萌，是一种笨拙的存在感。干干净净，安安静静，轻飘飘站着。
+
+## 完整提示词（English·实际生成用）
+
+Hand-painted watercolor illustration, Jimmy Liao picture book style. Loose ink line outlines — lines with slight tremble, broken strokes, ink density variation. Colored pencil cross-hatching layered over wet-on-wet watercolor washes, watercolor bleeding slightly beyond outlines, paper grain visible, handcrafted brushwork. Plain light cream background with faint watercolor wash and water-edge marks. Character design sheet, three views — front, side, back — arranged side by side.
+
+A boy around 7-8 years old. Slightly large head, thin small body, head-to-body ratio about 1:3.5. Limbs slender, shoulders narrow, weightless-looking.
+
+Face shape (square): square face. Forehead is wide but flat across, not a full rounded arc. Cheeks descend in near-straight lines, jaw angle clearly present — not the hard jaw of an adult, but a child's still-forming squareness, like the contour of an unpolished stone. Chin is a wide flat base, a very faint ink line at the center hinting at a chin cleft. The whole face looks like a small bulldog — not fierce, just dopey. A square face on a child removes all cuteness and replaces it with clumsy awkwardness.
+
+Features: two very small ink-dot eyes, set nearly one-and-a-half eye-widths apart. Square face + wide-set eyes — dopey and dazed simultaneously. Nose a faint ink blob. Mouth an extremely faint fine ink line, corners upturned 0.5mm.
+
+Hair: dark gray-blue, wet-on-wet watercolor base bleeding irregularly. Bangs uneven. One small tuft at crown. Clean, air-dried and uncombed look.
+
+Clothing: bright orange crew-neck T-shirt, watercolor wash, oversized and loose, collar slightly askew, hem half-tucked. Deep blue shorts, thin white side stripe, one leg slightly rolled. White socks, one slipped to ankle. Red canvas sneakers, one lace loose.
+
+Skin: very faint warm gray-yellow watercolor wash, clean.
+
+Overall: the square face transforms this kid from "cute" into "dopey" — not ingratiating charm, but a clumsy presence. Clean, quiet, standing weightless.
+
+## 创作上下文
+- **步骤**：步骤1-阶段A：角色与场景定稿（服化道）
+- **子项目**：小孩的独白
+- **目的**：脸型对比筛选——方脸方向
+- **脸型关键词**：方脸、bulldog、憨、笨拙、下颌角、平宽下巴
+
+## 生成历史
+| 版本 | 日期 | 结果 |
+|------|------|------|
+| v1 | 2026-06-06 | ✅ 正常生成，英文提示词 1024×1536 |

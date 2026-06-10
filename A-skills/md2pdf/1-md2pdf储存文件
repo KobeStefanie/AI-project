@@ -1,0 +1,6 @@
+# md2pdf 技能存储标记
+
+- 脚本位置：D:\AI-项目\5-几米创作\md2pdf.js
+- 技能定义：C:\Users\Administrator\.claude\skills\md2pdf\SKILL.md
+- 功能：将 Markdown 文件转换为 PDF（Markdown → HTML → Chrome 无头渲染 → PDF）
+- 创建日期：2026-06-05

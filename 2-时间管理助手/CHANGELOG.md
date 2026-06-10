@@ -1,5 +1,48 @@
 # CHANGELOG
 
+## v2.13.2 — 2026-06-01（iOS 离线缓存 + HTTPS 同步修复）
+
+### 修复（三个连锁 Bug 同时解决）
+
+- **iOS 离线打不开**（根因：`Cache-Control: no-store`）
+  - `Cache-Control: no-store` 导致 iOS Safari Cache API **严格拒绝存储**响应
+  - 服务器改为 `public, max-age=0`，SW 新增 `sanitizeForCache()` 剥离限制性缓存头
+  - SW install 改用 `fetch` + `cache.put` 替代 `cache.add`，更精细控制缓存存储
+- **iPhone 同步失败**（根因：Mixed Content 阻塞）
+  - HTTPS 页面（6443）→ HTTP fetch（6372）被 Safari 阻止为 Mixed Content
+  - 移除 `getEffectiveProtocol()` 中 iOS 强制 HTTP 的特判（v2.13.1 引入的误判）
+  - iOS 现在跟随页面协议：HTTPS 页面走 HTTPS 同步（6444），CA 已信任
+- **PWA 主屏图标正常显示**（附带修复）
+  - 蓝底白字图标首次正确显示，之前因缓存失败一直降级为灰色
+
+### 经验总结
+
+- `Cache-Control: no-store` 会同时禁用浏览器 HTTP 缓存和 **Service Worker Cache API**，两者不可兼得
+- 若需让 SW 管理缓存，服务器应设 `public, max-age=0`（允许 Cache API，禁止浏览器 HTTP 缓存）
+- iOS Safari 的 Mixed Content 拦截优先于 WKWebView 自签证书限制，不能为解决一个引入另一个
+
+
+## v2.13.1 hotfix — 2026-06-01（QR码本地化 + 同步配对修复）
+
+### 修复
+
+- **QR 码库本地化**：将 qrcode-generator 从 jsdelivr CDN 改为本地文件 `src/qrcode-generator.js`
+  - 消除 CDN 不可达（中国大陆）导致页面阻塞、二维码无法生成的问题
+  - 库文件采用 MIT 许可证，通过 npm pack 提取
+- **saveSyncConfig 补充桌面自注册**：用户手动启用同步时也会触发 `registerDesktop()`
+  - 修复 init 时同步未启用导致桌面从未注册的缺陷
+- **handlePairStart 增强**：生成配对码前先测试同步服务器连通性
+  - 同步未启用时给出明确提示
+  - 连接失败时显示具体排查建议（启动服务器、防火墙、混合内容）
+  - 新增 QR 生成异常捕获
+  - 显示手机连接地址（含 HTTPS 端口）
+- **心跳拉取增强**：心跳 ping 成功后自动拉取当前周数据
+  - 修复 WebSocket 断开时，一端推送成功但另一端永远收不到的问题
+  - 拉取失败自动恢复状态，避免误报心跳错误
+- **同步面板关闭清理**：关闭面板时清除配对轮询定时器，避免后台无效请求
+- **日志消息修复**：多行提示改用多次 `logSync` 调用，避免 `<br>` 被 `textContent` 当文本显示
+- **CSS 类名修复**：`.log-error` 别名，修复代码使用 `'error'` level 但 CSS 只有 `log-err`
+
 ## v2.13.1 — 2026-05-29（月历视图 + 三件事状态）
 
 新增桌面月历视图和前三件事三态状态标记，同步、导出、导入全链路支持。

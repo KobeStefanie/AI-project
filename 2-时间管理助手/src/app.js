@@ -173,7 +173,7 @@ function init() {
 // SW 注册 + 自动更新流：检测到新版本即让其立即激活，并在 controllerchange 时重载一次。
 // 首次安装（页面此前没有 controller）不触发 reload，避免空载场景下的循环刷新。
 // v2.11.2：新增 EXPECTED_CACHE_NAME 自检，若当前 SW 版本落后则强制注销+重载。
-var EXPECTED_CACHE_NAME = 'time-planner-v85';
+var EXPECTED_CACHE_NAME = 'time-planner-v89';
 
 function forceUpdateSW() {
   if (!('serviceWorker' in navigator)) return;
@@ -410,6 +410,7 @@ function renderTbody(dates, dateKeys, cellsByDate, keyItems, kiStatus, config, w
   // Key item rows（与时间表共用 data-cell 选区机制；id 加 KI| 前缀以区分）
   // v2.13.1：前三件事加状态框
   for (var r = 0; r < KEY_ROWS.length; r++) {
+    var extraCls = (r >= 3) ? ' cell-ki-center' : '';  // v2.13.1：小确幸/关键词居中
     html += '<tr class="row-keyitem"><td class="col-label">' + KEY_ROWS[r] + '</td>';
     for (var i = 0; i < 7; i++) {
       var k = dateKeys[i] + '|' + KEY_ROWS[r];
@@ -419,7 +420,7 @@ function renderTbody(dates, dateKeys, cellsByDate, keyItems, kiStatus, config, w
         if (st) statusBox = '<span class="ki-status-box ki-status-' + st + '" data-ki-status-key="' + k + '" title="点击切换状态">&nbsp;</span>';
         else statusBox = '<span class="ki-status-box" data-ki-status-key="' + k + '" title="点击设置状态">&nbsp;</span>';
       }
-      html += '<td colspan="2" class="cell-event" data-cell="KI|' + k + '">' + statusBox + (keyItems[k] || '') + '</td>';
+      html += '<td colspan="2" class="cell-event' + extraCls + '" data-cell="KI|' + k + '">' + statusBox + (keyItems[k] || '') + '</td>';
     }
     html += '<td></td></tr>';
   }
@@ -2554,7 +2555,12 @@ function setupSyncUI() {
   if ($('btn-sync-pull'))  $('btn-sync-pull').onclick  = handleSyncPull;
   if ($('btn-sync-push'))  $('btn-sync-push').onclick  = handleSyncPush;
   if ($('btn-sync-save'))  $('btn-sync-save').onclick  = handleSyncSaveBtn;
-  if ($('btn-sync-close')) $('btn-sync-close').onclick = function() { closeModal('sync-modal'); };
+  if ($('btn-sync-close')) $('btn-sync-close').onclick = function() {
+    // v2.13.1：关闭面板时清理配对轮询定时器
+    var qrArea = $('pair-qr-area');
+    if (qrArea && qrArea._pairTimer) { clearInterval(qrArea._pairTimer); qrArea._pairTimer = null; }
+    closeModal('sync-modal');
+  };
 
   // v2.13.0：配对 UI
   setupPairUI();
@@ -2679,8 +2685,27 @@ function setupPairUI() {
 
 function handlePairStart() {
   $('pair-qr-area').style.display = 'none';
-  logSync('正在生成配对码…', 'info');
-  syncClient.pairStart().then(function(info) {
+  logSync('正在测试同步服务器连接…', 'info');
+
+  // 先测试连通性，再生成配对码（v2.13.1：避免静默失败）
+  var cfg = syncClient.getSyncConfig();
+  if (!cfg.enabled) {
+    logSync('⚠ 请先勾选「启用局域网同步」并保存设置', 'error');
+    return;
+  }
+  var urls = syncClient.buildUrls(cfg);
+  if (urls.length === 0) {
+    logSync('⚠ 无法识别同步主机地址', 'error');
+    logSync('  1. 确认已双击运行「启动服务器.bat」', 'info');
+    logSync('  2. 或在高级设置中手动填写电脑名', 'info');
+    return;
+  }
+
+  syncClient.testConnection().then(function(r) {
+    logSync('✓ 同步服务器已连通 → ' + r.base, 'ok');
+    logSync('正在生成配对码…', 'info');
+    return syncClient.pairStart();
+  }).then(function(info) {
     var data = {
       hostname: info.hostname,
       ip: (info.lanIPs && info.lanIPs[0]) ? info.lanIPs[0].ip : '',
@@ -2689,18 +2714,25 @@ function handlePairStart() {
       code: info.pairCode
     };
     var jsonStr = JSON.stringify(data);
-    // 用 qrcode-generator 生成 QR
+    // 用本地 QR 码库生成 SVG（v2.13.1：本地文件，无需 CDN）
     if (typeof qrcode !== 'undefined') {
-      var qr = qrcode(0, 'M');
-      qr.addData(jsonStr);
-      qr.make();
-      $('pair-qr-code').innerHTML = qr.createSvgTag({ scalable: true, cellSize: 3 });
+      try {
+        var qr = qrcode(0, 'M');
+        qr.addData(jsonStr);
+        qr.make();
+        $('pair-qr-code').innerHTML = qr.createSvgTag({ scalable: true, cellSize: 3 });
+      } catch (qrErr) {
+        $('pair-qr-code').innerHTML = '<div style="padding:20px;color:#dc2626;">QR 生成异常：' + qrErr.message + '<br>配对码：<b>' + info.pairCode + '</b></div>';
+      }
     } else {
       $('pair-qr-code').innerHTML = '<div style="padding:20px;color:#dc2626;">QR 库未加载，请刷新页面。<br>配对码：<b>' + info.pairCode + '</b></div>';
     }
     $('pair-code-text').textContent = info.pairCode;
     $('pair-qr-area').style.display = '';
-    logSync('配对码已生成：' + info.pairCode + '（5 分钟有效）。等待手机扫码…', 'info');
+    logSync('配对码已生成：' + info.pairCode + '（5 分钟有效）。请用手机扫描二维码完成绑定', 'info');
+    if (data.ip) {
+      logSync('手机连接地址：' + (data.httpsPort ? 'https://' + data.ip + ':' + data.httpsPort : 'http://' + data.ip + ':' + data.port), 'info');
+    }
     // 每 5s 检查设备列表变化
     var checkCount = 0;
     var checkTimer = setInterval(function() {
@@ -2711,7 +2743,14 @@ function handlePairStart() {
     // 保存以便关闭面板时清理
     $('pair-qr-area')._pairTimer = checkTimer;
   }).catch(function(err) {
-    logSync('生成配对码失败：' + err.message, 'error');
+    var msg = err.message || String(err);
+    logSync('✗ 生成配对码失败：' + msg, 'error');
+    if (/timeout|NetworkError|Failed to fetch|ERR_/i.test(msg)) {
+      logSync('💡 可能原因：', 'info');
+      logSync('  1. 同步服务器未启动 → 请双击「启动服务器.bat」', 'info');
+      logSync('  2. 防火墙阻止了端口 6372/6444', 'info');
+      logSync('  3. 浏览器阻止了混合内容（HTTP/HTTPS 混用）', 'info');
+    }
   });
 }
 
@@ -2809,10 +2848,12 @@ function handleSyncPull() {
   logSync('拉取本地正在显示的周：' + y + '/W' + w + '...', 'info');
   syncClient.pullWeek(y, w).then(function(r) {
     if (r.applied) {
-      logSync('✓ 拉取成功，已覆盖本地数据', 'ok');
+      logSync('✓ 拉取成功，已更新本地数据', 'ok');
       renderAll();
-    } else {
+    } else if (r.reason === 'week not on server') {
       logSync('· 服务器还没有该周的数据（404），本地未变动', 'info');
+    } else {
+      logSync('· 数据已是最新，无需更新（服务端与本地一致）', 'info');
     }
     updateSyncStatusUI();
   }).catch(function(err) {

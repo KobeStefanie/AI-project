@@ -110,7 +110,41 @@ node sync-server.js         # 同步服务：HTTP 6372 + HTTPS 6444
 ## 开发注意事项
 
 - 修改 `app-core.js` 的数据存取逻辑后，需同步检查 `sync-server.js` 的 `mergeChanges` 是否也需要更新对应字段
-- Service Worker 版本号（`CACHE_NAME`）在每次发布前递增，配合 `app.js` 中的 `EXPECTED_CACHE_NAME` 做版本自检
+- **Service Worker 版本号同步**：修改 `service-worker.js` 的 `CACHE_NAME` 时，**必须同步修改** `app.js` 中的 `EXPECTED_CACHE_NAME`，否则 3 秒版本自检发现不匹配会触发 `window.location.reload()` 无限循环
 - 手机端仅红框内（关键事项区 + 日程区）可编辑，统计/校验/明细区只读自动计算
 - 桌面端周配置（QW 名称、GFP 名称、起始时间、标准数）由 Windows 端确认，手机端只读共享
 - 颜色规则：HTML 用 CSS class（`cat-rest`/`cat-qw`/`cat-gfp`/`cat-proc`/`cat-mw`），Excel 导出直接写 RGB 值
+- **iOS 同步协议**（v2.13.2 修正）：iOS 不再强制 HTTP。页面用 HTTPS 访问时同步也走 HTTPS 6444 端口，避免 Mixed Content 阻塞。`getEffectiveProtocol()` 已改为跟随页面协议，新增网络请求时保持此逻辑
+- **新周配置继承**：`getConfig()` 在新周无配置时会自动从上一周继承并保存，无需用户手动复制
+- **心跳自动拉取**：30s 心跳 ping `/info` 后会自动 pull 当前周数据（v2.13.1），作为 WebSocket 断开时的兜底
+- **拉取数据变化判断**：`_applyServerWeekToLocal` 通过 `serverWeekUpdatedAt` 快速跳过无变化数据，返回 `false` 时不触发 UI 刷新，避免页面频繁重绘
+- **Cache-Control 与 SW 的互斥**（v2.13.2 重要教训）：`Cache-Control: no-store` 会阻止 Service Worker Cache API 存储响应（iOS Safari 严格遵守）。服务器必须用 `public, max-age=0` 才能让 SW 缓存正常工作。SW 中 `sanitizeForCache()` 额外剥离限制性头以防万一
+
+## 常见问题排查
+
+### 同步不工作
+1. 确认两个服务器都在运行（`netstat -ano | grep 6372`）
+2. 确认同步面板「启用局域网同步」已勾选并保存
+3. 确认「尝试 URL」显示正确的地址（桌面 `http://127.0.0.1:6372`，iPhone 自动跟随页面协议：HTTPS 页面走 `https://<LAN IP>:6444`）
+4. **先清 Service Worker 缓存**（`sw-cleanup.html` 或 DevTools Unregister），否则旧代码可能还在运行
+5. 检查服务端数据：`curl http://127.0.0.1:6372/weeks`
+6. 检查 `sync-data/` 目录下 JSON 文件是否有数据
+7. **iPhone Mixed Content**：如果页面 HTTPS 但同步走 HTTP，Safari 会阻止——确保 `getEffectiveProtocol()` 跟随页面协议（v2.13.2 已修复）
+
+### 页面频繁刷新
+- Service Worker `CACHE_NAME` 与 `EXPECTED_CACHE_NAME` 不一致 → 3 秒自检强制 reload
+- 心跳拉取总是触发 `renderAll` → 检查 `_applyServerWeekToLocal` 是否正确返回 `false`
+
+### 二维码不显示
+- 确认 `src/qrcode-generator.js` 存在（v2.13.1 已本地化，不依赖 CDN）
+
+### iPhone 离线打不开
+1. 检查 `Cache-Control` 响应头：必须是 `public, max-age=0` 或类似允许缓存的头，**绝不能**是 `no-store`
+2. 确认 SW 已注册且版本匹配（`CACHE_NAME` = `EXPECTED_CACHE_NAME`）
+3. 确认 SW install 阶段缓存了 HTML 文件（检查 `Promise.allSettled` 结果）
+4. 用 Safari Web Inspector 查看 Cache Storage 是否有 `time-planner-vXX` 条目
+5. **先在线访问一次并下拉刷新**，让 SW 填充缓存，再切飞行模式测试
+
+### iPhone 同步面板秒关
+- Service Worker 无限重载循环 → 用 `sw-cleanup.html` 清理
+- 心跳频繁触发 `renderAll` → 检查数据变化判断逻辑

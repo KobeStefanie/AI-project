@@ -5,6 +5,8 @@
 - [技能存储规范](skills-storage-rules.md) — 技能安装后存储位置、文件命名、0-config规则维护
 - [自动打开预览](auto-open-preview.md) — 静态 HTML 预览文件生成后自动浏览器打开
 - [灵感收集器](inspiration-collector.md) — 跨端灵感捕获与整理项目，PLAN 阶段，执行前需确认
+- [Git 自动推送 GitHub](git-auto-push-github.md) — 每次 commit 后 post-commit hook 自动推送到 GitHub
 - [iOS PWA 限制与应对](ios-pwa-limitations.md) — iOS 18.2 自签 HTTPS + 私网的书签存储隔离、HTTP 数据不持久化、默认浏览器陷阱及完整应对方案
+- [时间管理助手同步要点](time-planner-sync-ios.md) — 同步架构、iOS 自签证书限制、SW 缓存陷阱、调试排查口诀
 - [心理咨询-S1](psych-counseling-s1.md) — D:\AI-项目\4-心理咨询-S1\，初始搭建阶段
 - [几米创作](jimmy-creation.md) — D:\AI-项目\5-几米创作\，初始搭建阶段

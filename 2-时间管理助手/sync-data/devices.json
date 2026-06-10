@@ -1,20 +1,20 @@
 {
   "devices": [
     {
-      "id": "ff27ab40-b050-411a-af1c-39a9790c4303",
-      "name": "手机",
-      "platform": "ios",
-      "token": "tok-2ae56feb0aa40664b8003f7f937b39ca",
-      "boundAt": 1780058976348,
-      "lastSyncAt": 1780058976348
-    },
-    {
       "id": "9f0a67c3-3df9-447d-bfbb-af3a70ecbbb7",
       "name": "手机",
       "platform": "android",
       "token": "tok-1da62b367495c42d31ea84c1810312e7",
       "boundAt": 1780065910270,
       "lastSyncAt": 1780065910270
+    },
+    {
+      "id": "122e5910-4eda-4b17-9040-fb53108decbc",
+      "name": "手机",
+      "platform": "ios",
+      "token": "tok-3541d7627e8cd3ac2f7093ce71261d84",
+      "boundAt": 1780315885838,
+      "lastSyncAt": 1780315885838
     }
   ]
 }
