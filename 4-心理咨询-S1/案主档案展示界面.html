@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>案主档案浏览 - 展示界面</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<style>
+  body { font-family: "Microsoft YaHei","PingFang SC",sans-serif; background:#F1F5F9; }
+  .client-card {
+    background:white; border-radius:10px; padding:14px; cursor:pointer;
+    border:2px solid transparent; transition:all .15s;
+  }
+  .client-card:hover { border-color:#93C5FD; background:#F8FAFC; }
+  .client-card.active { border-color:#2563EB; background:#EFF6FF; }
+  .stage-card {
+    background:white; border-radius:8px; border:1px solid #E5E7EB; overflow:hidden;
+  }
+  .stage-header {
+    padding:12px 16px; font-weight:700; font-size:14px; cursor:pointer;
+    display:flex; align-items:center; justify-content:space-between;
+    transition:background .15s;
+  }
+  .stage-header:hover { background:#F9FAFB; }
+  .session-row {
+    display:flex; align-items:center; gap:10px; padding:10px 16px;
+    border-bottom:1px solid #F3F4F6; cursor:pointer; font-size:13px;
+    transition:background .1s;
+  }
+  .session-row:hover { background:#EFF6FF; }
+  .session-row:last-child { border-bottom:none; }
+  .session-num {
+    background:#2563EB; color:white; width:28px; height:28px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;
+    flex-shrink:0;
+  }
+  .tag {
+    display:inline-block; padding:2px 8px; border-radius:9999px; font-size:10px; font-weight:700;
+    letter-spacing:.5px;
+  }
+  .tag-green { background:#D1FAE5; color:#065F46; }
+  .tag-blue { background:#DBEAFE; color:#1E40AF; }
+  .tag-yellow { background:#FEF3C7; color:#92400E; }
+  .tag-red { background:#FEE2E2; color:#991B1B; }
+  .tag-purple { background:#EDE9FE; color:#5B21B6; }
+  .timeline-dot {
+    width:10px; height:10px; border-radius:50%; flex-shrink:0;
+    border:2px solid white; box-shadow:0 0 0 2px #2563EB;
+  }
+  .modal-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:50;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .modal {
+    background:white; border-radius:12px; max-width:800px; width:90%; max-height:85vh;
+    overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.3);
+  }
+  .search-input:focus { outline:none; box-shadow:0 0 0 3px rgba(37,99,235,.15); }
+</style>
+</head>
+<body class="h-screen flex flex-col">
+
+<!-- ====== 顶部导航 ====== -->
+<header class="bg-white border-b px-6 py-3 flex items-center justify-between shrink-0">
+  <div class="flex items-center gap-3">
+    <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#2563EB,#7C3AED);display:flex;align-items:center;justify-content:center;">
+      <i class="fa fa-folder-open" style="color:white;font-size:18px;"></i>
+    </div>
+    <div>
+      <div class="font-bold text-gray-800">案主档案库</div>
+      <div class="text-xs text-gray-500">共 12 位案主 · 最后更新 2026-06-16</div>
+    </div>
+  </div>
+  <div class="flex items-center gap-3">
+    <input type="text" placeholder="搜索案主 / 标签..." class="search-input border rounded-lg px-3 py-2 text-sm w-56" id="searchInput">
+    <button class="bg-blue-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-blue-700">
+      <i class="fa fa-plus"></i> 新案主
+    </button>
+  </div>
+</header>
+
+<!-- ====== 主体 ====== -->
+<div class="flex flex-1 overflow-hidden">
+
+  <!-- 左侧：案主列表 -->
+  <aside class="w-72 bg-white border-r overflow-y-auto shrink-0" id="clientList">
+    <div class="p-3 border-b text-xs font-semibold text-gray-500 uppercase tracking-wider">进行中</div>
+
+    <!-- 案主1 -->
+    <div class="client-card mx-3 my-2 active" data-client="zhang" onclick="selectClient(this,'zhang')">
+      <div class="flex items-center justify-between mb-1">
+        <span class="font-semibold text-sm">张XX</span>
+        <span class="tag tag-green">进行中</span>
+      </div>
+      <div class="text-xs text-gray-500 mb-1">阶段3 · 职业规划</div>
+      <div class="flex gap-1 flex-wrap">
+        <span class="tag tag-blue">婆媳关系</span>
+        <span class="tag tag-yellow">焦虑症</span>
+        <span class="tag tag-purple">自我成长</span>
+      </div>
+      <div class="text-xs text-gray-400 mt-1">共45次 · 上次 03/20</div>
+    </div>
+
+    <!-- 案主2 -->
+    <div class="client-card mx-3 my-2" data-client="li" onclick="selectClient(this,'li')">
+      <div class="flex items-center justify-between mb-1">
+        <span class="font-semibold text-sm">李XX</span>
+        <span class="tag tag-yellow">进行中</span>
+      </div>
+      <div class="text-xs text-gray-500 mb-1">阶段1 · 出轨创伤+抑郁症</div>
+      <div class="flex gap-1 flex-wrap">
+        <span class="tag tag-blue">出轨</span>
+        <span class="tag tag-red">抑郁症</span>
+      </div>
+      <div class="text-xs text-gray-400 mt-1">共8次 · 上次 07/03</div>
+    </div>
+
+    <!-- 案主3 -->
+    <div class="client-card mx-3 my-2" data-client="wang" onclick="selectClient(this,'wang')">
+      <div class="flex items-center justify-between mb-1">
+        <span class="font-semibold text-sm">王XX</span>
+        <span class="tag tag-green">进行中</span>
+      </div>
+      <div class="text-xs text-gray-500 mb-1">阶段1 · 职场霸凌+PTSD</div>
+      <div class="flex gap-1 flex-wrap">
+        <span class="tag tag-blue">职场霸凌</span>
+        <span class="tag tag-yellow">PTSD</span>
+      </div>
+      <div class="text-xs text-gray-400 mt-1">共3次 · 上次 06/24</div>
+    </div>
+
+    <div class="p-3 border-b text-xs font-semibold text-gray-500 uppercase tracking-wider mt-2">已结案</div>
+
+    <!-- 案主4 -->
+    <div class="client-card mx-3 my-2" data-client="zhao" onclick="selectClient(this,'zhao')" style="opacity:.7;">
+      <div class="flex items-center justify-between mb-1">
+        <span class="font-semibold text-sm">赵XX</span>
+        <span class="tag tag-purple">已结案</span>
+      </div>
+      <div class="text-xs text-gray-500 mb-1">阶段1 · 婆媳关系+焦虑症</div>
+      <div class="flex gap-1 flex-wrap">
+        <span class="tag tag-blue">婆媳关系</span>
+        <span class="tag tag-yellow">焦虑症</span>
+      </div>
+      <div class="text-xs text-gray-400 mt-1">共15次 · 结案 2026.08</div>
+    </div>
+
+    <!-- 案主5 -->
+    <div class="client-card mx-3 my-2" data-client="sun" onclick="selectClient(this,'sun')" style="opacity:.7;">
+      <div class="flex items-center justify-between mb-1">
+        <span class="font-semibold text-sm">孙XX</span>
+        <span class="tag tag-purple">已结案</span>
+      </div>
+      <div class="text-xs text-gray-500 mb-1">阶段1 · 出轨创伤</div>
+      <div class="flex gap-1 flex-wrap">
+        <span class="tag tag-blue">出轨</span>
+      </div>
+      <div class="text-xs text-gray-400 mt-1">共20次 · 结案 2026.04</div>
+    </div>
+  </aside>
+
+  <!-- 右侧：案主详情 -->
+  <main class="flex-1 overflow-y-auto p-6" id="clientDetail">
+
+    <!-- ====== 张XX 的详情（默认展示） ====== -->
+    <div id="detail-zhang">
+
+      <!-- 案主信息头部 -->
+      <div class="bg-white rounded-xl shadow-sm border p-6 mb-4">
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+              张XX
+              <span class="tag tag-green text-sm">进行中</span>
+            </h1>
+            <div class="text-sm text-gray-500 mt-1">女 · 35岁 · 公司财务 · 已婚（一子8岁）· 首次接访 2026-06-14</div>
+          </div>
+          <div class="flex gap-2">
+            <button class="border rounded-lg px-3 py-1.5 text-sm hover:bg-gray-50">
+              <i class="fa fa-pencil"></i> 编辑信息
+            </button>
+            <button class="bg-blue-600 text-white rounded-lg px-3 py-1.5 text-sm hover:bg-blue-700">
+              <i class="fa fa-plus"></i> 新建接访
+            </button>
+          </div>
+        </div>
+
+        <!-- 标签 -->
+        <div class="flex gap-2 flex-wrap mb-3">
+          <span class="tag tag-blue">家庭关系-婆媳</span>
+          <span class="tag tag-yellow">焦虑障碍</span>
+          <span class="tag tag-purple">自我成长</span>
+          <span class="tag tag-blue">职业发展</span>
+          <span class="tag tag-green">长期咨询</span>
+          <span class="tag tag-blue">技术-CBT</span>
+          <span class="tag tag-purple">技术-存在主义</span>
+        </div>
+
+        <!-- 重要备注 -->
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 text-sm text-yellow-900">
+          <strong>⚠ 备注：</strong>案主对婆婆有强烈情绪，需小心处理。丈夫支持咨询但不愿参与。经济压力敏感话题。有轻微自伤史（抓挠手臂），已控制。
+        </div>
+      </div>
+
+      <!-- 治疗阶段概览 -->
+      <div class="bg-white rounded-xl shadow-sm border mb-4 overflow-hidden">
+        <div class="px-6 py-4 border-b bg-gray-50">
+          <h2 class="font-bold text-gray-700">治疗阶段概览</h2>
+        </div>
+
+        <!-- 阶段3（当前） -->
+        <div class="stage-card mx-4 my-3" style="border-left:4px solid #10B981;">
+          <div class="stage-header" style="background:#F0FDF4;" onclick="toggleSessions(this)">
+            <div>
+              <span class="tag tag-green" style="font-size:11px;">当前阶段</span>
+              <span class="font-bold ml-2">阶段3：职业规划</span>
+              <span class="text-xs text-gray-500 ml-2">2027.01 - 至今</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm text-gray-500">
+              <span>已10次</span>
+              <span>|</span>
+              <span>生涯咨询 + CBT</span>
+              <i class="fa fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="sessions">
+            <div class="session-row" onclick="viewSession('张XX','阶段3',45,'2027-03-20')">
+              <div class="session-num">45</div>
+              <div class="flex-1">
+                <div class="font-medium">第45次接访</div>
+                <div class="text-xs text-gray-500">2027-03-20 · 56分钟 · 面询</div>
+              </div>
+              <div class="flex gap-1 flex-wrap">
+                <span class="tag tag-blue">CBT</span>
+                <span class="tag tag-green">轻度</span>
+              </div>
+              <span class="text-xs text-gray-400">最新</span>
+            </div>
+            <div class="session-row" onclick="viewSession('张XX','阶段3',44,'2027-03-13')">
+              <div class="session-num">44</div>
+              <div class="flex-1">
+                <div class="font-medium">第44次接访</div>
+                <div class="text-xs text-gray-500">2027-03-13 · 50分钟 · 面询</div>
+              </div>
+              <div class="flex gap-1 flex-wrap">
+                <span class="tag tag-purple">存在主义</span>
+                <span class="tag tag-green">轻度</span>
+              </div>
+            </div>
+            <div class="session-row" onclick="viewSession('张XX','阶段3',43,'2027-03-06')">
+              <div class="session-num">43</div>
+              <div class="flex-1">
+                <div class="font-medium">第43次接访</div>
+                <div class="text-xs text-gray-500">2027-03-06 · 55分钟 · 面询</div>
+              </div>
+              <div class="flex gap-1 flex-wrap">
+                <span class="tag tag-blue">CBT</span>
+                <span class="tag tag-green">轻度</span>
+              </div>
+            </div>
+            <div class="px-4 py-2 text-xs text-gray-400 text-center cursor-pointer hover:text-blue-600">
+              ... 展开更多（共10次记录）
+            </div>
+          </div>
+        </div>
+
+        <!-- 阶段2 -->
+        <div class="stage-card mx-4 my-3" style="border-left:4px solid #8B5CF6;">
+          <div class="stage-header" style="background:#F5F3FF;" onclick="toggleSessions(this)">
+            <div>
+              <span class="font-bold">阶段2：自我成长</span>
+              <span class="text-xs text-gray-500 ml-2">2026.09 - 2026.12</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm text-gray-500">
+              <span>20次</span>
+              <span>|</span>
+              <span>存在主义 + 人本主义</span>
+              <span class="tag tag-purple text-xs">已结案</span>
+              <i class="fa fa-chevron-down"></i>
+            </div>
+          </div>
+          <div class="sessions" style="display:none;">
+            <div class="session-row" onclick="viewSession('张XX','阶段2',35,'2026-12-15')">
+              <div class="session-num">35</div>
+              <div class="flex-1">
+                <div class="font-medium">第35次接访（阶段2最后一次）</div>
+                <div class="text-xs text-gray-500">2026-12-15 · 52分钟 · 面询</div>
+              </div>
+              <div class="flex gap-1 flex-wrap">
+                <span class="tag tag-purple">存在主义</span>
+                <span class="tag tag-green">轻度</span>
+              </div>
+            </div>
+            <div class="session-row" onclick="viewSession('张XX','阶段2',16,'2026-09-05')">
+              <div class="session-num">16</div>
+              <div class="flex-1">
+                <div class="font-medium">第16次接访（阶段2第一次）</div>
+                <div class="text-xs text-gray-500">2026-09-05 · 50分钟 · 面询</div>
+              </div>
+              <div class="flex gap-1 flex-wrap">
+                <span class="tag tag-purple">存在主义</span>
+                <span class="tag tag-yellow">中度</span>
+              </div>
+            </div>
+            <div class="px-4 py-2 text-xs text-gray-400 text-center cursor-pointer hover:text-blue-600">
+              ... 展开更多（共20次记录）
+            </div>
+            <!-- 阶段总结 -->
+            <div class="px-4 py-2 text-xs bg-purple-50 mx-3 mb-2 rounded cursor-pointer hover:bg-purple-100" onclick="viewStageSummary('张XX','阶段2')">
+              📝 阶段总结.md — 点击查看
+            </div>
+          </div>
+        </div>
+
+        <!-- 阶段1 -->
+        <div class="stage-card mx-4 my-3" style="border-left:4px solid #3B82F6;">
+          <div class="stage-header" style="background:#EFF6FF;" onclick="toggleSessions(this)">
+            <div>
+              <span class="font-bold">阶段1：婆媳关系+焦虑症</span>
+              <span class="text-xs text-gray-500 ml-2">2026.06 - 2026.08</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm text-gray-500">
+              <span>15次</span>
+              <span>|</span>
+              <span>家庭治疗 + CBT</span>
+              <span class="tag tag-purple text-xs">已结案</span>
+              <i class="fa fa-chevron-right"></i>
+            </div>
+          </div>
+          <div class="sessions" style="display:none;">
+            <div class="session-row" onclick="viewSession('张XX','阶段1',15,'2026-08-30')">
+              <div class="session-num">15</div>
+              <div class="flex-1">
+                <div class="font-medium">第15次接访（阶段1最后一次）</div>
+                <div class="text-xs text-gray-500">2026-08-30 · 48分钟 · 面询</div>
+              </div>
+              <div class="flex gap-1 flex-wrap">
+                <span class="tag tag-blue">CBT</span>
+                <span class="tag tag-green">轻度</span>
+              </div>
+            </div>
+            <div class="session-row" onclick="viewSession('张XX','阶段1',1,'2026-06-14')">
+              <div class="session-num">1</div>
+              <div class="flex-1">
+                <div class="font-medium">第1次接访（首次）</div>
+                <div class="text-xs text-gray-500">2026-06-14 · 52分钟 · 希望热线</div>
+              </div>
+              <div class="flex gap-1 flex-wrap">
+                <span class="tag tag-blue">家庭治疗</span>
+                <span class="tag tag-yellow">中度</span>
+              </div>
+            </div>
+            <div class="px-4 py-2 text-xs text-gray-400 text-center cursor-pointer hover:text-blue-600">
+              ... 展开更多（共15次记录）
+            </div>
+            <div class="px-4 py-2 text-xs bg-blue-50 mx-3 mb-2 rounded cursor-pointer hover:bg-blue-100" onclick="viewStageSummary('张XX','阶段1')">
+              📝 阶段总结.md — 点击查看
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 治疗轨迹时间线 -->
+      <div class="bg-white rounded-xl shadow-sm border p-6">
+        <h2 class="font-bold text-gray-700 mb-4">📈 危机等级变化</h2>
+        <div class="flex items-end gap-1" style="height:120px;">
+          <div style="flex:1;text-align:center;">
+            <div style="height:80px;background:linear-gradient(to top,#FEF3C7,#FEF9C3);border-radius:4px 4px 0 0;margin:0 2px;"></div>
+            <div class="text-xs text-gray-500 mt-1">06月</div>
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div style="height:50px;background:linear-gradient(to top,#D1FAE5,#BBF7D0);border-radius:4px 4px 0 0;margin:0 2px;"></div>
+            <div class="text-xs text-gray-500 mt-1">07月</div>
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div style="height:35px;background:linear-gradient(to top,#D1FAE5,#BBF7D0);border-radius:4px 4px 0 0;margin:0 2px;"></div>
+            <div class="text-xs text-gray-500 mt-1">08月</div>
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div style="height:25px;background:#D1FAE5;border-radius:4px 4px 0 0;margin:0 2px;"></div>
+            <div class="text-xs text-gray-500 mt-1">09月</div>
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div style="height:20px;background:#D1FAE5;border-radius:4px 4px 0 0;margin:0 2px;"></div>
+            <div class="text-xs text-gray-500 mt-1">10月</div>
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div style="height:15px;background:#D1FAE5;border-radius:4px 4px 0 0;margin:0 2px;"></div>
+            <div class="text-xs text-gray-500 mt-1">11月</div>
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div style="height:10px;background:#D1FAE5;border-radius:4px 4px 0 0;margin:0 2px;"></div>
+            <div class="text-xs text-gray-500 mt-1">12月</div>
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div style="height:10px;background:#D1FAE5;border-radius:4px 4px 0 0;margin:0 2px;"></div>
+            <div class="text-xs text-gray-500 mt-1">01月</div>
+          </div>
+        </div>
+        <div class="flex justify-between text-xs text-gray-500 mt-2">
+          <span>中度(三等)</span>
+          <span>轻度(一等)</span>
+          <span>轻度(一等)</span>
+          <span>轻度(二等)</span>
+          <span>轻度(一等)</span>
+          <span>无危机</span>
+          <span>无危机</span>
+          <span>无危机</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== 其他案主详情（初始隐藏） ====== -->
+    <div id="detail-li" style="display:none;">
+      <div class="bg-white rounded-xl shadow-sm border p-6">
+        <h1 class="text-2xl font-bold text-gray-800">李XX</h1>
+        <div class="text-sm text-gray-500 mt-1">女 · 42岁 · 教师 · 已婚（二女5岁/8岁）· 首次接访 2026-05-15</div>
+        <div class="flex gap-2 flex-wrap mt-3">
+          <span class="tag tag-blue">家庭关系-出轨</span>
+          <span class="tag tag-red">抑郁症-中度</span>
+          <span class="tag tag-blue">技术-EFT</span>
+          <span class="tag tag-blue">技术-CBT</span>
+        </div>
+        <div class="mt-4 text-sm text-gray-700">
+          <strong>近期进展：</strong>已8次，情绪稳定中，正考虑是否离婚。危机等级从重度降至中度。
+        </div>
+      </div>
+    </div>
+
+    <div id="detail-wang" style="display:none;">
+      <div class="bg-white rounded-xl shadow-sm border p-6">
+        <h1 class="text-2xl font-bold text-gray-800">王XX</h1>
+        <div class="text-sm text-gray-500 mt-1">男 · 28岁 · 程序员 · 未婚 · 首次接访 2026-06-10</div>
+        <div class="flex gap-2 flex-wrap mt-3">
+          <span class="tag tag-blue">人际关系-职场霸凌</span>
+          <span class="tag tag-yellow">创伤-PTSD</span>
+          <span class="tag tag-blue">技术-EMDR</span>
+          <span class="tag tag-green">技术-CBT</span>
+        </div>
+        <div class="mt-4 text-sm text-gray-700">
+          <strong>近期进展：</strong>已3次，仍在回顾创伤事件阶段，EMDR准备中。
+        </div>
+      </div>
+    </div>
+
+    <div id="detail-zhao" style="display:none;">
+      <div class="bg-white rounded-xl shadow-sm border p-6">
+        <h1 class="text-2xl font-bold text-gray-800">赵XX</h1>
+        <div class="text-sm text-gray-500 mt-1">女 · 38岁 · 全职妈妈 · 已婚（一子12岁）· 首次接访 2026-06-01</div>
+        <div class="flex gap-2 flex-wrap mt-3">
+          <span class="tag tag-blue">家庭关系-婆媳</span>
+          <span class="tag tag-yellow">焦虑障碍</span>
+        </div>
+        <div class="mt-4 text-sm text-gray-700">
+          <strong>结案总结：</strong>共15次，焦虑症状缓解70%，婆媳关系改善。案主转入自我探索阶段。
+        </div>
+      </div>
+    </div>
+
+    <div id="detail-sun" style="display:none;">
+      <div class="bg-white rounded-xl shadow-sm border p-6">
+        <h1 class="text-2xl font-bold text-gray-800">孙XX</h1>
+        <div class="text-sm text-gray-500 mt-1">男 · 45岁 · 企业高管 · 已婚（无子女）· 首次接访 2025-11-10</div>
+        <div class="flex gap-2 flex-wrap mt-3">
+          <span class="tag tag-blue">家庭关系-出轨</span>
+        </div>
+        <div class="mt-4 text-sm text-gray-700">
+          <strong>结案总结：</strong>共20次，完成夫妻治疗。双方决定继续婚姻，关系修复进展良好。
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ====== 接访记录弹窗 ====== -->
+<div id="sessionModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeSessionModal()">
+  <div class="modal" id="sessionModalContent">
+  </div>
+</div>
+
+<script>
+// 切换案主
+function selectClient(el, id) {
+  document.querySelectorAll('.client-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('[id^="detail-"]').forEach(d => d.style.display='none');
+  const detail = document.getElementById('detail-'+id);
+  if (detail) detail.style.display='block';
+}
+
+// 展开/收起阶段
+function toggleSessions(el) {
+  const sessions = el.nextElementSibling;
+  const icon = el.querySelector('.fa');
+  if (sessions.style.display === 'none') {
+    sessions.style.display = 'block';
+    icon.classList.remove('fa-chevron-right');
+    icon.classList.add('fa-chevron-down');
+  } else {
+    sessions.style.display = 'none';
+    icon.classList.remove('fa-chevron-down');
+    icon.classList.add('fa-chevron-right');
+  }
+}
+
+// 查看单次接访记录
+function viewSession(client, stage, num, date) {
+  const modal = document.getElementById('sessionModal');
+  const content = document.getElementById('sessionModalContent');
+  content.innerHTML = `
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold">${client} · 第${num}次接访</h2>
+        <button onclick="closeSessionModal()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+      </div>
+      <div class="text-sm text-gray-500 mb-4">${stage} · ${date} · 面询</div>
+
+      <!-- 基本信息 -->
+      <div class="grid grid-cols-4 gap-3 mb-4 text-sm">
+        <div><span class="text-gray-500">日期：</span>${date}</div>
+        <div><span class="text-gray-500">接通：</span>14:00</div>
+        <div><span class="text-gray-500">挂断：</span>14:50</div>
+        <div><span class="text-gray-500">时长：</span>50分钟</div>
+      </div>
+
+      <!-- 上次回顾 -->
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+        <div class="font-semibold text-yellow-900 mb-1 text-sm">上次回顾（第${num-1}次 · ${date.replace(/\d+$/, parseInt(date.split('-')[2])-7)})</div>
+        <div class="text-sm text-yellow-800">
+          上次主要内容：婆媳沟通中练习了界限设定技巧，反馈效果良好。案主报告本周与婆婆发生两次小冲突，但使用了"暂停法"控制情绪。焦虑量表从7分降至5分。
+          <br>本次目标：继续巩固界限设定技巧，讨论工作中的焦虑泛化问题。
+        </div>
+      </div>
+
+      <!-- 大观量化 -->
+      <div class="border rounded-lg p-4 mb-4">
+        <div class="font-semibold text-blue-900 mb-3 text-sm">🟦 大观量化</div>
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div><span class="text-gray-500">危机等级：</span><span class="tag tag-green">一等·轻度 G</span></div>
+          <div><span class="text-gray-500">求助等级：</span><span class="tag tag-blue">D 行为赦免</span></div>
+          <div><span class="text-gray-500">六变三托：</span>无信号</div>
+          <div><span class="text-gray-500">五法宝：</span>一停 ✓ 二看 ✓ 三听 ✓ 四陪 ✓ 五治疗 ✓</div>
+        </div>
+        <div class="mt-2 text-sm"><span class="text-gray-500">使用技术：</span>同步同理心、搬楼层、CBT认知重构</div>
+        <div class="mt-2 text-sm"><span class="text-gray-500">SOR转码：</span>S(婆婆批评育儿方式) → O("她永远觉得我不够好") → R(愤怒、回避)</div>
+      </div>
+
+      <!-- CBT 分析 -->
+      <div class="border rounded-lg p-4 mb-4" style="border-color:#FDE68A;">
+        <div class="font-semibold text-yellow-900 mb-3 text-sm">🟨 CBT 分析</div>
+        <div class="text-sm"><span class="text-gray-500">自动思维：</span>"我不够好"→"她总是看扁我"</div>
+        <div class="text-sm mt-1"><span class="text-gray-500">认知歪曲：</span>过度概括、个人化</div>
+        <div class="text-sm mt-1"><span class="text-gray-500">重构点：</span>"她批评这次不等于她永远否定我"</div>
+      </div>
+
+      <!-- 转折之语 -->
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+        <div class="font-semibold text-red-900 mb-1 text-sm">⭐ 转折之语</div>
+        <div class="text-sm text-red-800 italic">
+          "其实她说的也不全错，我确实对孩子的作业管得少了……但这不是因为我不好，是因为我最近太累了。"
+        </div>
+      </div>
+
+      <!-- 策略反思 -->
+      <div class="border rounded-lg p-4 mb-4">
+        <div class="font-semibold text-green-900 mb-3 text-sm">🟩 策略反思</div>
+        <div class="text-sm"><span class="text-gray-500">自我状态：</span>良好，本次接访后无明显情绪波动</div>
+        <div class="text-sm mt-1"><span class="text-gray-500">下次目标：</span>探索"累"的根源——工作压力还是完美主义</div>
+      </div>
+    </div>
+  `;
+  modal.style.display = 'flex';
+}
+
+function closeSessionModal() {
+  document.getElementById('sessionModal').style.display = 'none';
+}
+
+// 查看阶段总结
+function viewStageSummary(client, stage) {
+  const modal = document.getElementById('sessionModal');
+  const content = document.getElementById('sessionModalContent');
+  content.innerHTML = `
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold">${client} · ${stage}总结</h2>
+        <button onclick="closeSessionModal()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+      </div>
+      <div class="text-sm space-y-3">
+        <div><strong>治疗目标：</strong>缓解焦虑症状、改善婆媳关系、建立界限</div>
+        <div><strong>治疗取向：</strong>家庭治疗 + CBT认知行为治疗</div>
+        <div><strong>次数：</strong>15次</div>
+        <div class="border-t pt-3 mt-3">
+          <strong>治疗轨迹：</strong>
+          <p class="mt-1">前期（1-5次）：建立关系，充分倾听。评估危机等级：中度。案主主要宣泄情绪，归罪婆婆。</p>
+          <p class="mt-1">中期（6-10次）：认知重构开始生效。案主开始觉察自己的完美主义，尝试设定界限但常失败。</p>
+          <p class="mt-1">后期（11-15次）：界限设定成功次数增加，焦虑症状明显缓解，危机等级降至轻度。案主提出新需求："我发现自己总是在满足别人"。</p>
+        </div>
+        <div class="border-t pt-3 mt-3">
+          <strong>结果评估：</strong>✅ 焦虑缓解70% ✅ 关系改善 ✅ 掌握基础情绪调节技术
+        </div>
+        <div class="border-t pt-3 mt-3">
+          <strong>咨询师反省：</strong>前期过度同情可能强化了案主的"受害者"认同。中期转向认知重构后进展明显。
+        </div>
+      </div>
+    </div>
+  `;
+  modal.style.display = 'flex';
+}
+
+// 搜索功能
+document.getElementById('searchInput').addEventListener('input', function(e) {
+  const query = e.target.value.toLowerCase();
+  document.querySelectorAll('.client-card').forEach(card => {
+    const text = card.textContent.toLowerCase();
+    card.style.display = text.includes(query) ? '' : 'none';
+  });
+});
+</script>
+</body>
+</html>

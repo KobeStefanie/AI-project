@@ -10,3 +10,7 @@
 - [时间管理助手同步要点](time-planner-sync-ios.md) — 同步架构、iOS 自签证书限制、SW 缓存陷阱、调试排查口诀
 - [心理咨询-S1](psych-counseling-s1.md) — D:\AI-项目\4-心理咨询-S1\，初始搭建阶段
 - [几米创作](jimmy-creation.md) — D:\AI-项目\5-几米创作\，初始搭建阶段
+- [音频转录指南](audio-transcription-guide.md) — FunASR SenseVoiceSmall + ct-punc 第一方案，faster-whisper 备选
+- [Office 文件读取策略](office-file-reading-strategy.md) — Python 读 docx/pptx/xlsx + Node.js 生成 docx，PowerShell 兜底
+- [CatKingAI 优先使用](catkingai-preferred-api.md) — 自研 API 网关，默认首选，调用其他 API 需先征得同意
+- [Token 追踪系统紧急补救](token-tracker-rescue.md) — 代理服务器故障恢复、配置备份还原、API 配置紧急修复方案

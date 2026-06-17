@@ -614,6 +614,852 @@
       "code": 3.3,
       "updatedAt": 1781106480285,
       "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-10|23:30-0:00": {
+      "title": "研究心理学",
+      "code": 1.1,
+      "updatedAt": 1781126983513,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-10|0:00-0:30": {
+      "title": "研究心理学",
+      "code": 1.1,
+      "updatedAt": 1781126987608,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-10|0:30-1:00": {
+      "title": "研究心理学",
+      "code": 1.1,
+      "updatedAt": 1781126989157,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-10|1:00-1:30": {
+      "title": "研究心理学",
+      "code": 1.1,
+      "updatedAt": 1781126993343,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-10|1:30-2:00": {
+      "title": "吃面",
+      "code": 0,
+      "updatedAt": 1781126999299,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|9:00-9:30": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781163902241,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|9:30-10:00": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781163905775,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|10:00-10:30": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781163909215,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|10:30-11:00": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781163910765,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|11:00-11:30": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781163912527,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|11:30-12:00": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781163914326,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|12:00-12:30": {
+      "title": "睡懒觉",
+      "code": 3.1,
+      "updatedAt": 1781163926157,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|12:30-13:00": {
+      "title": "睡懒觉",
+      "code": 3.1,
+      "updatedAt": 1781163931710,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|13:00-13:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781163946946,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|13:30-14:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781163952144,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|14:00-14:30": {
+      "title": "出门",
+      "code": 0,
+      "updatedAt": 1781163961297,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|14:30-15:00": {
+      "title": "吃饭",
+      "code": 0,
+      "updatedAt": 1781163967669,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|15:00-15:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781163975365,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|15:30-16:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781164239045,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|16:00-16:30": {
+      "title": "买茶叶",
+      "code": 4,
+      "updatedAt": 1781185710803,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|16:30-17:00": {
+      "title": "买茶叶",
+      "code": 4,
+      "updatedAt": 1781185715592,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|17:00-17:30": {
+      "title": "闲鱼",
+      "code": 1.7,
+      "updatedAt": 1781185732271,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|17:30-18:00": {
+      "title": "闲鱼",
+      "code": 1.7,
+      "updatedAt": 1781185736167,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|18:00-18:30": {
+      "title": "闲鱼",
+      "code": 1.7,
+      "updatedAt": 1781185737715,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|18:30-19:00": {
+      "title": "闲鱼",
+      "code": 1.7,
+      "updatedAt": 1781185739435,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|19:00-19:30": {
+      "title": "出门",
+      "code": 0,
+      "updatedAt": 1781185749306,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|19:30-20:00": {
+      "title": "吃饭",
+      "code": 0,
+      "updatedAt": 1781185756896,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|20:00-20:30": {
+      "title": "回来",
+      "code": 0,
+      "updatedAt": 1781185763470,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|20:30-21:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781185770336,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|21:00-21:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781185773497,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|21:30-22:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781185774896,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|22:00-22:30": {
+      "title": "洗澡",
+      "code": 0,
+      "updatedAt": 1781202895360,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|22:30-23:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781202879345,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|23:00-23:30": {
+      "title": "案例-被Pc伤害的女的",
+      "code": 1.2,
+      "updatedAt": 1781202963193,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|23:30-0:00": {
+      "title": "案例-被Pc伤害的女的",
+      "code": 1.2,
+      "updatedAt": 1781202967974,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|0:00-0:30": {
+      "title": "豆督导",
+      "code": 1.2,
+      "updatedAt": 1781202991026,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|0:30-1:00": {
+      "title": "案例-不知如何安抚的悲伤",
+      "code": 1.2,
+      "updatedAt": 1781203034179,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|1:00-1:30": {
+      "title": "案例-不知如何安抚的悲伤",
+      "code": 1.2,
+      "updatedAt": 1781203038320,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|1:30-2:00": {
+      "title": "豆督导-存在主义",
+      "code": 1.2,
+      "updatedAt": 1781203058944,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|9:00-9:30": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781258495813,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|9:30-10:00": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781258499707,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|10:00-10:30": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781258501843,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|10:30-11:00": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781258503577,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|11:00-11:30": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781258505027,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|11:30-12:00": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781258506477,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|12:00-12:30": {
+      "title": "睡懒觉",
+      "code": 3.1,
+      "updatedAt": 1781258525417,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|12:30-13:00": {
+      "title": "睡懒觉",
+      "code": 3.1,
+      "updatedAt": 1781258529685,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|13:00-13:30": {
+      "title": "睡懒觉",
+      "code": 3.1,
+      "updatedAt": 1781258531285,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|13:30-14:00": {
+      "title": "睡懒觉",
+      "code": 3.1,
+      "updatedAt": 1781258533084,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|14:00-14:30": {
+      "title": "睡懒觉",
+      "code": 3.1,
+      "updatedAt": 1781258556515,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|14:30-15:00": {
+      "title": "洗漱",
+      "code": 0,
+      "updatedAt": 1781258553567,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|15:00-15:30": {
+      "title": "出门",
+      "code": 0,
+      "updatedAt": 1781258582464,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|15:30-16:00": {
+      "title": "吃饭",
+      "code": 0,
+      "updatedAt": 1781258590924,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|16:00-16:30": {
+      "title": "修眼镜",
+      "code": 4,
+      "updatedAt": 1781258604378,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|16:30-17:00": {
+      "title": "回家",
+      "code": 0,
+      "updatedAt": 1781258610791,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|17:00-17:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781258617246,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|17:30-18:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781258620806,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|18:00-18:30": {
+      "title": "履约到期通知书",
+      "code": 1.7,
+      "updatedAt": 1781266592150,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|18:30-19:00": {
+      "title": "履约到期通知书",
+      "code": 1.7,
+      "updatedAt": 1781266599198,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|19:00-19:30": {
+      "title": "履约到期通知书",
+      "code": 1.7,
+      "updatedAt": 1781266600833,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|19:30-20:00": {
+      "title": "履约到期通知书",
+      "code": 1.7,
+      "updatedAt": 1781266602750,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|20:00-20:30": {
+      "title": "吃饭",
+      "code": 0,
+      "updatedAt": 1781266608065,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|20:30-21:00": {
+      "title": "回来",
+      "code": 0,
+      "updatedAt": 1781274160662,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|21:00-21:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781274174453,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|21:30-22:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781274178576,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|22:00-22:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781274182597,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|22:30-23:00": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781274187883,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|23:00-23:30": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781274191122,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|23:30-0:00": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781274192606,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|0:00-0:30": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781274194788,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|0:30-1:00": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781274196480,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|1:00-1:30": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781274198798,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|1:30-2:00": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781274200631,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|9:00-9:30": {
+      "title": "债务小红书",
+      "code": 1.7,
+      "updatedAt": 1781318643444,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|9:30-10:00": {
+      "title": "债务小红书",
+      "code": 1.7,
+      "updatedAt": 1781318652826,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|10:00-10:30": {
+      "title": "心理咨询模拟",
+      "code": 1.2,
+      "updatedAt": 1781318671367,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|10:30-11:00": {
+      "title": "心理咨询模拟",
+      "code": 1.2,
+      "updatedAt": 1781318674883,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|11:00-11:30": {
+      "title": "睡懒觉",
+      "code": 3.1,
+      "updatedAt": 1781353562561,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|11:30-12:00": {
+      "title": "睡懒觉",
+      "code": 3.1,
+      "updatedAt": 1781353567176,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|12:00-12:30": {
+      "title": "睡懒觉",
+      "code": 3.1,
+      "updatedAt": 1781353569343,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|12:30-13:00": {
+      "title": "睡懒觉",
+      "code": 3.1,
+      "updatedAt": 1781353572876,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|13:00-13:30": {
+      "title": "出门",
+      "code": 0,
+      "updatedAt": 1781353596716,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|13:30-14:00": {
+      "title": "吃饭",
+      "code": 0,
+      "updatedAt": 1781353607643,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|14:00-14:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781353630431,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|14:30-15:00": {
+      "title": "Ai心理学",
+      "code": 1.2,
+      "updatedAt": 1781353857382,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|15:00-15:30": {
+      "title": "Ai心理学",
+      "code": 1.2,
+      "updatedAt": 1781353861038,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|15:30-16:00": {
+      "title": "Ai心理学",
+      "code": 1.2,
+      "updatedAt": 1781353862475,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|16:00-16:30": {
+      "title": "Ai心理学",
+      "code": 1.2,
+      "updatedAt": 1781353863910,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|16:30-17:00": {
+      "title": "Ai心理学",
+      "code": 1.2,
+      "updatedAt": 1781353872475,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|17:00-17:30": {
+      "title": "Ai心理学",
+      "code": 1.2,
+      "updatedAt": 1781353874780,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|17:30-18:00": {
+      "title": "Ai心理学",
+      "code": 1.2,
+      "updatedAt": 1781353877333,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|18:00-18:30": {
+      "title": "Ai心理学",
+      "code": 1.2,
+      "updatedAt": 1781353878917,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|18:30-19:00": {
+      "title": "Ai心理学",
+      "code": 1.2,
+      "updatedAt": 1781353924333,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|19:00-19:30": {
+      "title": "出门",
+      "code": 0,
+      "updatedAt": 1781353934819,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|19:30-20:00": {
+      "title": "吃饭",
+      "code": 0,
+      "updatedAt": 1781353930001,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|20:00-20:30": {
+      "title": "散步",
+      "code": 0,
+      "updatedAt": 1781353942356,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|20:30-21:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781364690326,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|21:00-21:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781364697943,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|21:30-22:00": {
+      "title": "Ai心理学",
+      "code": 1.2,
+      "updatedAt": 1781364711988,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|22:00-22:30": {
+      "title": "Ai心理学",
+      "code": 1.2,
+      "updatedAt": 1781364715340,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|22:30-23:00": {
+      "title": "Ai心理学",
+      "code": 1.2,
+      "updatedAt": 1781364717005,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|23:00-23:30": {
+      "title": "Ai心理学",
+      "code": 1.2,
+      "updatedAt": 1781364719140,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|23:30-0:00": {
+      "title": "Ai心理学",
+      "code": 1.2,
+      "updatedAt": 1781371451805,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|0:00-0:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781371447005,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|0:30-1:00": {
+      "title": "洗澡",
+      "code": 0,
+      "updatedAt": 1781371442034,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|1:00-1:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781371461653,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|1:30-2:00": {
+      "title": "看书",
+      "code": 1.3,
+      "updatedAt": 1781371478114,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|9:00-9:30": {
+      "title": "心理ai",
+      "code": 1.1,
+      "updatedAt": 1781410008380,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|9:30-10:00": {
+      "title": "心理ai",
+      "code": 1.1,
+      "updatedAt": 1781410012746,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|10:00-10:30": {
+      "title": "心理ai",
+      "code": 1.1,
+      "updatedAt": 1781410014495,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|10:30-11:00": {
+      "title": "心理ai",
+      "code": 1.1,
+      "updatedAt": 1781410016078,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|11:00-11:30": {
+      "title": "心理ai",
+      "code": 1.1,
+      "updatedAt": 1781410017898,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|11:30-12:00": {
+      "title": "休息",
+      "code": 0,
+      "updatedAt": 1781410027083,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|12:00-12:30": {
+      "title": "吃饭",
+      "code": 0,
+      "updatedAt": 1781452337663,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|12:30-13:00": {
+      "title": "出发黔灵山公园",
+      "code": 2.2,
+      "updatedAt": 1781452364023,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|13:00-13:30": {
+      "title": "爬山开始",
+      "code": 2.2,
+      "updatedAt": 1781452385322,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|13:30-14:00": {
+      "title": "爬山开始",
+      "code": 2.2,
+      "updatedAt": 1781452389723,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|14:00-14:30": {
+      "title": "爬山开始",
+      "code": 2.2,
+      "updatedAt": 1781452391841,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|14:30-15:00": {
+      "title": "爬山开始",
+      "code": 2.2,
+      "updatedAt": 1781452393374,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|15:00-15:30": {
+      "title": "爬山开始",
+      "code": 2.2,
+      "updatedAt": 1781452395237,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|15:30-16:00": {
+      "title": "爬山开始",
+      "code": 2.2,
+      "updatedAt": 1781452396736,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|16:00-16:30": {
+      "title": "爬山开始",
+      "code": 2.2,
+      "updatedAt": 1781452399219,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|16:30-17:00": {
+      "title": "爬山开始",
+      "code": 2.2,
+      "updatedAt": 1781452403805,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|17:00-17:30": {
+      "title": "王者",
+      "code": 3.2,
+      "updatedAt": 1781452420070,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|17:30-18:00": {
+      "title": "干饭",
+      "code": 2.2,
+      "updatedAt": 1781452430551,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|18:00-18:30": {
+      "title": "折返",
+      "code": 2.2,
+      "updatedAt": 1781452454023,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|18:30-19:00": {
+      "title": "回家",
+      "code": 0,
+      "updatedAt": 1781452465129,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|19:00-19:30": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781452471298,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|19:30-20:00": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781452475044,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|20:00-20:30": {
+      "title": "睡觉",
+      "code": 0,
+      "updatedAt": 1781452476709,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|20:30-21:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1781452614767,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|21:00-21:30": {
+      "title": "洗澡",
+      "code": 0,
+      "updatedAt": 1781452622429,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|21:30-22:00": {
+      "title": "测试ai",
+      "code": 1.1,
+      "updatedAt": 1781452632328,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|22:00-22:30": {
+      "title": "测试ai",
+      "code": 1.1,
+      "updatedAt": 1781452638429,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|22:30-23:00": {
+      "title": "测试ai",
+      "code": 1.1,
+      "updatedAt": 1781452640928,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|23:00-23:30": {
+      "title": "Token 管理项目",
+      "code": 1.1,
+      "updatedAt": 1781452655303,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|23:30-0:00": {
+      "title": "Token 管理项目",
+      "code": 1.1,
+      "updatedAt": 1781452659996,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|0:00-0:30": {
+      "title": "Token 管理项目",
+      "code": 1.1,
+      "updatedAt": 1781501348409,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|0:30-1:00": {
+      "title": "Token 管理项目",
+      "code": 1.1,
+      "updatedAt": 1781501350376,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|1:00-1:30": {
+      "title": "Token 管理项目",
+      "code": 1.1,
+      "updatedAt": 1781501352359,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|1:30-2:00": {
+      "title": "放弃",
+      "code": 0,
+      "updatedAt": 1781501359309,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
     }
   },
   "keyitems": {
@@ -661,6 +1507,91 @@
       "value": "概念化",
       "updatedAt": 1781090248746,
       "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|第一件事": {
+      "value": "督导",
+      "updatedAt": 1781127018100,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|第二件事": {
+      "value": "个案概念化",
+      "updatedAt": 1781127024504,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|第三件事": {
+      "value": "闲鱼",
+      "updatedAt": 1781127032396,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-10|关键词": {
+      "value": "6=3+2+1",
+      "updatedAt": 1781168076440,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|关键词": {
+      "value": "过河",
+      "updatedAt": 1781204315013,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|第一件事": {
+      "value": "督导",
+      "updatedAt": 1781258462979,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|第二件事": {
+      "value": "Ai",
+      "updatedAt": 1781258476092,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|第三件事": {
+      "value": "个案概念化",
+      "updatedAt": 1781258488551,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|关键词": {
+      "value": "调时差",
+      "updatedAt": 1781313200685,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|第一件事": {
+      "value": "债务管理",
+      "updatedAt": 1781313210347,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|第二件事": {
+      "value": "心理学粗糙开始",
+      "updatedAt": 1781313224173,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|第三件事": {
+      "value": "心理学ai",
+      "updatedAt": 1781313232625,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|关键词": {
+      "value": "调时差，睡觉比玩手机强",
+      "updatedAt": 1781313254669,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|第三件事": {
+      "value": "小红书",
+      "updatedAt": 1781409977083,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|第二件事": {
+      "value": "心理学ai",
+      "updatedAt": 1781409985030,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|第一件事": {
+      "value": "话术背诵",
+      "updatedAt": 1781409998254,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|关键词": {
+      "value": "黔灵山喂猴",
+      "updatedAt": 1781536455942,
+      "updatedBy": "a8919958-474a-424a-ae00-dbd43f98536f"
     }
   },
   "keyitemStatus": {
@@ -678,14 +1609,104 @@
       "value": "ongoing",
       "updatedAt": 1780991721819,
       "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-10|第一件事": {
+      "value": "done",
+      "updatedAt": 1781127006053,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-10|第二件事": {
+      "value": "ongoing",
+      "updatedAt": 1781127008514,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-10|第三件事": {
+      "value": "ongoing",
+      "updatedAt": 1781127010832,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-09|第二件事": {
+      "value": "ongoing",
+      "updatedAt": 1781164028040,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-09|第三件事": {
+      "value": "ongoing",
+      "updatedAt": 1781164029457,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|第三件事": {
+      "value": "done",
+      "updatedAt": 1781187536175,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|第一件事": {
+      "value": "ongoing",
+      "updatedAt": 1781204340734,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-11|第二件事": {
+      "value": "ongoing",
+      "updatedAt": 1781204342377,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|第一件事": {
+      "value": "todo",
+      "updatedAt": 1781313187076,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|第二件事": {
+      "value": "todo",
+      "updatedAt": 1781313190377,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-12|第三件事": {
+      "value": "todo",
+      "updatedAt": 1781313192543,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|第一件事": {
+      "value": "ongoing",
+      "updatedAt": 1781409960989,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|第二件事": {
+      "value": "ongoing",
+      "updatedAt": 1781409965155,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-13|第三件事": {
+      "value": "ongoing",
+      "updatedAt": 1781409966554,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|第三件事": {
+      "value": "todo",
+      "updatedAt": 1781452781486,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|第一件事": {
+      "value": "todo",
+      "updatedAt": 1781452784620,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-06-14|第二件事": {
+      "value": "ongoing",
+      "updatedAt": 1781452787365,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
     }
   },
   "review": {
     "keyword": "视频流程化+二更一",
-    "updatedAt": 1780993868693,
+    "top3Quotes": [
+      "我的目的是过河，而不是对付鳄鱼",
+      "",
+      ""
+    ],
+    "updatedAt": 1781204332169,
     "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
   },
   "archived": false,
   "archivedAt": null,
-  "weekUpdatedAt": 1781106481173
+  "weekUpdatedAt": 1781537322812
 }
