@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>心理咨询案例管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        .module-card {
+            transition: all 0.3s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+        }
+        .status-available {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .status-dev {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-6 py-12">
+        <!-- 头部 -->
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-bold text-gray-800 mb-4">
+                <i class="fa fa-heartbeat text-red-500"></i>
+                心理咨询案例管理系统
+            </h1>
+            <p class="text-xl text-gray-600">S1 - 案例记录、学习与实践平台</p>
+            <div class="mt-4 inline-flex items-center gap-4 text-sm text-gray-500">
+                <span><i class="fa fa-calendar"></i> 最后更新: 2026-06-27</span>
+                <span><i class="fa fa-folder"></i> 版本: v1.1 - 案例管理系统</span>
+            </div>
+        </div>
+
+        <!-- 核心功能 -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fa fa-star"></i> 核心功能（已完成）
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- 接访记录 -->
+                <div class="module-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="status-available p-6 text-white">
+                        <div class="flex items-center justify-between mb-3">
+                            <i class="fa fa-file-text text-4xl"></i>
+                            <span class="bg-white bg-opacity-30 px-3 py-1 rounded-full text-sm font-semibold">
+                                ✅ 可用
+                            </span>
+                        </div>
+                        <h3 class="text-2xl font-bold">接访记录</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                            完整的案例录入界面：基本信息、关系标签、症状标签、危机等级、对话记录，以及录音、逐字稿、督导资料上传。一站式完成案例录入。
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">
+                                <i class="fa fa-check-circle"></i> 标签 + 录音 + 逐字稿 + 督导
+                            </div>
+                            <a href="接访记录/intake-record-new.html"
+                               class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                                进入 <i class="fa fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 案例库 -->
+                <div class="module-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="status-available p-6 text-white">
+                        <div class="flex items-center justify-between mb-3">
+                            <i class="fa fa-folder-open text-4xl"></i>
+                            <span class="bg-white bg-opacity-30 px-3 py-1 rounded-full text-sm font-semibold">
+                                ✅ 可用
+                            </span>
+                        </div>
+                        <h3 class="text-2xl font-bold">案例库</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                            查看和管理所有心理咨询案例记录，支持搜索、筛选、危机等级分类。包含完整对话记录、AI督导分析、技术标注。中性案例数据，可用于多学派分析。
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">
+                                <i class="fa fa-database"></i> 案例库索引
+                            </div>
+                            <a href="案例库/index.html"
+                               class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                                进入 <i class="fa fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 案例管理 -->
+                <div class="module-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="status-available p-6 text-white">
+                        <div class="flex items-center justify-between mb-3">
+                            <i class="fa fa-list-alt text-4xl"></i>
+                            <span class="bg-white bg-opacity-30 px-3 py-1 rounded-full text-sm font-semibold">
+                                ✅ 可用
+                            </span>
+                        </div>
+                        <h3 class="text-2xl font-bold">案例管理</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                            管理进行中的咨询案例（10-20次会谈）。支持首次接访记录、后续会谈追踪、咨询目标修改、用药情况更新、上次会谈概要查看、结案归档。
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">
+                                <i class="fa fa-check-circle"></i> 多次来访 + 历史追踪
+                            </div>
+                            <a href="接访记录/case-list.html"
+                               class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                                进入 <i class="fa fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 大观危机干预技术手册 -->
+                <div class="module-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="status-available p-6 text-white">
+                        <div class="flex items-center justify-between mb-3">
+                            <i class="fa fa-book text-4xl"></i>
+                            <span class="bg-white bg-opacity-30 px-3 py-1 rounded-full text-sm font-semibold">
+                                ✅ 可用
+                            </span>
+                        </div>
+                        <h3 class="text-2xl font-bold">技术手册</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                            大观学派危机干预技术完整手册，包含15章理论知识、技术讲解、案例示范，以及危机等级评估和干预流程图。
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">
+                                <i class="fa fa-file-text"></i> Markdown文档
+                            </div>
+                            <a href="../大观-危机干预技术/大观危机干预技术手册.md"
+                               class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                               查看 <i class="fa fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 处理工具 -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fa fa-cogs"></i> 处理工具（已开发）
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- 批量处理 -->
+                <div class="module-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="bg-gradient-to-br from-gray-600 to-gray-800 p-6 text-white">
+                        <div class="flex items-center justify-between mb-3">
+                            <i class="fa fa-refresh text-4xl"></i>
+                            <span class="bg-white bg-opacity-30 px-3 py-1 rounded-full text-sm font-semibold">
+                                ⚙️ CLI
+                            </span>
+                        </div>
+                        <h3 class="text-2xl font-bold">批量处理</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                            扫描目录批量处理多个案例，支持预览模式、排除督导文件、自动生成案例编号、显示处理进度。
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">
+                                <i class="fa fa-terminal"></i> batch_process.py
+                            </div>
+                            <button disabled
+                                    class="inline-flex items-center px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed text-sm">
+                                命令行工具
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HTML生成 -->
+                <div class="module-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="bg-gradient-to-br from-gray-600 to-gray-800 p-6 text-white">
+                        <div class="flex items-center justify-between mb-3">
+                            <i class="fa fa-html5 text-4xl"></i>
+                            <span class="bg-white bg-opacity-30 px-3 py-1 rounded-full text-sm font-semibold">
+                                ⚙️ CLI
+                            </span>
+                        </div>
+                        <h3 class="text-2xl font-bold">案例库生成</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                            自动读取JSON案例和索引，生成HTML案例库（索引页+详情页），支持搜索筛选、统计面板、响应式设计。
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">
+                                <i class="fa fa-terminal"></i> generate_case_library.py
+                            </div>
+                            <button disabled
+                                    class="inline-flex items-center px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed text-sm">
+                                命令行工具
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 未来功能 -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fa fa-rocket"></i> 未来功能（规划中）
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- 多学派分析 -->
+                <div class="module-card bg-white rounded-xl shadow-lg overflow-hidden opacity-75">
+                    <div class="status-dev p-6 text-white">
+                        <div class="flex items-center justify-between mb-3">
+                            <i class="fa fa-users text-4xl"></i>
+                            <span class="bg-white bg-opacity-30 px-3 py-1 rounded-full text-sm font-semibold">
+                                🚧 开发中
+                            </span>
+                        </div>
+                        <h3 class="text-2xl font-bold">多学派分析</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                            从不同心理学派视角分析同一案例：大观学派、CBT、精神分析、人本主义等。对比不同处理方式的优劣。
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">
+                                <i class="fa fa-lightbulb-o"></i> 敬请期待
+                            </div>
+                            <button disabled
+                                    class="inline-flex items-center px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed">
+                                开发中
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 话术模拟 -->
+                <div class="module-card bg-white rounded-xl shadow-lg overflow-hidden opacity-75">
+                    <div class="status-dev p-6 text-white">
+                        <div class="flex items-center justify-between mb-3">
+                            <i class="fa fa-comments text-4xl"></i>
+                            <span class="bg-white bg-opacity-30 px-3 py-1 rounded-full text-sm font-semibold">
+                                🚧 开发中
+                            </span>
+                        </div>
+                        <h3 class="text-2xl font-bold">话术模拟</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                            基于真实案例生成逐字稿，AI模拟来访者/咨询师对话。选择不同学派进行话术练习，提升咨询技能。
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">
+                                <i class="fa fa-microphone"></i> 敬请期待
+                            </div>
+                            <button disabled
+                                    class="inline-flex items-center px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed">
+                                开发中
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 督导记录 -->
+                <div class="module-card bg-white rounded-xl shadow-lg overflow-hidden opacity-75">
+                    <div class="status-dev p-6 text-white">
+                        <div class="flex items-center justify-between mb-3">
+                            <i class="fa fa-user-md text-4xl"></i>
+                            <span class="bg-white bg-opacity-30 px-3 py-1 rounded-full text-sm font-semibold">
+                                🚧 开发中
+                            </span>
+                        </div>
+                        <h3 class="text-2xl font-bold">督导记录</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                            查看和管理督导意见，关联具体案例。记录督导师的建议、改进方向、技术点评，持续提升专业能力。
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">
+                                <i class="fa fa-file-text-o"></i> 敬请期待
+                            </div>
+                            <button disabled
+                                    class="inline-flex items-center px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed">
+                                开发中
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据统计 -->
+                <div class="module-card bg-white rounded-xl shadow-lg overflow-hidden opacity-75">
+                    <div class="status-dev p-6 text-white">
+                        <div class="flex items-center justify-between mb-3">
+                            <i class="fa fa-bar-chart text-4xl"></i>
+                            <span class="bg-white bg-opacity-30 px-3 py-1 rounded-full text-sm font-semibold">
+                                🚧 开发中
+                            </span>
+                        </div>
+                        <h3 class="text-2xl font-bold">数据统计</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                            案例数据分析和可视化：症状分布、危机等级趋势、技术使用频率、人群特征统计等多维度数据洞察。
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">
+                                <i class="fa fa-pie-chart"></i> 敬请期待
+                            </div>
+                            <button disabled
+                                    class="inline-flex items-center px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed">
+                                开发中
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+        <!-- 数据资源 -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fa fa-database"></i> 数据资源
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- 索引系统 -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fa fa-tags text-purple-600"></i> 四大索引系统
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">关系标签索引</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">10 标签</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">症状标签索引</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">18 标签</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">危机等级索引</span>
+                            <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold">5 等级</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">关键词索引</span>
+                            <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">33 关键词</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 培训资料 -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fa fa-graduation-cap text-indigo-600"></i> 培训资料
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-2">
+                            <i class="fa fa-file-text text-gray-400 mt-1"></i>
+                            <div>
+                                <div class="text-sm font-semibold text-gray-700">大观危机干预技术手册</div>
+                                <div class="text-xs text-gray-500">15章理论+2附录，完整技术体系</div>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i class="fa fa-file-powerpoint-o text-gray-400 mt-1"></i>
+                            <div>
+                                <div class="text-sm font-semibold text-gray-700">希望热线培训课件</div>
+                                <div class="text-xs text-gray-500">6次培训PPT+笔记+音频转录</div>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i class="fa fa-book text-gray-400 mt-1"></i>
+                            <div>
+                                <div class="text-sm font-semibold text-gray-700">参考书籍</div>
+                                <div class="text-xs text-gray-500">《自我伤害防治心理学》等</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 系统配置 -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fa fa-cog"></i> 系统配置
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- 流派配置管理 -->
+                <div class="module-card bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="status-available p-6 text-white">
+                        <div class="flex items-center justify-between mb-3">
+                            <i class="fa fa-sliders text-4xl"></i>
+                            <span class="bg-white bg-opacity-30 px-3 py-1 rounded-full text-sm font-semibold">
+                                ✅ 可用
+                            </span>
+                        </div>
+                        <h3 class="text-2xl font-bold">流派配置</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                            管理所有治疗学派的配置信息，包括名称、图标、颜色、排序、启用状态。支持添加、编辑、删除流派，实时保存配置文件。
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">
+                                <i class="fa fa-database"></i> 5个流派
+                            </div>
+                            <a href="案例库/config-approaches.html"
+                               class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                                管理 <i class="fa fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 项目文档 -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">
+                <i class="fa fa-file-text-o"></i> 项目文档
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <a href="../README.md" class="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm hover:underline">
+                    <i class="fa fa-readme"></i> <span>README</span>
+                </a>
+                <a href="../.claude/需求文档-v2.0.md" class="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm hover:underline">
+                    <i class="fa fa-file-text"></i> <span>需求文档</span>
+                </a>
+                <a href="../.claude/项目进度.md" class="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm hover:underline">
+                    <i class="fa fa-tasks"></i> <span>项目进度</span>
+                </a>
+                <a href="../.claude/文件审查报告.md" class="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm hover:underline">
+                    <i class="fa fa-check-square-o"></i> <span>审查报告</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <div class="text-center mt-12 text-gray-500 text-sm">
+            <p>心理咨询案例管理系统 S1 | 设计用于案例记录、学习与实践</p>
+            <p class="mt-2">
+                <i class="fa fa-code"></i> Built with Python + Tailwind CSS + Font Awesome
+            </p>
+        </div>
+    </div>
+</body>
+</html>

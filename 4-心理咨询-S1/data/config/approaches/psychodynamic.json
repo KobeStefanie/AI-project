@@ -1,0 +1,31 @@
+{
+  "id": "psychodynamic",
+  "name": "精神动力学",
+  "name_en": "Psychodynamic Therapy",
+  "description": "精神动力学取向，关注潜意识、早期经历、防御机制和移情关系对当前心理状态的影响",
+  "color": "#7c3aed",
+  "icon": "fa-user-circle",
+  "core_concepts": [
+    "潜意识",
+    "防御机制",
+    "移情与反移情",
+    "早期客体关系",
+    "内在冲突"
+  ],
+  "typical_techniques": [
+    "自由联想",
+    "梦的解析",
+    "移情分析",
+    "阻抗分析",
+    "解释技术"
+  ],
+  "focus_areas": [
+    "潜意识探索",
+    "早期经历影响",
+    "防御机制识别",
+    "关系模式分析"
+  ],
+  "enabled": false,
+  "sort_order": 3,
+  "note": "待学习后启用"
+}

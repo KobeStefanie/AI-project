@@ -1,0 +1,32 @@
+{
+  "id": "cbt",
+  "name": "认知行为疗法",
+  "name_en": "Cognitive Behavioral Therapy",
+  "description": "认知行为疗法（CBT），关注思维、情绪和行为之间的关系，通过改变不合理认知来改善情绪和行为",
+  "color": "#059669",
+  "icon": "fa-brain",
+  "core_concepts": [
+    "自动化思维",
+    "核心信念",
+    "认知重构",
+    "行为激活",
+    "暴露疗法"
+  ],
+  "typical_techniques": [
+    "思维记录",
+    "认知重构",
+    "行为实验",
+    "暴露与反应阻止",
+    "放松训练",
+    "问题解决训练"
+  ],
+  "focus_areas": [
+    "认知模式识别",
+    "非理性信念挑战",
+    "行为改变",
+    "技能训练"
+  ],
+  "enabled": false,
+  "sort_order": 2,
+  "note": "待学习后启用"
+}

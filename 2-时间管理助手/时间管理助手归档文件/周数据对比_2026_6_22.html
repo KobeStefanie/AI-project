@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>周数据对比 - 趋势图表</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f8fafc;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #1e293b;
+      margin-bottom: 30px;
+      font-size: 24px;
+    }
+    .chart-container {
+      position: relative;
+      height: 500px;
+      margin-bottom: 40px;
+    }
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 2px;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 40px;
+    }
+    .data-table th,
+    .data-table td {
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #e2e8f0;
+    }
+    .data-table th {
+      background: #f1f5f9;
+      font-weight: 600;
+      color: #475569;
+    }
+    .data-table tbody tr:hover {
+      background: #f8fafc;
+    }
+    .cat-qw { background: #16a34a; color: white; }
+    .cat-gfp { background: #2563eb; color: white; }
+    .cat-proc { background: #dc2626; color: white; }
+    .cat-rest { background: #4ade80; }
+    .cat-mw { background: #ffff00; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 周数据对比 - 趋势图表</h1>
+
+    <div class="chart-container">
+      <canvas id="trendChart"></canvas>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>项目</th>
+          <th>2026-W26</th><th>2026-W25</th><th>2026-W24</th><th>2026-W23</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cat-qw">QW - Quality Work</td>
+          <td>1</td><td>74</td><td>70</td><td>79</td>
+        </tr>
+        <tr>
+          <td class="cat-gfp">GFP - Guilt Free Play</td>
+          <td>2</td><td>0</td><td>15</td><td>8</td>
+        </tr>
+        <tr>
+          <td class="cat-proc">Proc - Procrastination</td>
+          <td>6</td><td>103</td><td>73</td><td>88</td>
+        </tr>
+        <tr>
+          <td class="cat-rest">Rest</td>
+          <td>10</td><td>61</td><td>77</td><td>61</td>
+        </tr>
+        <tr>
+          <td class="cat-mw">MW</td>
+          <td>0</td><td>0</td><td>3</td><td>3</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ["2026-W26","2026-W25","2026-W24","2026-W23"],
+        datasets: [
+          {
+            label: 'QW - Quality Work',
+            data: [1,74,70,79],
+            borderColor: '#16a34a',
+            backgroundColor: 'rgba(22, 163, 74, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          },
+          {
+            label: 'GFP - Guilt Free Play',
+            data: [2,0,15,8],
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          },
+          {
+            label: 'Proc - Procrastination',
+            data: [6,103,73,88],
+            borderColor: '#dc2626',
+            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          },
+          {
+            label: 'Rest',
+            data: [10,61,77,61],
+            borderColor: '#4ade80',
+            backgroundColor: 'rgba(74, 222, 128, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          },
+          {
+            label: 'MW',
+            data: [0,0,3,3],
+            borderColor: '#eab308',
+            backgroundColor: 'rgba(234, 179, 8, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              padding: 15,
+              font: {
+                size: 13
+              }
+            }
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+            titleFont: {
+              size: 14
+            },
+            bodyFont: {
+              size: 13
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 10,
+              font: {
+                size: 12
+              }
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            }
+          },
+          x: {
+            ticks: {
+              font: {
+                size: 12
+              }
+            },
+            grid: {
+              display: false
+            }
+          }
+        },
+        interaction: {
+          mode: 'nearest',
+          axis: 'x',
+          intersect: false
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1703,10 +1703,26 @@
       "",
       ""
     ],
-    "updatedAt": 1781204332169,
-    "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    "moviesWatched": "三国的星空",
+    "top5Work": [
+      "AI心理学",
+      "记录案例",
+      "小红书试水",
+      "爬山",
+      "删除三国"
+    ],
+    "top3Stupid": [
+      "游戏三国",
+      "",
+      ""
+    ],
+    "selfScore": "5",
+    "overallReview": "还是有点松懈",
+    "booksRead": "维特根斯坦同志",
+    "updatedAt": 1782067886400,
+    "updatedBy": "a8919958-474a-424a-ae00-dbd43f98536f"
   },
-  "archived": false,
-  "archivedAt": null,
-  "weekUpdatedAt": 1781537322812
+  "archived": true,
+  "archivedAt": 1782067970643,
+  "weekUpdatedAt": 1782126077959
 }

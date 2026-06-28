@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大观学派案例库</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto p-6">
+        <!-- 头部 -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                <i class="fa fa-folder-open text-blue-600"></i> 大观学派案例库
+            </h1>
+            <p class="text-gray-600">希望热线危机干预技术 | 案例总数: 3</p>
+            <p class="text-sm text-gray-500 mt-2">最后更新: 2026-06-24</p>
+        </div>
+
+        <!-- 统计面板 -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+            <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4">
+                <div class="text-red-800 text-sm font-semibold">S - 自杀风险</div>
+                <div class="text-3xl font-bold text-red-600">1</div>
+            </div>
+            <div class="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-4">
+                <div class="text-orange-800 text-sm font-semibold">L - 生命危险</div>
+                <div class="text-3xl font-bold text-orange-600">1</div>
+            </div>
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4">
+                <div class="text-yellow-800 text-sm font-semibold">M - 中度危机</div>
+                <div class="text-3xl font-bold text-yellow-600">1</div>
+            </div>
+            <div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4">
+                <div class="text-blue-800 text-sm font-semibold">C - 慢性困扰</div>
+                <div class="text-3xl font-bold text-blue-600">0</div>
+            </div>
+            <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-4">
+                <div class="text-green-800 text-sm font-semibold">Z - 正常范围</div>
+                <div class="text-3xl font-bold text-green-600">0</div>
+            </div>
+        </div>
+
+        <!-- 搜索筛选 -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fa fa-search"></i> 搜索
+                    </label>
+                    <input type="text" id="searchInput" placeholder="关键词、症状、人群..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fa fa-exclamation-triangle"></i> 危机等级
+                    </label>
+                    <select id="crisisFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="">全部等级</option>
+                        <option value="S">S - 自杀风险</option>
+                        <option value="L">L - 生命危险</option>
+                        <option value="M">M - 中度危机</option>
+                        <option value="C">C - 慢性困扰</option>
+                        <option value="Z">Z - 正常范围</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fa fa-users"></i> 人群
+                    </label>
+                    <select id="ageFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="">全部人群</option>
+                        <option value="青少年">青少年</option>
+                        <option value="中年">中年</option>
+                        <option value="老年">老年</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 案例列表 -->
+        <div id="caseList" class="space-y-4">
+
+            <!-- 案例: C20260616001 -->
+            <div class="case-card bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
+                 data-crisis="S"
+                 data-age="青少年"
+                 data-keywords="青少年 自杀风险 重度抑郁症 学校霸凌 遗书 同伴支持 失联 断药 重男轻女 热线求助 24小时在线">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <h3 class="text-xl font-bold text-gray-800">善良女孩的求助</h3>
+                            <span class="px-3 py-1 bg-red-100 text-red-800 font-bold rounded-lg text-sm">S级</span>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3">
+                            <span><i class="fa fa-calendar"></i> 2026-06-16</span>
+                            <span class="ml-4"><i class="fa fa-clock-o"></i> 约26分钟（16:26-16:52）</span>
+                            <span class="ml-4"><i class="fa fa-phone"></i> 电话热线</span>
+                        </div>
+                        <div class="text-sm text-gray-700 mb-3">
+                            <strong>案例编号：</strong>C20260616001
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3">
+                            14岁女孩的同伴来电求助：朋友确诊重度抑郁症，有多次自杀尝试史，当天写完遗书后失联半小时。来电者本人也有抑郁症史但已药物控制。咨询师在面对'第三方自杀危机'的复杂局面中，通过六变三托筛查（确认遗书未嘱托）、同步同理心陪伴、拒绝成为遗书执行者（制造现实拉力）、隧道隐喻（赋予希望），最终等到了朋友的安全回复。核心议题：青少年同伴支持系统中的自杀危机干预、双重抑郁症青少年的安全网建立。...
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">青少年</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">自杀风险</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">重度抑郁症</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">学校霸凌</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">遗书</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">同伴支持</span>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            <strong>核心技术：</strong>同步同理心, 六变三托筛查（询问遗书内容、嘱托情况）, 逆向倒推（判断是否达到报警程度）, 资源引入（提供联系方式和安全网）
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t pt-3 flex justify-between items-center">
+                    <div class="text-xs text-green-600">
+                        <i class="fa fa-lightbulb-o"></i> <strong>亮点：</strong>危机判断精准：快速识别这是'第三方自杀危机'而非来电者本人，复杂局面下的判断力值得肯定...
+                    </div>
+                    <a href="案例库/[自杀风险]-[青少年]-C20260616001-善良女孩的求助.html"
+                       class="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                        <i class="fa fa-eye"></i> 查看详情
+                    </a>
+                </div>
+            </div>
+
+            <!-- 案例: C20260620001 -->
+            <div class="case-card bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
+                 data-crisis="L"
+                 data-age="青少年"
+                 data-keywords="重度抑郁症 焦虑症 双相情感障碍 幻听 幻影 抑郁躯体化 厌食 催吐 自伤 休学 情感忽视 融入困难 青春期 情绪不稳定">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <h3 class="text-xl font-bold text-gray-800">很多大人，都背叛了小时候不曾善待的自己</h3>
+                            <span class="px-3 py-1 bg-orange-100 text-orange-800 font-bold rounded-lg text-sm">L级</span>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3">
+                            <span><i class="fa fa-calendar"></i> 2026-06-16</span>
+                            <span class="ml-4"><i class="fa fa-clock-o"></i> 63分钟</span>
+                            <span class="ml-4"><i class="fa fa-phone"></i> 电话/线上</span>
+                        </div>
+                        <div class="text-sm text-gray-700 mb-3">
+                            <strong>案例编号：</strong>C20260620001
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3">
+                            高二女生确诊重度抑郁症+焦虑症，伴有双相情感障碍发展倾向、幻听幻影、严重进食障碍（厌食+催吐）、频繁抑郁躯体化、自伤行为。咨询师使用了多种技术（情绪承接、赋能、隐喻、重新框架），其中'我是国王'隐喻对幻听处理有创新性。触及了家庭动力核心（父母情感忽视）。但咨询师自评'说教太多'，对社交融入的建议过于空泛。案例涉及精神病性症状和严重自伤风险，处于生命危险级别（L级）。...
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">重度抑郁症</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">焦虑症</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">双相情感障碍</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">幻听</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">幻影</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">抑郁躯体化</span>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            <strong>核心技术：</strong>情绪承接, 正常化技术, 赋能技术（'勇士'）, 隐喻技术（'我是国王，声音是臣民'）
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t pt-3 flex justify-between items-center">
+                    <div class="text-xs text-green-600">
+                        <i class="fa fa-lightbulb-o"></i> <strong>亮点：</strong>很好地承接了来访者强烈的情绪，建立了安全的咨询关系...
+                    </div>
+                    <a href="案例库/[抑郁症]-[青少年]-C20260620001-很多大人，都背叛了小时候不曾善待的自己.html"
+                       class="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                        <i class="fa fa-eye"></i> 查看详情
+                    </a>
+                </div>
+            </div>
+
+            <!-- 案例: C20260620002 -->
+            <div class="case-card bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
+                 data-crisis="M"
+                 data-age="中年"
+                 data-keywords="抑郁症 焦虑症 更年期 企业主 经营压力 躯体化 轻生想法 休息两个月 内在小孩 动力枯竭 账目收不回 时代变化">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <h3 class="text-xl font-bold text-gray-800">压垮人的是，一直都这样</h3>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 font-bold rounded-lg text-sm">M级</span>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3">
+                            <span><i class="fa fa-calendar"></i> 2026-06-16</span>
+                            <span class="ml-4"><i class="fa fa-clock-o"></i> 46分钟</span>
+                            <span class="ml-4"><i class="fa fa-phone"></i> 电话/线上</span>
+                        </div>
+                        <div class="text-sm text-gray-700 mb-3">
+                            <strong>案例编号：</strong>C20260620002
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3">
+                            女企业主确诊抑郁症+焦虑症，更年期叠加，已休息两个月，有轻生想法但无明确计划。主要压力来自账目收不回、时代变化快、不想学习。咨询师使用了'内在小孩'理论进行重新框架，强调动力枯竭是新课题，建议让理性满足内在小孩需求而非外界需求。咨询师有两处自我质疑：1）建议'去厂里看看'过于直接；2）建议'休息半年'担心经营风险。案主用'更年期'作为保护壳。危机等级M（中度），需持续跟进。...
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">抑郁症</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">焦虑症</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">更年期</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">企业主</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">经营压力</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">躯体化</span>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            <strong>核心技术：</strong>共情, 躯体化识别, 内在小孩理论, 重新框架（理性vs内在小孩）
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t pt-3 flex justify-between items-center">
+                    <div class="text-xs text-green-600">
+                        <i class="fa fa-lightbulb-o"></i> <strong>亮点：</strong>很好地识别了躯体化症状（'身体无法挪动'），并得到案主认同...
+                    </div>
+                    <a href="案例库/[抑郁症（已确诊）]-[中年]-C20260620002-压垮人的是，一直都这样.html"
+                       class="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                        <i class="fa fa-eye"></i> 查看详情
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 无结果提示 -->
+        <div id="noResults" class="text-center text-gray-500 py-8 hidden">
+            <i class="fa fa-search text-4xl mb-2"></i>
+            <p>没有找到匹配的案例</p>
+        </div>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const crisisFilter = document.getElementById('crisisFilter');
+        const ageFilter = document.getElementById('ageFilter');
+        const caseCards = document.querySelectorAll('.case-card');
+        const noResults = document.getElementById('noResults');
+
+        function filterCases() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const crisisValue = crisisFilter.value;
+            const ageValue = ageFilter.value;
+
+            let visibleCount = 0;
+
+            caseCards.forEach(card => {
+                const keywords = card.dataset.keywords.toLowerCase();
+                const crisis = card.dataset.crisis;
+                const age = card.dataset.age;
+
+                const matchSearch = !searchTerm || keywords.includes(searchTerm);
+                const matchCrisis = !crisisValue || crisis === crisisValue;
+                const matchAge = !ageValue || age.includes(ageValue);
+
+                if (matchSearch && matchCrisis && matchAge) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            noResults.classList.toggle('hidden', visibleCount > 0);
+        }
+
+        searchInput.addEventListener('input', filterCases);
+        crisisFilter.addEventListener('change', filterCases);
+        ageFilter.addEventListener('change', filterCases);
+    </script>
+</body>
+</html>

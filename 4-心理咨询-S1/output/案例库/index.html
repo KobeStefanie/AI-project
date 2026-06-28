@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>心理咨询案例库</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        .filter-card {
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+        }
+        .filter-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: #F9FAFB;
+            cursor: pointer;
+            user-select: none;
+        }
+        .filter-card-header:hover {
+            background: #F3F4F6;
+        }
+        .filter-card.expanded .filter-card-header {
+            background: #EFF6FF;
+            border-bottom: 1px solid #BFDBFE;
+        }
+        .filter-card-body {
+            display: none;
+            padding: 16px;
+            background: white;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .filter-card.expanded .filter-card-body {
+            display: grid;
+        }
+        .filter-arrow {
+            margin-left: auto;
+            transition: transform 0.2s;
+            font-size: 12px;
+            color: #9CA3AF;
+        }
+        .filter-card.expanded .filter-arrow {
+            transform: rotate(90deg);
+        }
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+        }
+        .filter-checkbox:hover {
+            background: #F3F4F6;
+        }
+        .filter-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .selected-tags-box {
+            background: #F3F4F6;
+            border: 1px dashed #D1D5DB;
+            border-radius: 8px;
+            padding: 12px;
+            min-height: 40px;
+            margin-bottom: 16px;
+        }
+        .selected-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: #3B82F6;
+            color: white;
+            border-radius: 16px;
+            font-size: 12px;
+            margin: 2px;
+        }
+        .selected-tag .remove-btn {
+            cursor: pointer;
+            font-weight: bold;
+            opacity: 0.8;
+        }
+        .selected-tag .remove-btn:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto p-6">
+        <!-- 头部 -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                <i class="fa fa-folder-open text-blue-600"></i> 心理咨询案例库
+            </h1>
+            <p class="text-gray-600">真实案例记录与学习资料 | 案例总数: 3</p>
+            <p class="text-sm text-gray-500 mt-2">最后更新: 2026-06-27</p>
+        </div>
+
+        <!-- 统计面板 -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+            <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-3">
+                <div class="text-red-800 text-xs font-semibold">S - 自杀风险</div>
+                <div class="text-2xl font-bold text-red-600">1</div>
+            </div>
+            <div class="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-3">
+                <div class="text-orange-800 text-xs font-semibold">L - 生命危险</div>
+                <div class="text-2xl font-bold text-orange-600">1</div>
+            </div>
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-3">
+                <div class="text-yellow-800 text-xs font-semibold">M - 中度危机</div>
+                <div class="text-2xl font-bold text-yellow-600">1</div>
+            </div>
+            <div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-3">
+                <div class="text-blue-800 text-xs font-semibold">C - 慢性困扰</div>
+                <div class="text-2xl font-bold text-blue-600">0</div>
+            </div>
+            <div class="bg-green-50 border-l-4 border-green-500 rounded-lg p-3">
+                <div class="text-green-800 text-xs font-semibold">Z - 正常范围</div>
+                <div class="text-2xl font-bold text-green-600">0</div>
+            </div>
+        </div>
+
+        <!-- 搜索筛选 -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <!-- 关键词搜索 -->
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa fa-search"></i> 关键词搜索
+                </label>
+                <input type="text" id="searchInput" placeholder="搜索关键词..."
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <!-- 已选标签显示框 -->
+            <div class="mb-4">
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">已选:</h3>
+                <div id="selectedTagsBox" class="selected-tags-box">
+                    <span class="text-xs text-gray-400">未选择任何标签</span>
+                </div>
+            </div>
+
+            <!-- 一、关系标签大分类 -->
+            <div class="mb-6">
+                <h3 class="text-base font-bold text-gray-800 mb-3">
+                    <i class="fa fa-link"></i> 关系标签
+                </h3>
+                <div class="grid grid-cols-2 gap-3" id="relationCategoriesGrid">
+                    <div class="filter-card" data-category="家庭关系">
+                        <div class="filter-card-header" onclick="toggleFilterCard(this)">
+                            <span>👨‍👩‍👧‍👦</span>
+                            <span class="font-semibold text-gray-700">家庭关系</span>
+                            <span class="text-xs text-gray-500">21项</span>
+                            <span class="filter-arrow">▶</span>
+                        </div>
+                        <div class="filter-card-body">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-亲子关系-父母控制" onchange="filterCases()">
+                                <span>父母控制</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-亲子关系-父母缺位" onchange="filterCases()">
+                                <span>父母缺位</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-亲子关系-情感忽视" onchange="filterCases()">
+                                <span>情感忽视</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-亲子关系-重男轻女" onchange="filterCases()">
+                                <span>重男轻女</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-亲子关系-父母情绪回应不当" onchange="filterCases()">
+                                <span>父母情绪回应不当</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-亲子关系-青少年-情感忽视" onchange="filterCases()">
+                                <span>青少年-情感忽视</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-亲子关系-青少年-重男轻女" onchange="filterCases()">
+                                <span>青少年-重男轻女</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-亲子关系-青少年-父母控制" onchange="filterCases()">
+                                <span>青少年-父母控制</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-夫妻关系-沟通障碍" onchange="filterCases()">
+                                <span>沟通障碍</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-夫妻关系-家暴" onchange="filterCases()">
+                                <span>家暴</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-夫妻关系-出轨" onchange="filterCases()">
+                                <span>出轨</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-夫妻关系-性生活不和谐" onchange="filterCases()">
+                                <span>性生活不和谐</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-夫妻关系-婚姻倦怠" onchange="filterCases()">
+                                <span>婚姻倦怠</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-婆媳关系-育儿观念冲突" onchange="filterCases()">
+                                <span>育儿观念冲突</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-婆媳关系-代际边界不清" onchange="filterCases()">
+                                <span>代际边界不清</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-婆媳关系-矛盾冲突" onchange="filterCases()">
+                                <span>矛盾冲突</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-兄弟姐妹-手足竞争" onchange="filterCases()">
+                                <span>手足竞争</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-兄弟姐妹-关系疏离" onchange="filterCases()">
+                                <span>关系疏离</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-产后问题-产后抑郁" onchange="filterCases()">
+                                <span>产后抑郁</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-产后问题-育儿焦虑" onchange="filterCases()">
+                                <span>育儿焦虑</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="家庭关系-产后问题-角色适应困难" onchange="filterCases()">
+                                <span>角色适应困难</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-card" data-category="社交关系">
+                        <div class="filter-card-header" onclick="toggleFilterCard(this)">
+                            <span>👥</span>
+                            <span class="font-semibold text-gray-700">社交关系</span>
+                            <span class="text-xs text-gray-500">12项</span>
+                            <span class="filter-arrow">▶</span>
+                        </div>
+                        <div class="filter-card-body">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社交关系-友谊-友谊破裂" onchange="filterCases()">
+                                <span>友谊破裂</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社交关系-友谊-朋友疏远" onchange="filterCases()">
+                                <span>朋友疏远</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社交关系-友谊-友情背叛" onchange="filterCases()">
+                                <span>友情背叛</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社交关系-同伴关系-融入困难" onchange="filterCases()">
+                                <span>融入困难</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社交关系-同伴关系-校园适应" onchange="filterCases()">
+                                <span>校园适应</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社交关系-同伴关系-学校霸凌" onchange="filterCases()">
+                                <span>学校霸凌</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社交关系-同伴关系-社交孤立" onchange="filterCases()">
+                                <span>社交孤立</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社交关系-同伴关系-青少年同伴支持" onchange="filterCases()">
+                                <span>青少年同伴支持</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社交关系-恋爱关系-失恋分手" onchange="filterCases()">
+                                <span>失恋分手</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社交关系-恋爱关系-暗恋" onchange="filterCases()">
+                                <span>暗恋</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社交关系-恋爱关系-异地恋" onchange="filterCases()">
+                                <span>异地恋</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社交关系-恋爱关系-恋爱焦虑" onchange="filterCases()">
+                                <span>恋爱焦虑</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-card" data-category="工作关系">
+                        <div class="filter-card-header" onclick="toggleFilterCard(this)">
+                            <span>💼</span>
+                            <span class="font-semibold text-gray-700">工作关系</span>
+                            <span class="text-xs text-gray-500">9项</span>
+                            <span class="filter-arrow">▶</span>
+                        </div>
+                        <div class="filter-card-body">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="工作关系-职场压力-工作倦怠" onchange="filterCases()">
+                                <span>工作倦怠</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="工作关系-职场压力-职场霸凌" onchange="filterCases()">
+                                <span>职场霸凌</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="工作关系-职场压力-上下级矛盾" onchange="filterCases()">
+                                <span>上下级矛盾</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="工作关系-企业经营-经营压力" onchange="filterCases()">
+                                <span>经营压力</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="工作关系-企业经营-经济困境" onchange="filterCases()">
+                                <span>经济困境</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="工作关系-企业经营-创业焦虑" onchange="filterCases()">
+                                <span>创业焦虑</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="工作关系-职业发展-职业迷茫" onchange="filterCases()">
+                                <span>职业迷茫</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="工作关系-职业发展-失业" onchange="filterCases()">
+                                <span>失业</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="工作关系-职业发展-转行困难" onchange="filterCases()">
+                                <span>转行困难</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-card" data-category="自我关系">
+                        <div class="filter-card-header" onclick="toggleFilterCard(this)">
+                            <span>🧘</span>
+                            <span class="font-semibold text-gray-700">自我关系</span>
+                            <span class="text-xs text-gray-500">6项</span>
+                            <span class="filter-arrow">▶</span>
+                        </div>
+                        <div class="filter-card-body">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="自我关系-自我认同-性别认同困惑" onchange="filterCases()">
+                                <span>性别认同困惑</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="自我关系-自我认同-性取向困惑" onchange="filterCases()">
+                                <span>性取向困惑</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="自我关系-自我认同-自我价值感低" onchange="filterCases()">
+                                <span>自我价值感低</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="自我关系-自我成长-人生意义探索" onchange="filterCases()">
+                                <span>人生意义探索</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="自我关系-自我成长-价值观冲突" onchange="filterCases()">
+                                <span>价值观冲突</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="自我关系-自我成长-存在焦虑" onchange="filterCases()">
+                                <span>存在焦虑</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-card" data-category="社会关系">
+                        <div class="filter-card-header" onclick="toggleFilterCard(this)">
+                            <span>🌍</span>
+                            <span class="font-semibold text-gray-700">社会关系</span>
+                            <span class="text-xs text-gray-500">4项</span>
+                            <span class="filter-arrow">▶</span>
+                        </div>
+                        <div class="filter-card-body">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社会关系-经济问题-经济困境" onchange="filterCases()">
+                                <span>经济困境</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社会关系-经济问题-债务压力" onchange="filterCases()">
+                                <span>债务压力</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社会关系-法律问题-法律纠纷" onchange="filterCases()">
+                                <span>法律纠纷</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="社会关系-法律问题-离婚诉讼" onchange="filterCases()">
+                                <span>离婚诉讼</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 二、精神症状标签大分类 -->
+            <div class="mb-6">
+                <h3 class="text-base font-bold text-gray-800 mb-3">
+                    <i class="fa fa-stethoscope"></i> 精神症状标签
+                </h3>
+                <div class="grid grid-cols-2 gap-3" id="symptomCategoriesGrid">
+                    <div class="filter-card" data-category="情绪障碍">
+                        <div class="filter-card-header" onclick="toggleFilterCard(this)">
+                            <span>😔</span>
+                            <span class="font-semibold text-gray-700">情绪障碍</span>
+                            <span class="text-xs text-gray-500">11项</span>
+                            <span class="filter-arrow">▶</span>
+                        </div>
+                        <div class="filter-card-body">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪障碍-抑郁症-轻度" onchange="filterCases()">
+                                <span>抑郁症-轻度</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪障碍-抑郁症-中度" onchange="filterCases()">
+                                <span>抑郁症-中度</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪障碍-抑郁症-重度" onchange="filterCases()">
+                                <span>抑郁症-重度</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪障碍-抑郁症-已确诊-轻度" onchange="filterCases()">
+                                <span>抑郁症-已确诊-轻度</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪障碍-抑郁症-已确诊-中度" onchange="filterCases()">
+                                <span>抑郁症-已确诊-中度</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪障碍-抑郁症-已确诊-重度" onchange="filterCases()">
+                                <span>抑郁症-已确诊-重度</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪障碍-抑郁症-已控制" onchange="filterCases()">
+                                <span>抑郁症-已控制</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪障碍-焦虑症-疑似" onchange="filterCases()">
+                                <span>焦虑症-疑似</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪障碍-焦虑症-已确诊" onchange="filterCases()">
+                                <span>焦虑症-已确诊</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪障碍-双相情感障碍-疑似" onchange="filterCases()">
+                                <span>双相情感障碍-疑似</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪障碍-双相情感障碍-已确诊" onchange="filterCases()">
+                                <span>双相情感障碍-已确诊</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-card" data-category="情绪问题">
+                        <div class="filter-card-header" onclick="toggleFilterCard(this)">
+                            <span>😰</span>
+                            <span class="font-semibold text-gray-700">情绪问题</span>
+                            <span class="text-xs text-gray-500">5项</span>
+                            <span class="filter-arrow">▶</span>
+                        </div>
+                        <div class="filter-card-body">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪问题-广泛性焦虑" onchange="filterCases()">
+                                <span>广泛性焦虑</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪问题-社交焦虑" onchange="filterCases()">
+                                <span>社交焦虑</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪问题-惊恐障碍" onchange="filterCases()">
+                                <span>惊恐障碍</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪问题-强迫症" onchange="filterCases()">
+                                <span>强迫症</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="情绪问题-情绪不稳定" onchange="filterCases()">
+                                <span>情绪不稳定</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-card" data-category="精神症状">
+                        <div class="filter-card-header" onclick="toggleFilterCard(this)">
+                            <span>🌀</span>
+                            <span class="font-semibold text-gray-700">精神症状</span>
+                            <span class="text-xs text-gray-500">4项</span>
+                            <span class="filter-arrow">▶</span>
+                        </div>
+                        <div class="filter-card-body">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="精神症状-幻听" onchange="filterCases()">
+                                <span>幻听</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="精神症状-幻影" onchange="filterCases()">
+                                <span>幻影</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="精神症状-妄想" onchange="filterCases()">
+                                <span>妄想</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="精神症状-思维混乱" onchange="filterCases()">
+                                <span>思维混乱</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-card" data-category="行为问题">
+                        <div class="filter-card-header" onclick="toggleFilterCard(this)">
+                            <span>⚠️</span>
+                            <span class="font-semibold text-gray-700">行为问题</span>
+                            <span class="text-xs text-gray-500">14项</span>
+                            <span class="filter-arrow">▶</span>
+                        </div>
+                        <div class="filter-card-body">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="行为问题-自杀风险-自杀意念" onchange="filterCases()">
+                                <span>自杀意念</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="行为问题-自杀风险-自杀计划" onchange="filterCases()">
+                                <span>自杀计划</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="行为问题-自杀风险-自杀未遂" onchange="filterCases()">
+                                <span>自杀未遂</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="行为问题-自杀风险-多次自杀未遂" onchange="filterCases()">
+                                <span>多次自杀未遂</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="行为问题-自伤行为-割腕" onchange="filterCases()">
+                                <span>割腕</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="行为问题-自伤行为-烫伤" onchange="filterCases()">
+                                <span>烫伤</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="行为问题-自伤行为-其他自伤" onchange="filterCases()">
+                                <span>其他自伤</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="行为问题-进食障碍-厌食" onchange="filterCases()">
+                                <span>厌食</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="行为问题-进食障碍-暴食" onchange="filterCases()">
+                                <span>暴食</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="行为问题-进食障碍-催吐" onchange="filterCases()">
+                                <span>催吐</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="行为问题-成瘾行为-酒精依赖" onchange="filterCases()">
+                                <span>酒精依赖</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="行为问题-成瘾行为-药物滥用" onchange="filterCases()">
+                                <span>药物滥用</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="行为问题-成瘾行为-网络成瘾" onchange="filterCases()">
+                                <span>网络成瘾</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="行为问题-成瘾行为-赌博成瘾" onchange="filterCases()">
+                                <span>赌博成瘾</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-card" data-category="躯体症状">
+                        <div class="filter-card-header" onclick="toggleFilterCard(this)">
+                            <span>🩺</span>
+                            <span class="font-semibold text-gray-700">躯体症状</span>
+                            <span class="text-xs text-gray-500">5项</span>
+                            <span class="filter-arrow">▶</span>
+                        </div>
+                        <div class="filter-card-body">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="躯体症状-抑郁躯体化" onchange="filterCases()">
+                                <span>抑郁躯体化</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="躯体症状-焦虑躯体化" onchange="filterCases()">
+                                <span>焦虑躯体化</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="躯体症状-睡眠障碍" onchange="filterCases()">
+                                <span>睡眠障碍</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="躯体症状-疼痛症状" onchange="filterCases()">
+                                <span>疼痛症状</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="躯体症状-疲劳" onchange="filterCases()">
+                                <span>疲劳</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-card" data-category="内分泌">
+                        <div class="filter-card-header" onclick="toggleFilterCard(this)">
+                            <span>🧬</span>
+                            <span class="font-semibold text-gray-700">内分泌</span>
+                            <span class="text-xs text-gray-500">3项</span>
+                            <span class="filter-arrow">▶</span>
+                        </div>
+                        <div class="filter-card-body">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="内分泌-更年期综合征" onchange="filterCases()">
+                                <span>更年期综合征</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="内分泌-产后抑郁" onchange="filterCases()">
+                                <span>产后抑郁</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="内分泌-甲状腺问题" onchange="filterCases()">
+                                <span>甲状腺问题</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-card" data-category="创伤相关">
+                        <div class="filter-card-header" onclick="toggleFilterCard(this)">
+                            <span>💔</span>
+                            <span class="font-semibold text-gray-700">创伤相关</span>
+                            <span class="text-xs text-gray-500">5项</span>
+                            <span class="filter-arrow">▶</span>
+                        </div>
+                        <div class="filter-card-body">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="创伤相关-童年创伤" onchange="filterCases()">
+                                <span>童年创伤</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="创伤相关-性侵创伤" onchange="filterCases()">
+                                <span>性侵创伤</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="创伤相关-家暴创伤" onchange="filterCases()">
+                                <span>家暴创伤</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="创伤相关-重大丧失" onchange="filterCases()">
+                                <span>重大丧失</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="创伤相关-创伤后应激障碍（PTSD）" onchange="filterCases()">
+                                <span>创伤后应激障碍（PTSD）</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 人群筛选 -->
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa fa-users"></i> 人群
+                </label>
+                <select id="ageFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg" onchange="filterCases()">
+                    <option value="">全部人群</option>
+                    <option value="青少年">青少年</option>
+                    <option value="中年">中年</option>
+                    <option value="老年">老年</option>
+                </select>
+            </div>
+
+            <!-- 危机等级筛选 -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa fa-exclamation-triangle"></i> 危机等级
+                </label>
+                <select id="crisisFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg" onchange="filterCases()">
+                    <option value="">全部等级</option>
+                    <option value="S">S - 自杀风险</option>
+                    <option value="L">L - 生命危险</option>
+                    <option value="M">M - 中度危机</option>
+                    <option value="C">C - 慢性困扰</option>
+                    <option value="Z">Z - 正常范围</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 案例列表 -->
+        <div id="caseList" class="space-y-4">
+
+            <!-- 案例: C20260616001 -->
+            <div class="case-card bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
+                 data-crisis="S"
+                 data-age="青少年"
+                 data-keywords="青少年 自杀风险 重度抑郁症 学校霸凌 遗书 同伴支持 失联 断药 重男轻女 热线求助 24小时在线"
+                 data-relation-tags="社交关系-友谊-危机干预|||社交关系-友谊-青少年同伴支持|||家庭关系-亲子关系-青少年-重男轻女|||家庭关系-亲子关系-父母缺位"
+                 data-symptom-tags="行为问题-自杀风险-自杀计划|||行为问题-自杀风险-自杀未遂（多次尝试）|||行为问题-自伤行为-击中头部|||情绪障碍-抑郁症-重度（案主朋友）|||情绪障碍-抑郁症-已控制（来电者本人）">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <h3 class="text-xl font-bold text-gray-800">善良女孩的求助</h3>
+                            <span class="px-3 py-1 bg-red-100 text-red-800 font-bold rounded-lg text-sm">S级</span>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3">
+                            <span><i class="fa fa-calendar"></i> 2026-06-16</span>
+                            <span class="ml-4"><i class="fa fa-clock-o"></i> 约26分钟（16:26-16:52）</span>
+                            <span class="ml-4"><i class="fa fa-phone"></i> 电话热线</span>
+                        </div>
+                        <div class="text-sm text-gray-700 mb-3">
+                            <strong>案例编号：</strong>C20260616001
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3">
+                            14岁女孩的同伴来电求助：朋友确诊重度抑郁症，有多次自杀尝试史，当天写完遗书后失联半小时。来电者本人也有抑郁症史但已药物控制。咨询师在面对'第三方自杀危机'的复杂局面中，通过六变三托筛查（确认遗书未嘱托）、同步同理心陪伴、拒绝成为遗书执行者（制造现实拉力）、隧道隐喻（赋予希望），最终等到了朋友的安全回复。核心议题：青少年同伴支持系统中的自杀危机干预、双重抑郁症青少年的安全网建立。...
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">青少年</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">自杀风险</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">重度抑郁症</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">学校霸凌</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">遗书</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">同伴支持</span>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            <strong>核心技术：</strong>同步同理心, 六变三托筛查（询问遗书内容、嘱托情况）, 逆向倒推（判断是否达到报警程度）, 资源引入（提供联系方式和安全网）
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t pt-3 flex justify-between items-center">
+                    <div class="text-xs text-green-600">
+                        <i class="fa fa-lightbulb-o"></i> <strong>亮点：</strong>危机判断精准：快速识别这是'第三方自杀危机'而非来电者本人，复杂局面下的判断力值得肯定...
+                    </div>
+                    <a href="cases/[自杀风险]-[青少年]-C20260616001-善良女孩的求助.html"
+                       class="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                        <i class="fa fa-eye"></i> 查看详情
+                    </a>
+                </div>
+            </div>
+
+            <!-- 案例: C20260620001 -->
+            <div class="case-card bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
+                 data-crisis="L"
+                 data-age="青少年"
+                 data-keywords="重度抑郁症 焦虑症 双相情感障碍 幻听 幻影 抑郁躯体化 厌食 催吐 自伤 休学 情感忽视 融入困难 青春期 情绪不稳定"
+                 data-relation-tags="家庭关系-亲子关系-青少年-情感忽视|||家庭关系-亲子关系-父母情绪回应不当|||社交关系-同伴关系-融入困难|||社交关系-同伴关系-校园适应"
+                 data-symptom-tags="情绪障碍-抑郁症-重度（已确诊）|||情绪障碍-焦虑症（已确诊）|||情绪障碍-双相情感障碍-发展倾向|||精神症状-幻听|||精神症状-幻影|||行为问题-进食障碍-厌食|||行为问题-进食障碍-催吐|||行为问题-自伤倾向-掐脖子|||躯体症状-抑郁躯体化|||情绪问题-情绪不稳定（双相特征）">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <h3 class="text-xl font-bold text-gray-800">很多大人，都背叛了小时候不曾善待的自己</h3>
+                            <span class="px-3 py-1 bg-orange-100 text-orange-800 font-bold rounded-lg text-sm">L级</span>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3">
+                            <span><i class="fa fa-calendar"></i> 2026-06-16</span>
+                            <span class="ml-4"><i class="fa fa-clock-o"></i> 63分钟</span>
+                            <span class="ml-4"><i class="fa fa-phone"></i> 电话/线上</span>
+                        </div>
+                        <div class="text-sm text-gray-700 mb-3">
+                            <strong>案例编号：</strong>C20260620001
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3">
+                            高二女生确诊重度抑郁症+焦虑症，伴有双相情感障碍发展倾向、幻听幻影、严重进食障碍（厌食+催吐）、频繁抑郁躯体化、自伤行为。咨询师使用了多种技术（情绪承接、赋能、隐喻、重新框架），其中'我是国王'隐喻对幻听处理有创新性。触及了家庭动力核心（父母情感忽视）。但咨询师自评'说教太多'，对社交融入的建议过于空泛。案例涉及精神病性症状和严重自伤风险，处于生命危险级别（L级）。...
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">重度抑郁症</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">焦虑症</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">双相情感障碍</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">幻听</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">幻影</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">抑郁躯体化</span>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            <strong>核心技术：</strong>情绪承接, 正常化技术, 赋能技术（'勇士'）, 隐喻技术（'我是国王，声音是臣民'）
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t pt-3 flex justify-between items-center">
+                    <div class="text-xs text-green-600">
+                        <i class="fa fa-lightbulb-o"></i> <strong>亮点：</strong>很好地承接了来访者强烈的情绪，建立了安全的咨询关系...
+                    </div>
+                    <a href="cases/[抑郁症]-[青少年]-C20260620001-很多大人，都背叛了小时候不曾善待的自己.html"
+                       class="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                        <i class="fa fa-eye"></i> 查看详情
+                    </a>
+                </div>
+            </div>
+
+            <!-- 案例: C20260620002 -->
+            <div class="case-card bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition"
+                 data-crisis="M"
+                 data-age="中年"
+                 data-keywords="抑郁症 焦虑症 更年期 企业主 经营压力 躯体化 轻生想法 休息两个月 内在小孩 动力枯竭 账目收不回 时代变化"
+                 data-relation-tags="工作关系-企业经营压力|||社会关系-经济困境"
+                 data-symptom-tags="情绪障碍-抑郁症（已确诊）|||情绪障碍-焦虑症（已确诊）|||躯体症状-抑郁躯体化（身体无法挪动）|||行为问题-自杀意念（想轻生）|||内分泌-更年期综合征">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <h3 class="text-xl font-bold text-gray-800">压垮人的是，一直都这样</h3>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 font-bold rounded-lg text-sm">M级</span>
+                        </div>
+                        <div class="text-sm text-gray-600 mb-3">
+                            <span><i class="fa fa-calendar"></i> 2026-06-16</span>
+                            <span class="ml-4"><i class="fa fa-clock-o"></i> 46分钟</span>
+                            <span class="ml-4"><i class="fa fa-phone"></i> 电话/线上</span>
+                        </div>
+                        <div class="text-sm text-gray-700 mb-3">
+                            <strong>案例编号：</strong>C20260620002
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3">
+                            女企业主确诊抑郁症+焦虑症，更年期叠加，已休息两个月，有轻生想法但无明确计划。主要压力来自账目收不回、时代变化快、不想学习。咨询师使用了'内在小孩'理论进行重新框架，强调动力枯竭是新课题，建议让理性满足内在小孩需求而非外界需求。咨询师有两处自我质疑：1）建议'去厂里看看'过于直接；2）建议'休息半年'担心经营风险。案主用'更年期'作为保护壳。危机等级M（中度），需持续跟进。...
+                        </p>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">抑郁症</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">焦虑症</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">更年期</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">企业主</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">经营压力</span>
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded font-medium">躯体化</span>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            <strong>核心技术：</strong>共情, 躯体化识别, 内在小孩理论, 重新框架（理性vs内在小孩）
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t pt-3 flex justify-between items-center">
+                    <div class="text-xs text-green-600">
+                        <i class="fa fa-lightbulb-o"></i> <strong>亮点：</strong>很好地识别了躯体化症状（'身体无法挪动'），并得到案主认同...
+                    </div>
+                    <a href="cases/[抑郁症（已确诊）]-[中年]-C20260620002-压垮人的是，一直都这样.html"
+                       class="text-blue-600 hover:text-blue-800 font-semibold text-sm">
+                        <i class="fa fa-eye"></i> 查看详情
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 无结果提示 -->
+        <div id="noResults" class="text-center text-gray-500 py-8 hidden">
+            <i class="fa fa-search text-4xl mb-2"></i>
+            <p>没有找到匹配的案例</p>
+        </div>
+
+        <!-- 返回主页按钮 -->
+        <div class="text-center mt-8">
+            <a href="../index.html" class="inline-block px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                <i class="fa fa-home"></i> 返回项目主页
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // 展开/收起面板
+        function toggleFilterCard(headerElement) {
+            const card = headerElement.parentElement;
+            card.classList.toggle('expanded');
+        }
+
+        const searchInput = document.getElementById('searchInput');
+        const crisisFilter = document.getElementById('crisisFilter');
+        const ageFilter = document.getElementById('ageFilter');
+        const caseCards = document.querySelectorAll('.case-card');
+        const noResults = document.getElementById('noResults');
+        const selectedTagsBox = document.getElementById('selectedTagsBox');
+
+        // 更新已选标签显示
+        function updateSelectedTags() {
+            const selectedTags = [];
+
+            // 收集关系标签
+            document.querySelectorAll('#relationCategoriesGrid input[type="checkbox"]:checked').forEach(cb => {
+                const label = cb.parentElement.textContent.trim();
+                selectedTags.push({ value: cb.value, label: label, type: 'relation' });
+            });
+
+            // 收集症状标签
+            document.querySelectorAll('#symptomCategoriesGrid input[type="checkbox"]:checked').forEach(cb => {
+                const label = cb.parentElement.textContent.trim();
+                selectedTags.push({ value: cb.value, label: label, type: 'symptom' });
+            });
+
+            // 更新显示
+            if (selectedTags.length === 0) {
+                selectedTagsBox.innerHTML = '<span class="text-xs text-gray-400">未选择任何标签</span>';
+            } else {
+                selectedTagsBox.innerHTML = selectedTags.map(tag =>
+                    `<span class="selected-tag">
+                        ${tag.label}
+                        <span class="remove-btn" onclick="removeTag('${tag.value}')">×</span>
+                    </span>`
+                ).join('');
+            }
+        }
+
+        // 移除标签
+        function removeTag(tagValue) {
+            const checkbox = document.querySelector(`input[type="checkbox"][value="${tagValue}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+                updateSelectedTags();
+                filterCases();
+            }
+        }
+
+        function filterCases() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const crisisValue = crisisFilter.value;
+            const ageValue = ageFilter.value;
+
+            // 获取选中的关系标签
+            const selectedRelationTags = [];
+            document.querySelectorAll('#relationCategoriesGrid input[type="checkbox"]:checked').forEach(cb => {
+                selectedRelationTags.push(cb.value);
+            });
+
+            // 获取选中的症状标签
+            const selectedSymptomTags = [];
+            document.querySelectorAll('#symptomCategoriesGrid input[type="checkbox"]:checked').forEach(cb => {
+                selectedSymptomTags.push(cb.value);
+            });
+
+            // 更新已选标签显示
+            updateSelectedTags();
+
+            let visibleCount = 0;
+
+            caseCards.forEach(card => {
+                const keywords = card.dataset.keywords.toLowerCase();
+                const crisis = card.dataset.crisis;
+                const age = card.dataset.age;
+                const relationTags = card.dataset.relationTags.split('|||').filter(t => t);
+                const symptomTags = card.dataset.symptomTags.split('|||').filter(t => t);
+
+                const matchSearch = !searchTerm || keywords.includes(searchTerm);
+                const matchCrisis = !crisisValue || crisis === crisisValue;
+                const matchAge = !ageValue || age.includes(ageValue);
+
+                // 关系标签筛选：如果选中了任何标签，案例必须包含至少一个选中的标签
+                const matchRelation = selectedRelationTags.length === 0 ||
+                    selectedRelationTags.some(tag => relationTags.includes(tag));
+
+                // 症状标签筛选：如果选中了任何标签，案例必须包含至少一个选中的标签
+                const matchSymptom = selectedSymptomTags.length === 0 ||
+                    selectedSymptomTags.some(tag => symptomTags.includes(tag));
+
+                if (matchSearch && matchCrisis && matchAge && matchRelation && matchSymptom) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            noResults.classList.toggle('hidden', visibleCount > 0);
+        }
+
+        searchInput.addEventListener('input', filterCases);
+        crisisFilter.addEventListener('change', filterCases);
+        ageFilter.addEventListener('change', filterCases);
+    </script>
+</body>
+</html>

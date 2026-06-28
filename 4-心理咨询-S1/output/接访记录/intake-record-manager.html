@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>接访记录管理 - 心理咨询案例系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        .tab-btn {
+            padding: 12px 24px;
+            border-bottom: 3px solid transparent;
+            color: #6B7280;
+            cursor: pointer;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            color: #1F2937;
+            background: #F9FAFB;
+        }
+        .tab-btn.active {
+            border-bottom-color: #3B82F6;
+            color: #1F2937;
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .upload-zone {
+            border: 2px dashed #cbd5e0;
+            transition: all 0.3s;
+        }
+        .upload-zone:hover {
+            border-color: #4299e1;
+            background-color: #ebf8ff;
+        }
+        .upload-zone.dragging {
+            border-color: #3182ce;
+            background-color: #bee3f8;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 标题栏 -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">
+                        <i class="fa fa-folder-open text-blue-600"></i> 接访记录管理
+                    </h1>
+                    <p class="text-gray-500 mt-1">完整的案例资料采集与管理</p>
+                </div>
+                <a href="../index.html" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                    <i class="fa fa-home"></i> 返回首页
+                </a>
+            </div>
+        </div>
+
+        <!-- 案例选择 -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fa fa-search text-blue-600"></i> 选择操作模式
+            </h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <button id="btnNewCase" onclick="switchMode('new')" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    <i class="fa fa-plus-circle"></i> 创建新案例
+                </button>
+                <button id="btnExistingCase" onclick="switchMode('existing')" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                    <i class="fa fa-folder-open"></i> 管理已有案例
+                </button>
+            </div>
+
+            <!-- 已有案例输入框 -->
+            <div id="existingCaseInput" class="hidden">
+                <div class="flex gap-4">
+                    <input
+                        type="text"
+                        id="caseIdInput"
+                        placeholder="输入案例编号，例如: C20260616001"
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                    <button
+                        onclick="loadCase()"
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <i class="fa fa-folder-open"></i> 加载案例
+                    </button>
+                </div>
+            </div>
+
+            <div id="caseInfo" class="mt-4 hidden">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p class="text-sm text-gray-700">
+                        <strong>当前案例：</strong><span id="currentCaseId" class="text-blue-700 font-mono"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能Tab -->
+        <div id="mainContent" class="hidden">
+            <div class="bg-white rounded-lg shadow-sm mb-6">
+                <div class="border-b px-6">
+                    <div class="flex gap-2">
+                        <button class="tab-btn active" data-tab="create" onclick="switchTab('create')">
+                            <i class="fa fa-file-word-o"></i> 案例创建
+                        </button>
+                        <button class="tab-btn" data-tab="audio" onclick="switchTab('audio')">
+                            <i class="fa fa-microphone"></i> 录音上传
+                        </button>
+                        <button class="tab-btn" data-tab="transcript" onclick="switchTab('transcript')">
+                            <i class="fa fa-file-text"></i> 逐字稿
+                        </button>
+                        <button class="tab-btn" data-tab="supervision" onclick="switchTab('supervision')">
+                            <i class="fa fa-briefcase"></i> 督导资料
+                        </button>
+                        <button class="tab-btn" data-tab="summary" onclick="switchTab('summary')">
+                            <i class="fa fa-list-alt"></i> 资料汇总
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 案例创建Tab -->
+                <div class="tab-content active p-6" id="tab-create">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="fa fa-file-word-o text-blue-600"></i> 上传接访记录Word文档
+                    </h3>
+
+                    <!-- Word上传区 -->
+                    <div id="wordDropZone" class="upload-zone rounded-lg p-12 text-center mb-6">
+                        <i class="fa fa-cloud-upload text-6xl text-gray-400 mb-4"></i>
+                        <p class="text-xl text-gray-600 mb-2">拖拽Word文档到此处，或点击选择文件</p>
+                        <p class="text-sm text-gray-400 mb-4">仅支持 .docx 格式</p>
+                        <input type="file" id="wordFileInput" accept=".docx" class="hidden">
+                        <button
+                            onclick="document.getElementById('wordFileInput').click()"
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            <i class="fa fa-folder-open"></i> 选择Word文档
+                        </button>
+                    </div>
+
+                    <!-- Word文件信息 -->
+                    <div id="wordFileInfo" class="hidden mb-6">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <i class="fa fa-file-word-o text-blue-600 text-2xl mr-3"></i>
+                                    <span id="wordFileName" class="font-bold"></span>
+                                    <span id="wordFileSize" class="text-gray-600 ml-2"></span>
+                                </div>
+                                <button onclick="startWordAnalysis()" class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                                    <i class="fa fa-arrow-right mr-2"></i>开始分析
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI分析中 -->
+                    <div id="wordAnalyzing" class="hidden text-center py-12">
+                        <i class="fa fa-spinner fa-spin text-6xl text-blue-500 mb-4"></i>
+                        <p class="text-xl text-gray-600">正在分析接访记录，请稍候...</p>
+                        <p class="text-gray-500 mt-2">AI正在提取标签、关键词、危机等级等信息</p>
+                    </div>
+
+                    <!-- AI分析结果 -->
+                    <div id="wordAnalysisResult" class="hidden">
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                            <p class="text-green-700">
+                                <i class="fa fa-check-circle"></i> 分析完成！案例编号：<span id="newCaseId" class="font-mono font-bold"></span>
+                            </p>
+                        </div>
+
+                        <div class="space-y-6">
+                            <!-- 基本信息 -->
+                            <div>
+                                <h4 class="font-bold text-gray-800 mb-3">基本信息</h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-bold mb-1">代号</label>
+                                        <input type="text" id="ai_代号" class="w-full border rounded px-3 py-2">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold mb-1">性别</label>
+                                        <select id="ai_性别" class="w-full border rounded px-3 py-2">
+                                            <option value="">未知</option>
+                                            <option value="男">男</option>
+                                            <option value="女">女</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold mb-1">年龄</label>
+                                        <input type="text" id="ai_年龄" class="w-full border rounded px-3 py-2">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold mb-1">职业</label>
+                                        <input type="text" id="ai_职业" class="w-full border rounded px-3 py-2">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 危机等级 -->
+                            <div>
+                                <h4 class="font-bold text-gray-800 mb-3">危机等级</h4>
+                                <select id="ai_crisis_level" class="w-full border rounded px-3 py-2">
+                                    <option value="S">S - 自杀风险</option>
+                                    <option value="L">L - 生命危险</option>
+                                    <option value="M">M - 中度危机</option>
+                                    <option value="C" selected>C - 慢性困扰</option>
+                                    <option value="Z">Z - 正常范围</option>
+                                </select>
+                            </div>
+
+                            <!-- 关键词 -->
+                            <div>
+                                <h4 class="font-bold text-gray-800 mb-3">关键词</h4>
+                                <input type="text" id="ai_keywords" placeholder="用逗号分隔" class="w-full border rounded px-3 py-2">
+                            </div>
+
+                            <!-- AI摘要 -->
+                            <div>
+                                <h4 class="font-bold text-gray-800 mb-3">AI分析摘要</h4>
+                                <textarea id="ai_summary" rows="4" class="w-full border rounded px-3 py-2"></textarea>
+                            </div>
+
+                            <div class="flex justify-end gap-4">
+                                <button onclick="saveNewCase()" class="px-8 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 text-lg font-bold">
+                                    <i class="fa fa-save mr-2"></i>保存案例并继续上传材料
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 录音上传Tab -->
+                <div class="tab-content active p-6" id="tab-audio">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="fa fa-upload text-blue-600"></i> 上传咨询录音
+                    </h3>
+
+                    <div id="audioDropZone" class="upload-zone rounded-lg p-8 text-center mb-6">
+                        <i class="fa fa-cloud-upload text-5xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600 mb-2">拖拽录音文件到此处，或点击选择文件</p>
+                        <p class="text-sm text-gray-400">支持格式: MP3, WAV, M4A, OGG, AAC</p>
+                        <input type="file" id="audioFileInput" accept="audio/*" class="hidden">
+                        <button
+                            onclick="document.getElementById('audioFileInput').click()"
+                            class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            <i class="fa fa-folder-open"></i> 选择文件
+                        </button>
+                    </div>
+
+                    <div id="audioProgress" class="hidden mb-6">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-700">
+                                    <i class="fa fa-spinner fa-spin"></i> 正在上传...
+                                </span>
+                                <span id="audioStatus" class="text-sm text-blue-600"></span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="audioProgressBar" class="bg-blue-600 h-2 rounded-full transition-all" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="audioList" class="space-y-3">
+                        <!-- 动态加载 -->
+                    </div>
+                </div>
+
+                <!-- 逐字稿Tab -->
+                <div class="tab-content p-6" id="tab-transcript">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="fa fa-plus text-green-600"></i> 添加逐字稿
+                    </h3>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">关联录音（可选）</label>
+                        <select id="transcriptAudioSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="">无关联录音</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">逐字稿内容</label>
+                        <textarea
+                            id="transcriptContent"
+                            rows="12"
+                            placeholder="在此输入或粘贴咨询对话逐字稿...&#10;&#10;示例格式：&#10;来访者：您好，我最近遇到了一些困扰...&#10;咨询师：你好，请慢慢说，我在听..."
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 font-mono text-sm"
+                        ></textarea>
+                    </div>
+
+                    <div class="flex justify-end gap-3 mb-6">
+                        <button
+                            onclick="clearTranscriptForm()"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                            <i class="fa fa-times"></i> 清空
+                        </button>
+                        <button
+                            onclick="saveTranscript()"
+                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                            <i class="fa fa-save"></i> 保存逐字稿
+                        </button>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 mt-8">
+                        <i class="fa fa-list text-purple-600"></i> 已保存逐字稿
+                    </h3>
+                    <div id="transcriptList" class="space-y-4">
+                        <!-- 动态加载 -->
+                    </div>
+                </div>
+
+                <!-- 督导资料Tab -->
+                <div class="tab-content p-6" id="tab-supervision">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="fa fa-upload text-amber-600"></i> 上传督导资料
+                    </h3>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">资料标题</label>
+                        <input
+                            type="text"
+                            id="supervisionTitle"
+                            placeholder="例如：第一次督导笔记、案例讨论记录"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        >
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">备注说明（可选）</label>
+                        <textarea
+                            id="supervisionNote"
+                            rows="2"
+                            placeholder="关于这份资料的补充说明..."
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        ></textarea>
+                    </div>
+
+                    <div id="supervisionDropZone" class="upload-zone rounded-lg p-8 text-center mb-6">
+                        <i class="fa fa-cloud-upload text-5xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600 mb-2">拖拽文件到此处，或点击选择文件</p>
+                        <p class="text-sm text-gray-400">支持格式: TXT, MD, PDF, DOC, DOCX, JPG, PNG</p>
+                        <input type="file" id="supervisionFileInput" accept=".txt,.md,.pdf,.doc,.docx,.jpg,.jpeg,.png" class="hidden">
+                        <button
+                            onclick="document.getElementById('supervisionFileInput').click()"
+                            class="mt-4 px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition">
+                            <i class="fa fa-folder-open"></i> 选择文件
+                        </button>
+                    </div>
+
+                    <div id="supervisionProgress" class="hidden mb-6">
+                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-700">
+                                    <i class="fa fa-spinner fa-spin"></i> 正在上传...
+                                </span>
+                                <span id="supervisionStatus" class="text-sm text-amber-600"></span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="supervisionProgressBar" class="bg-amber-600 h-2 rounded-full transition-all" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="supervisionList" class="space-y-3">
+                        <!-- 动态加载 -->
+                    </div>
+                </div>
+
+                <!-- 资料汇总Tab -->
+                <div class="tab-content p-6" id="tab-summary">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="fa fa-check-circle text-green-600"></i> 案例资料汇总
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+                            <i class="fa fa-microphone text-4xl text-blue-600 mb-3"></i>
+                            <div class="text-3xl font-bold text-gray-800" id="summaryAudioCount">0</div>
+                            <div class="text-sm text-gray-600 mt-1">录音文件</div>
+                        </div>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+                            <i class="fa fa-file-text text-4xl text-green-600 mb-3"></i>
+                            <div class="text-3xl font-bold text-gray-800" id="summaryTranscriptCount">0</div>
+                            <div class="text-sm text-gray-600 mt-1">逐字稿</div>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
+                            <i class="fa fa-briefcase text-4xl text-amber-600 mb-3"></i>
+                            <div class="text-3xl font-bold text-gray-800" id="summarySupervisionCount">0</div>
+                            <div class="text-sm text-gray-600 mt-1">督导资料</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                        <h4 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <i class="fa fa-info-circle text-green-600"></i>
+                            下一步操作
+                        </h4>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li class="flex items-start gap-2">
+                                <i class="fa fa-check text-green-600 mt-1"></i>
+                                <span>确保录音、逐字稿、督导资料已完整上传</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa fa-check text-green-600 mt-1"></i>
+                                <span>前往案例库查看：所有资料会自动显示在案例详情页</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa fa-check text-green-600 mt-1"></i>
+                                <span>使用案例处理脚本进行AI分析和标签提取</span>
+                            </li>
+                        </ul>
+                        <div class="mt-4 flex gap-3">
+                            <a href="../案例库/index.html" target="_blank"
+                               class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                <i class="fa fa-external-link"></i> 打开案例库
+                            </a>
+                            <button onclick="regenerateCaseLibrary()"
+                                    class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+                                <i class="fa fa-refresh"></i> 重新生成案例库
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑逐字稿模态框 -->
+    <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">
+                        <i class="fa fa-edit text-green-600"></i> 编辑逐字稿
+                    </h3>
+                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fa fa-times text-2xl"></i>
+                    </button>
+                </div>
+                <div class="mb-4">
+                    <textarea
+                        id="editTranscriptContent"
+                        rows="15"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 font-mono text-sm"
+                    ></textarea>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button
+                        onclick="closeEditModal()"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                        取消
+                    </button>
+                    <button
+                        onclick="updateTranscript()"
+                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        <i class="fa fa-save"></i> 保存修改
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="intake-record-manager.js"></script>
+</body>
+</html>

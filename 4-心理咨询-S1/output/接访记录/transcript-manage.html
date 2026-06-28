@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>逐字稿管理 - 心理咨询案例系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <!-- 标题栏 -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">
+                        <i class="fa fa-file-text text-green-600"></i> 逐字稿管理
+                    </h1>
+                    <p class="text-gray-500 mt-1">编辑和管理案例咨询逐字稿</p>
+                </div>
+                <a href="../index.html" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                    <i class="fa fa-home"></i> 返回首页
+                </a>
+            </div>
+        </div>
+
+        <!-- 案例选择 -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fa fa-folder-open text-green-600"></i> 选择案例
+            </h2>
+            <div class="flex gap-4">
+                <input
+                    type="text"
+                    id="caseIdInput"
+                    placeholder="输入案例编号，例如: C20260616001"
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                <button
+                    onclick="loadCaseTranscripts()"
+                    class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                    <i class="fa fa-search"></i> 加载案例
+                </button>
+            </div>
+            <div id="caseInfo" class="mt-4 hidden">
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p class="text-sm text-gray-700">
+                        <strong>当前案例：</strong><span id="currentCaseId" class="text-green-700 font-mono"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 逐字稿管理区域 -->
+        <div id="transcriptSection" class="hidden">
+            <!-- 录音关联选择 -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fa fa-plus text-green-600"></i> 添加逐字稿
+                </h2>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">关联录音（可选）</label>
+                    <select id="audioSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="">无关联录音</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">逐字稿内容</label>
+                    <textarea
+                        id="transcriptContent"
+                        rows="10"
+                        placeholder="在此输入或粘贴咨询对话逐字稿..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 font-mono text-sm"
+                    ></textarea>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button
+                        onclick="clearTranscriptForm()"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                        <i class="fa fa-times"></i> 清空
+                    </button>
+                    <button
+                        onclick="saveTranscript()"
+                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        <i class="fa fa-save"></i> 保存逐字稿
+                    </button>
+                </div>
+            </div>
+
+            <!-- 逐字稿列表 -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fa fa-list text-purple-600"></i> 已保存逐字稿
+                </h2>
+                <div id="transcriptList" class="space-y-4">
+                    <!-- 动态加载 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑模态框 -->
+    <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">
+                        <i class="fa fa-edit text-green-600"></i> 编辑逐字稿
+                    </h3>
+                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fa fa-times text-2xl"></i>
+                    </button>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">逐字稿内容</label>
+                    <textarea
+                        id="editTranscriptContent"
+                        rows="15"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 font-mono text-sm"
+                    ></textarea>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button
+                        onclick="closeEditModal()"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                        取消
+                    </button>
+                    <button
+                        onclick="updateTranscript()"
+                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        <i class="fa fa-save"></i> 保存修改
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TRANSCRIPT_API = 'http://localhost:8005';
+        const AUDIO_API = 'http://localhost:8004';
+        let currentCaseId = null;
+        let editingTranscriptId = null;
+
+        // 加载案例逐字稿
+        async function loadCaseTranscripts() {
+            const caseId = document.getElementById('caseIdInput').value.trim();
+            if (!caseId) {
+                alert('请输入案例编号');
+                return;
+            }
+
+            currentCaseId = caseId;
+            document.getElementById('currentCaseId').textContent = caseId;
+            document.getElementById('caseInfo').classList.remove('hidden');
+            document.getElementById('transcriptSection').classList.remove('hidden');
+
+            await loadAudioList();
+            await refreshTranscriptList();
+        }
+
+        // 加载录音列表（用于关联）
+        async function loadAudioList() {
+            try {
+                const response = await fetch(`${AUDIO_API}/api/audio/list?case_id=${currentCaseId}`);
+                const audioList = await response.json();
+
+                const select = document.getElementById('audioSelect');
+                select.innerHTML = '<option value="">无关联录音</option>';
+
+                audioList.forEach(audio => {
+                    const option = document.createElement('option');
+                    option.value = audio.filename;
+                    option.textContent = audio.filename;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('加载录音列表失败:', error);
+            }
+        }
+
+        // 刷新逐字稿列表
+        async function refreshTranscriptList() {
+            if (!currentCaseId) return;
+
+            try {
+                const response = await fetch(`${TRANSCRIPT_API}/api/transcript?case_id=${currentCaseId}`);
+                const transcripts = await response.json();
+
+                const container = document.getElementById('transcriptList');
+
+                if (transcripts.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 text-gray-400">
+                            <i class="fa fa-file-text-o text-4xl mb-3"></i>
+                            <p>暂无逐字稿</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = transcripts.map(transcript => {
+                    const preview = transcript.content.substring(0, 150) + (transcript.content.length > 150 ? '...' : '');
+                    const audioInfo = transcript.audio_filename
+                        ? `<span class="text-xs text-blue-600"><i class="fa fa-link"></i> ${transcript.audio_filename}</span>`
+                        : '';
+
+                    return `
+                        <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="text-sm font-mono text-gray-600">${transcript.id}</span>
+                                        ${audioInfo}
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        创建于 ${formatDateTime(transcript.created_at)}
+                                        ${transcript.last_modified !== transcript.created_at ? ' | 修改于 ' + formatDateTime(transcript.last_modified) : ''}
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button
+                                        onclick="openEditModal('${transcript.id}', ${JSON.stringify(transcript.content).replace(/'/g, "\\'") })"
+                                        class="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded hover:bg-blue-200 transition">
+                                        <i class="fa fa-edit"></i> 编辑
+                                    </button>
+                                    <button
+                                        onclick="deleteTranscript('${transcript.id}')"
+                                        class="px-3 py-1 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200 transition">
+                                        <i class="fa fa-trash"></i> 删除
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="bg-gray-100 rounded p-3 font-mono text-xs text-gray-700 whitespace-pre-wrap">${preview}</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('加载逐字稿列表失败:', error);
+                alert('加载逐字稿列表失败，请检查服务器是否启动');
+            }
+        }
+
+        // 保存逐字稿
+        async function saveTranscript() {
+            if (!currentCaseId) {
+                alert('请先选择案例');
+                return;
+            }
+
+            const content = document.getElementById('transcriptContent').value.trim();
+            if (!content) {
+                alert('请输入逐字稿内容');
+                return;
+            }
+
+            const audioFilename = document.getElementById('audioSelect').value;
+
+            try {
+                const response = await fetch(`${TRANSCRIPT_API}/api/transcript`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        case_id: currentCaseId,
+                        content: content,
+                        audio_filename: audioFilename,
+                        timestamps: []
+                    })
+                });
+
+                if (response.ok) {
+                    alert('保存成功！');
+                    clearTranscriptForm();
+                    await refreshTranscriptList();
+                } else {
+                    const error = await response.json();
+                    alert('保存失败: ' + error.error);
+                }
+            } catch (error) {
+                console.error('保存失败:', error);
+                alert('保存失败，请检查服务器是否启动');
+            }
+        }
+
+        // 清空表单
+        function clearTranscriptForm() {
+            document.getElementById('transcriptContent').value = '';
+            document.getElementById('audioSelect').value = '';
+        }
+
+        // 打开编辑模态框
+        function openEditModal(transcriptId, content) {
+            editingTranscriptId = transcriptId;
+            document.getElementById('editTranscriptContent').value = content;
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        // 关闭编辑模态框
+        function closeEditModal() {
+            editingTranscriptId = null;
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        // 更新逐字稿
+        async function updateTranscript() {
+            if (!editingTranscriptId) return;
+
+            const content = document.getElementById('editTranscriptContent').value.trim();
+            if (!content) {
+                alert('逐字稿内容不能为空');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${TRANSCRIPT_API}/api/transcript`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        case_id: currentCaseId,
+                        transcript_id: editingTranscriptId,
+                        content: content,
+                        timestamps: []
+                    })
+                });
+
+                if (response.ok) {
+                    alert('更新成功！');
+                    closeEditModal();
+                    await refreshTranscriptList();
+                } else {
+                    const error = await response.json();
+                    alert('更新失败: ' + error.error);
+                }
+            } catch (error) {
+                console.error('更新失败:', error);
+                alert('更新失败，请检查服务器是否启动');
+            }
+        }
+
+        // 删除逐字稿
+        async function deleteTranscript(transcriptId) {
+            if (!confirm('确定要删除这条逐字稿吗？此操作不可恢复。')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${TRANSCRIPT_API}/api/transcript`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        case_id: currentCaseId,
+                        transcript_id: transcriptId
+                    })
+                });
+
+                if (response.ok) {
+                    alert('删除成功');
+                    await refreshTranscriptList();
+                } else {
+                    const error = await response.json();
+                    alert('删除失败: ' + error.error);
+                }
+            } catch (error) {
+                console.error('删除失败:', error);
+                alert('删除失败，请检查服务器是否启动');
+            }
+        }
+
+        // 格式化日期时间
+        function formatDateTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+    </script>
+</body>
+</html>

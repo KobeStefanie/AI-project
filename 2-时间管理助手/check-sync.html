@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>检查同步状态</title>
+  <style>
+    body { font-family: system-ui; padding: 20px; max-width: 800px; margin: 0 auto; }
+    pre { background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; }
+    button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; }
+    .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+    .info { background: #d1ecf1; color: #0c5460; }
+  </style>
+</head>
+<body>
+  <h1>同步状态检查工具</h1>
+
+  <div id="status"></div>
+
+  <div>
+    <button onclick="checkSync()">检查同步配置</button>
+    <button onclick="pullData()">执行拉取</button>
+    <button onclick="checkLocalData()">检查本地数据</button>
+  </div>
+
+  <h2>同步配置</h2>
+  <pre id="config"></pre>
+
+  <h2>本地数据 (2026-W26)</h2>
+  <pre id="localData"></pre>
+
+  <h2>操作日志</h2>
+  <pre id="log"></pre>
+
+  <script>
+    function log(msg) {
+      const logEl = document.getElementById('log');
+      logEl.textContent += new Date().toLocaleTimeString() + ': ' + msg + '\n';
+    }
+
+    function showStatus(msg, type) {
+      const statusEl = document.getElementById('status');
+      statusEl.className = 'status ' + type;
+      statusEl.textContent = msg;
+    }
+
+    function checkSync() {
+      const syncEnabled = localStorage.getItem('syncEnabled');
+      const syncServer = localStorage.getItem('syncServer');
+      const deviceToken = localStorage.getItem('deviceToken');
+      const deviceName = localStorage.getItem('deviceName');
+
+      const config = {
+        syncEnabled: syncEnabled,
+        syncServer: syncServer,
+        deviceToken: deviceToken ? deviceToken.substring(0, 12) + '...' : null,
+        deviceName: deviceName
+      };
+
+      document.getElementById('config').textContent = JSON.stringify(config, null, 2);
+
+      if (syncEnabled === 'true') {
+        showStatus('同步已启用', 'success');
+      } else {
+        showStatus('同步未启用！', 'error');
+      }
+
+      log('同步配置检查完成');
+    }
+
+    function checkLocalData() {
+      const key = 'week-2026-26';
+      const data = localStorage.getItem(key);
+
+      if (data) {
+        try {
+          const parsed = JSON.parse(data);
+          const cellsCount = Object.keys(parsed.cells || {}).length;
+          const keyitemsCount = Object.keys(parsed.keyitems || {}).length;
+
+          document.getElementById('localData').textContent =
+            `cells: ${cellsCount}\n` +
+            `keyitems: ${keyitemsCount}\n` +
+            `weekUpdatedAt: ${parsed.weekUpdatedAt}\n` +
+            `第一件事: ${parsed.keyitems['2026-06-22|第一件事']?.value || '无'}\n` +
+            `第二件事: ${parsed.keyitems['2026-06-22|第二件事']?.value || '无'}\n` +
+            `第三件事: ${parsed.keyitems['2026-06-22|第三件事']?.value || '无'}\n\n` +
+            JSON.stringify(parsed, null, 2);
+
+          showStatus(`本地数据: ${cellsCount} 个单元格, ${keyitemsCount} 个关键项`, 'info');
+          log('本地数据检查完成');
+        } catch (e) {
+          showStatus('解析本地数据失败: ' + e.message, 'error');
+        }
+      } else {
+        document.getElementById('localData').textContent = '无数据';
+        showStatus('本地无 2026-W26 数据', 'error');
+        log('本地无数据');
+      }
+    }
+
+    async function pullData() {
+      const syncServer = localStorage.getItem('syncServer') || 'https://192.168.31.153:6444';
+      const deviceToken = localStorage.getItem('deviceToken');
+
+      log('开始拉取数据...');
+      log('服务器: ' + syncServer);
+
+      try {
+        const url = `${syncServer}/weeks/2026/26`;
+        const headers = deviceToken ? { 'X-Device-Token': deviceToken } : {};
+
+        log('请求: GET ' + url);
+
+        const response = await fetch(url, { headers });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        log('成功拉取数据');
+        log(`cells: ${Object.keys(data.cells || {}).length}`);
+        log(`keyitems: ${Object.keys(data.keyitems || {}).length}`);
+
+        // 保存到 localStorage
+        const key = 'week-2026-26';
+        localStorage.setItem(key, JSON.stringify(data));
+        log('已保存到 localStorage: ' + key);
+
+        showStatus('拉取成功！请刷新主页面查看', 'success');
+
+        // 显示数据
+        checkLocalData();
+
+      } catch (e) {
+        showStatus('拉取失败: ' + e.message, 'error');
+        log('错误: ' + e.message);
+      }
+    }
+
+    // 页面加载时自动检查
+    window.onload = function() {
+      checkSync();
+      checkLocalData();
+    };
+  </script>
+</body>
+</html>

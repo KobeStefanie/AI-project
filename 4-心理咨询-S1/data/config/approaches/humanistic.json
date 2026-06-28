@@ -1,0 +1,31 @@
+{
+  "id": "humanistic",
+  "name": "人本主义",
+  "name_en": "Humanistic Therapy",
+  "description": "人本主义取向，强调个人成长潜能、自我实现和此时此地的体验，以来访者为中心",
+  "color": "#dc2626",
+  "icon": "fa-heart",
+  "core_concepts": [
+    "无条件积极关注",
+    "共情理解",
+    "真诚一致",
+    "自我实现倾向",
+    "此时此地"
+  ],
+  "typical_techniques": [
+    "积极倾听",
+    "反映情感",
+    "澄清",
+    "具体化",
+    "当下觉察"
+  ],
+  "focus_areas": [
+    "情感体验",
+    "自我探索",
+    "个人成长",
+    "关系质量"
+  ],
+  "enabled": false,
+  "sort_order": 4,
+  "note": "待学习后启用"
+}

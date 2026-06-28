@@ -3,6 +3,7 @@
 - [Memory 默认存储位置](memory-default-location.md) — 所有 memory 权威源为 D:\AI-项目\0-config，不得擅自变更
 - [项目目录规范](project-rules.md) — 项目存放位置、命名格式、内部结构、新建流程
 - [技能存储规范](skills-storage-rules.md) — 技能安装后存储位置、文件命名、0-config规则维护
+- [浏览器自动化偏好](browser-automation-preference.md) — 浏览器操作直接执行不询问用户
 - [自动打开预览](auto-open-preview.md) — 静态 HTML 预览文件生成后自动浏览器打开
 - [灵感收集器](inspiration-collector.md) — 跨端灵感捕获与整理项目，PLAN 阶段，执行前需确认
 - [Git 自动推送 GitHub](git-auto-push-github.md) — 每次 commit 后 post-commit hook 自动推送到 GitHub

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>案例：很多大人，都背叛了小时候不曾善待的自己</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        .tab-btn {
+            padding: 12px 24px;
+            border-bottom: 3px solid transparent;
+            color: #6B7280;
+            cursor: pointer;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            color: #1F2937;
+            background: #F9FAFB;
+        }
+        .tab-btn.active {
+            border-bottom-color: #3B82F6;
+            color: #1F2937;
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <!-- 返回按钮 -->
+        <div class="mb-4">
+            <a href="../index.html" class="text-blue-600 hover:text-blue-800">
+                <i class="fa fa-arrow-left"></i> 返回案例库
+            </a>
+        </div>
+
+        <!-- 案例头部 -->
+        <div class="border-b pb-4 mb-6">
+            <div class="flex items-center justify-between mb-3">
+                <h1 class="text-3xl font-bold text-gray-800">很多大人，都背叛了小时候不曾善待的自己</h1>
+                <span class="px-4 py-2 bg-orange-100 text-orange-800 font-bold rounded-lg text-lg">L级 - 生命危险</span>
+            </div>
+            <div class="text-sm text-gray-600 space-x-4">
+                <span><strong>案例编号：</strong>C20260620001</span>
+                <span><strong>日期：</strong>2026-06-16</span>
+                <span><strong>时长：</strong>63分钟</span>
+                <span><strong>渠道：</strong>电话/线上</span>
+            </div>
+        </div>
+
+        <!-- 基本信息 -->
+        <div class="mb-6">
+            <h2 class="text-xl font-bold text-blue-900 mb-3">📋 基本信息</h2>
+            <div class="bg-blue-50 rounded-lg p-4 grid grid-cols-2 gap-3 text-sm">
+                <div><strong>代号：</strong>L001</div>
+                <div><strong>性别：</strong>女</div>
+                <div><strong>年龄：</strong>16-17岁（高二）</div>
+                <div><strong>职业：</strong>学生</div>
+                <div><strong>婚姻：</strong>未婚</div>
+            </div>
+        </div>
+
+        <!-- 录音资料 -->
+        <!-- 流派Tab导航 -->
+        <div class="border-b mb-6">
+            <div class="flex gap-2">
+        <!-- 流派Tab导航 -->
+        <div class="border-b mb-6">
+            <div class="flex gap-2">
+                <button class="tab-btn active" data-tab="daguanpai">
+                    <i class="fa fa-compass"></i> 大观学派
+                </button>
+                <button class="tab-btn " data-tab="cbt">
+                    <i class="fa fa-brain"></i> 认知行为疗法
+                </button>
+                <button class="tab-btn " data-tab="psychodynamic">
+                    <i class="fa fa-user-circle"></i> 精神动力学
+                </button>
+                <button class="tab-btn " data-tab="humanistic">
+                    <i class="fa fa-heart"></i> 人本主义
+                </button>
+                <button class="tab-btn " data-tab="existential">
+                    <i class="fa fa-lightbulb-o"></i> 存在主义
+                </button>
+                <button class="tab-btn " data-tab="temp_1">
+                    <i class="fa fa-circle"></i> 拉康
+                </button>
+            </div>
+        </div>
+
+        <!-- 大观学派Tab内容 -->
+        <div class="tab-content active" id="tab-daguanpai">
+            <!-- 危机评估 -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-red-900 mb-3">⚠️ 危机评估</h2>
+                <div class="bg-orange-50 border-l-4 border-orange-500 rounded p-4 text-sm">
+                    <div class="font-semibold mb-2">L级 - 生命危险</div>
+                    <div class="text-gray-700">
+                        <strong>证据：</strong>1. 重度抑郁症+焦虑症已确诊；2. 双相情感障碍发展倾向；3. 严重幻听幻影（精神病性症状）；4. 抑郁躯体化频繁严重（每周一次→更频繁）；5. 自伤行为（用手掐脖子）；6. 严重进食障碍（110→80斤体重骤降）；7. 已休学；8. 描述痛苦为'凌迟'级别
+                    </div>
+                </div>
+            </div>
+
+            <!-- 关键词 -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-purple-900 mb-3">🏷️ 关键词</h2>
+                <div class="flex flex-wrap gap-2">
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">重度抑郁症</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">焦虑症</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">双相情感障碍</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">幻听</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">幻影</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">抑郁躯体化</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">厌食</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">催吐</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">自伤</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">休学</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">情感忽视</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">融入困难</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">青春期</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">情绪不稳定</span>
+                </div>
+            </div>
+
+            <!-- 使用技术 -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-green-900 mb-3">🛠️ 使用技术</h2>
+                <div class="bg-green-50 rounded-lg p-4">
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li>情绪承接</li>
+                        <li>正常化技术</li>
+                        <li>赋能技术（'勇士'）</li>
+                        <li>隐喻技术（'我是国王，声音是臣民'）</li>
+                        <li>重新框架（躯体化=身体求救信号）</li>
+                        <li>重新框架（'回避'→'想融入但怕被伤害'）</li>
+                        <li>共情</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- AI分析 -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-indigo-900 mb-3">🤖 AI督导分析</h2>
+
+                <!-- 案例摘要 -->
+                <div class="mb-4">
+                    <h3 class="font-semibold text-gray-800 mb-2">📝 案例摘要</h3>
+                    <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded">高二女生确诊重度抑郁症+焦虑症，伴有双相情感障碍发展倾向、幻听幻影、严重进食障碍（厌食+催吐）、频繁抑郁躯体化、自伤行为。咨询师使用了多种技术（情绪承接、赋能、隐喻、重新框架），其中'我是国王'隐喻对幻听处理有创新性。触及了家庭动力核心（父母情感忽视）。但咨询师自评'说教太多'，对社交融入的建议过于空泛。案例涉及精神病性症状和严重自伤风险，处于生命危险级别（L级）。</p>
+                </div>
+
+                <!-- 咨询师优势 -->
+                <div class="mb-4">
+                    <h3 class="font-semibold text-green-800 mb-2">✅ 咨询师优势</h3>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-700">
+                        <li>很好地承接了来访者强烈的情绪，建立了安全的咨询关系</li>
+                        <li>使用'勇士'等词汇进行赋能，增强来访者的自我效能感</li>
+                        <li>'我是国王，声音是臣民'的隐喻对幻听处理创新且有效，帮助来访者建立对症状的掌控感</li>
+                        <li>将躯体化重新框架为'身体的求救信号'，帮助来访者理解症状意义</li>
+                        <li>对'回避'进行了精准的重新框架（'想融入但怕被伤害'），澄清了真实需求</li>
+                        <li>对青春期暴躁进行了正常化处理，减轻来访者的自责</li>
+                        <li>敏锐地触及了深层的家庭动力（父母的情感忽视），并用'背叛小时候的自己'进行深刻反思</li>
+                    </ul>
+                </div>
+
+                <!-- 改进建议 -->
+                <div class="mb-4">
+                    <h3 class="font-semibold text-orange-800 mb-2">💡 改进建议</h3>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-700">
+                        <li>咨询师自评'说教太多'是准确的，建议减少建议性陈述，增加开放式提问，让来访者自己探索</li>
+                        <li>对于幻听幻影这样的精神病性症状，需要更谨慎评估是否超出心理咨询范围，必须与精神科医生密切协作</li>
+                        <li>自伤行为（掐脖子）和'凌迟'般的痛苦描述需要立即评估自杀风险并建立安全协议</li>
+                        <li>对于严重的进食障碍（110→80斤），需要转介营养师和医疗团队</li>
+                        <li>对融入人群的建议'慢慢去接受他们'过于空泛，咨询师自己也承认'不知道如何给出方法'，建议聚焦具体的社交技能训练</li>
+                        <li>案例危机等级为L级（生命危险），需要建立多学科协作（精神科+营养科+心理咨询）</li>
+                        <li>需要评估家庭系统的支持能力，考虑家庭治疗改善父母的情感回应方式</li>
+                    </ul>
+                </div>
+
+                <!-- 下次咨询建议 -->
+                <div>
+                    <h3 class="font-semibold text-blue-800 mb-2">📅 下次咨询建议</h3>
+                    <p class="text-sm text-gray-700 bg-blue-50 p-3 rounded">['立即评估自杀风险，建立安全计划和紧急联系机制', '转介营养师处理进食障碍，监测体重和身体健康指标', '与精神科医生沟通，评估幻听幻影的严重程度和药物治疗进展', "建立家庭治疗，改善父母的情感回应方式（从'别想'到情感验证）", '聚焦具体的社交技能训练（如何开启对话、如何应对尴尬、如何处理拒绝），而非空泛建议']</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 认知行为疗法Tab内容 -->
+        <div class="tab-content " id="tab-cbt">
+            <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
+                <i class="fa fa-info-circle text-4xl mb-3"></i>
+                <p>该流派分析暂未添加</p>
+            </div>
+        </div>
+
+        <!-- 精神动力学Tab内容 -->
+        <div class="tab-content " id="tab-psychodynamic">
+            <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
+                <i class="fa fa-info-circle text-4xl mb-3"></i>
+                <p>该流派分析暂未添加</p>
+            </div>
+        </div>
+
+        <!-- 人本主义Tab内容 -->
+        <div class="tab-content " id="tab-humanistic">
+            <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
+                <i class="fa fa-info-circle text-4xl mb-3"></i>
+                <p>该流派分析暂未添加</p>
+            </div>
+        </div>
+
+        <!-- 存在主义Tab内容 -->
+        <div class="tab-content " id="tab-existential">
+            <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
+                <i class="fa fa-info-circle text-4xl mb-3"></i>
+                <p>该流派分析暂未添加</p>
+            </div>
+        </div>
+
+        <!-- 拉康Tab内容 -->
+        <div class="tab-content " id="tab-temp_1">
+            <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
+                <i class="fa fa-info-circle text-4xl mb-3"></i>
+                <p>该流派分析暂未添加</p>
+            </div>
+        </div>
+
+        <!-- 完整对话记录 -->
+        <div class="mb-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-3">💬 完整对话记录</h2>
+            <div class="bg-gray-50 rounded-lg p-4">
+                <pre class="whitespace-pre-wrap text-sm text-gray-800 font-mono">很多大人，都背叛了小时候不曾善待的自己
+1、抑郁高二女生                                                   13:41-14:44
+自今年4月确诊重度抑郁症及焦虑症，同时有双相情感障碍发展的倾向，平均每周一次的抑郁躯体化的症状，自五月以来更频繁也更严重，曾寻求过咨询师，但收效甚微，目前按时吃药，现在已经开始有幻听及幻影，目前休学在家。最近一次躯体化是昨天从晚六点到十点，直至服药才得到缓解。起因是去染发，能清晰的听到脑海里有三种声音，一种是支持一种反对一种是中立。支持的声音是想叛逆一下，去寻求一种改变，而反对的声音则是学校规则不允许，最后其采纳了支持染发的决定，然后没来由的悲伤，导致抑郁躯体化。来访动机是觉得生活没有意义，抑郁躯体化的时候，会用手想掐死自己，她清晰地说她感觉她在接受“凌迟”，极其痛苦。高中住校，发现的起因是去年10月体重110斤，于是采取厌食和催吐的方式减肥，一度减肥到80斤，由于服药导致现在90斤。现在常常会出现白天豪情壮志，激情澎湃，晚上则是抑郁悲伤绝望。
+首先，我承接住了她的情绪，一直鼓励她是一个勇士，我们与病魔的斗争，不同于其他的斗争，那种常常只有我们一个人，我们受到的伤害不同于物理的损伤，能被人一眼识别，所以可能我们常常会被误解，但是我们很勇敢的去面对。
+躯体化是我们身体的求救信号，属于情绪达到崩溃的边缘，由身体来承担这部分伤害，她很认同。对于她出现的幻听，由于昨晚染发时清晰的听到支持/反对/中立的声音。我说我是我的国王，无论支持/反对/中立的声音，都是我们的臣民。我们不是一定非得听着他们的声音，我们是我们自己的国王，可以听支持的建议，等过两天觉得反方的意见更在理，我们又染回来，但我们都是自己的国王，臣子仅能提意见，我作为国王决定采取谁的意见，这个无关对于错，我们不用苛责让每个臣子都满意。
+她又说她很暴躁，比如会因为一点小事就会跟爸爸妈妈发火，我说这是正常的，我们进入了青春期，慢慢会跟家庭进行疏远，同时伴随着身体的发育，会觉得自己长大了，所以下意识与父母的关系没有小学的时候好了。她又补充道，不仅仅是对父母暴躁，有一次两个好朋友间闹矛盾，她夹在中间很难受，就去调节，也很暴躁，会觉得自己的好意被辜负了。我说我们很勇敢，很多时候很多人会选择逃避或者视而不见，但是你就有勇气去调节，虽然结果可能不理想，但是这只是因为我们欠缺方法而已。
+她说，她一直在回避人群，我问具体回避什么人群，她说同学，感觉融不进去，担心承受异样的目光，尤其从确诊之后。我从“回避”这个词来解析，我说想去融入但又怕被伤害的行为，才是回避背后的声音，我们准确的描述这个问题，应该是我想融入人群但是又怕被伤害，找不到合适的方法。我的建议，我们要坚信自己，你看我们都在承受着“凌迟”的痛苦，如此的勇敢了。我们在融入人群的过程中，异样的情况是难免，可能还会受到伤害，但是我们需要每次去尝试和迭代，慢慢去接受他们【真实是我也不知道如何给出方法】。
+期间比较触动我的一句话是，我问孩子，躯体化的时候，爸爸妈妈呢，她说妈妈总让她别想。那一刻我会想到了前几天大冰说的那句话，很多人长大了后都背叛了当时的自己。一个孩子在学校遇到人际关系，在他们眼里是小事，一个孩子有情绪时，在他们眼里是小事。但很多人小时候，在学校里因人际关系被排挤或者被打压，这是比天塌了都要大的事，不是一个小事而已，多希望被父母所看见，多希望被父母能理解，多希望被父母所呵护。但很多时候，当人长大了会背叛当初那个不曾被善待的自己，同时觉得这个是合理的，最后当自己孩子遇到相同的情况是，选择了“这只是一件小事，不去想”所轻轻带过。
+整体个人评价：我说教还是太多，没有很好的引导</pre>
+            </div>
+        </div>
+
+        <!-- 返回按钮 -->
+        <div class="text-center mt-8">
+            <a href="../../index.html" class="inline-block px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 mr-3">
+                <i class="fa fa-home"></i> 返回项目主页
+            </a>
+            <a href="../index.html" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <i class="fa fa-arrow-left"></i> 返回案例库
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Tab切换
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.dataset.tab;
+                // 切换按钮状态
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                // 切换内容
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById('tab-' + tabId).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

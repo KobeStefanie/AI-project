@@ -41,6 +41,69 @@ const MIME = {
 // 走 HTTP 6371 也能拿（避开未信任 HTTPS 警告，iPhone 首次下载用）。
 const CERT_DOWNLOAD_ALIASES = ['/cert.crt', '/cert.pem', '/ca.crt', '/ca.pem'];
 
+function handleExportExcel(req, res) {
+  let body = '';
+  req.on('data', chunk => {
+    body += chunk.toString();
+    if (body.length > 10 * 1024 * 1024) { // 10MB limit
+      req.connection.destroy();
+      return;
+    }
+  });
+
+  req.on('end', () => {
+    try {
+      const data = JSON.parse(body);
+      const { filename, content, htmlFilename, htmlContent } = data;
+
+      if (!filename || !content) {
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: '缺少 filename 或 content' }));
+        return;
+      }
+
+      // 保存到指定目录
+      const archiveDir = path.resolve(__dirname, '..', '时间管理助手归档文件');
+      if (!fs.existsSync(archiveDir)) {
+        fs.mkdirSync(archiveDir, { recursive: true });
+      }
+
+      const filePath = path.join(archiveDir, filename);
+      const buffer = Buffer.from(content, 'base64');
+
+      fs.writeFile(filePath, buffer, (err) => {
+        if (err) {
+          console.error('保存文件失败:', err);
+          res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({ error: '保存文件失败: ' + err.message }));
+          return;
+        }
+
+        console.log('文件已保存:', filePath);
+
+        // 如果有HTML内容，也保存HTML文件
+        if (htmlFilename && htmlContent) {
+          const htmlPath = path.join(archiveDir, htmlFilename);
+          fs.writeFile(htmlPath, htmlContent, 'utf8', (htmlErr) => {
+            if (htmlErr) {
+              console.error('保存HTML文件失败:', htmlErr);
+            } else {
+              console.log('HTML文件已保存:', htmlPath);
+            }
+          });
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ success: true, path: filePath }));
+      });
+
+    } catch (e) {
+      res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify({ error: '解析请求失败: ' + e.message }));
+    }
+  });
+}
+
 function serveCertDownload(req, res) {
   // 优先 .crt（部分客户端识别更稳），不存在再退 .pem
   const src = fs.existsSync(CA_CRT_PATH) ? CA_CRT_PATH
@@ -71,6 +134,11 @@ function requestHandler(req, res) {
   try { pathname = decodeURIComponent(url.parse(req.url).pathname); }
   catch (e) { res.writeHead(400); res.end('Bad URL'); return; }
 
+  // 导出Excel到指定目录
+  if (pathname === '/export-excel' && req.method === 'POST') {
+    return handleExportExcel(req, res);
+  }
+
   // CA 下载路由（v2.11.0）
   if (CERT_DOWNLOAD_ALIASES.indexOf(pathname) >= 0) {
     return serveCertDownload(req, res);
@@ -78,9 +146,19 @@ function requestHandler(req, res) {
 
   if (pathname === '/' || pathname === '') pathname = '/时间管理助手.html';
 
-  const filePath = path.normalize(path.join(ROOT, pathname));
-  if (!filePath.startsWith(ROOT)) {
-    res.writeHead(403); res.end('Forbidden'); return;
+  // 特殊处理：允许访问 sync-data 目录（用于周数据对比功能）
+  let filePath;
+  if (pathname.startsWith('/sync-data/')) {
+    const syncDataRoot = path.resolve(__dirname, '..', 'sync-data');
+    filePath = path.normalize(path.join(syncDataRoot, pathname.replace('/sync-data/', '')));
+    if (!filePath.startsWith(syncDataRoot)) {
+      res.writeHead(403); res.end('Forbidden'); return;
+    }
+  } else {
+    filePath = path.normalize(path.join(ROOT, pathname));
+    if (!filePath.startsWith(ROOT)) {
+      res.writeHead(403); res.end('Forbidden'); return;
+    }
   }
 
   fs.readFile(filePath, (err, data) => {

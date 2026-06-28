@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>接访记录录入 - 心理咨询案例系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        .section-box {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #3b82f6;
+        }
+        .tag-category {
+            margin-bottom: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            background: #fafafa;
+        }
+        .tag-category-title {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .tag-subcategory {
+            margin-left: 0;
+            margin-bottom: 6px;
+        }
+        .tag-subcategory-title {
+            font-weight: 500;
+            color: #6b7280;
+            margin-bottom: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 6px;
+            background: #ffffff;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .tag-subcategory-title:hover {
+            background: #f3f4f6;
+        }
+        .tag-subcategory-title .toggle-icon {
+            font-size: 10px;
+            transition: transform 0.3s;
+        }
+        .tag-subcategory-title.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        .tag-options {
+            margin-left: 8px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px 12px;
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            margin-top: 4px;
+        }
+        .tag-options.collapsed {
+            max-height: 0;
+            margin-top: 0;
+        }
+        .tag-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px;
+        }
+        .tag-checkbox input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+        }
+        .tag-checkbox label {
+            font-size: 12px;
+            color: #4b5563;
+            cursor: pointer;
+        }
+        .upload-zone {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 32px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .upload-zone:hover {
+            border-color: #4299e1;
+            background-color: #ebf8ff;
+        }
+        .upload-zone.dragging {
+            border-color: #3182ce;
+            background-color: #bee3f8;
+        }
+        .file-item {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .crisis-radio {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .crisis-radio:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .crisis-radio input[type="radio"]:checked + label {
+            font-weight: 600;
+        }
+        .crisis-radio input[type="radio"]:checked ~ * {
+            color: #1f2937;
+        }
+        .collapsible-header {
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .collapsible-header:hover {
+            background: #f3f4f6;
+        }
+        .collapsible-header .toggle-icon {
+            transition: transform 0.3s;
+        }
+        .collapsible-header.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        .collapsible-content {
+            max-height: 2000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .collapsible-content.collapsed {
+            max-height: 0;
+        }
+        .selected-tag-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .selected-tag-badge.relation {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .selected-tag-badge.symptom {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- 标题栏 -->
+        <div class="section-box mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">
+                        <i class="fa fa-file-text-o text-blue-600"></i> 接访记录录入
+                    </h1>
+                    <p class="text-gray-500 mt-2">完整记录咨询案例的所有信息和资料</p>
+                </div>
+                <a href="../index.html" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                    <i class="fa fa-home"></i> 返回首页
+                </a>
+            </div>
+        </div>
+
+        <!-- 案例加载 -->
+        <div class="section-box" id="caseLoadSection">
+            <h2 class="section-title">
+                <i class="fa fa-folder-open text-purple-600"></i> 加载案例（后续会谈）
+            </h2>
+            <div class="flex gap-4 items-end">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">输入案例代号以加载已有案例</label>
+                    <input type="text" id="caseIdInput" placeholder="例如：L001"
+                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                </div>
+                <button onclick="loadCase()"
+                        class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                    <i class="fa fa-download"></i> 加载案例
+                </button>
+                <a href="case-list.html"
+                   class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                    <i class="fa fa-list"></i> 案例列表
+                </a>
+            </div>
+            <div id="caseLoadStatus" class="mt-3"></div>
+        </div>
+
+        <!-- Word文档导入 -->
+        <div class="section-box" id="wordImportSection">
+            <h2 class="section-title">
+                <i class="fa fa-file-word-o text-blue-600"></i> Word文档导入（首次接访）
+            </h2>
+            <div class="mb-3">
+                <p class="text-sm text-gray-600 mb-3">上传接访记录Word文档，系统将自动识别并填充表单字段</p>
+                <div id="wordDropZone" class="upload-zone" style="padding: 24px;">
+                    <i class="fa fa-cloud-upload text-4xl text-gray-400 mb-2"></i>
+                    <p class="text-base text-gray-600 mb-2">拖拽Word文档到此处，或点击选择文件</p>
+                    <p class="text-xs text-gray-400 mb-3">支持格式: DOC, DOCX</p>
+                    <input type="file" id="wordFileInput" accept=".doc,.docx" class="hidden">
+                    <button onclick="document.getElementById('wordFileInput').click()"
+                            class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <i class="fa fa-folder-open"></i> 选择Word文档
+                    </button>
+                </div>
+                <div id="wordImportStatus" class="mt-3"></div>
+            </div>
+        </div>
+
+        <!-- 基本信息 -->
+        <div class="section-box">
+            <h2 class="section-title">
+                <i class="fa fa-user text-blue-600"></i> 基本信息
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">案例代号 *</label>
+                    <input type="text" id="代号" placeholder="例如：善良的小女孩"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">性别</label>
+                    <select id="性别" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">未知</option>
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">年龄</label>
+                    <input type="text" id="年龄" placeholder="例如：15"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">职业</label>
+                    <input type="text" id="职业" placeholder="例如：学生"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">婚姻状况</label>
+                    <select id="婚姻状况" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">未知</option>
+                        <option value="未婚">未婚</option>
+                        <option value="已婚">已婚</option>
+                        <option value="离异">离异</option>
+                        <option value="丧偶">丧偶</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">性取向</label>
+                    <select id="性取向" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">未知</option>
+                        <option value="异性恋">异性恋</option>
+                        <option value="同性恋">同性恋</option>
+                        <option value="双性恋">双性恋</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">宗教信仰</label>
+                    <select id="宗教信仰" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">无/未知</option>
+                        <option value="佛教">佛教</option>
+                        <option value="道教">道教</option>
+                        <option value="基督教">基督教</option>
+                        <option value="天主教">天主教</option>
+                        <option value="伊斯兰教">伊斯兰教</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">紧急联系人（关系）</label>
+                    <input type="text" id="紧急联系人" placeholder="例如：张女士（母亲）"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">紧急联系电话</label>
+                    <input type="tel" id="联系电话" placeholder="例如：138****1234"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">接访日期 *</label>
+                    <input type="date" id="接访日期"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">接访次数</label>
+                    <input type="text" id="接访次数" placeholder="例如：1" onchange="checkPreviousSessions()"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">通话时长</label>
+                    <input type="text" id="通话时长" placeholder="例如：26"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">咨询渠道</label>
+                    <select id="咨询渠道" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">未知</option>
+                        <option value="电话热线">电话热线</option>
+                        <option value="面对面">面对面</option>
+                        <option value="在线视频">在线视频</option>
+                        <option value="文字咨询">文字咨询</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">咨询师姓名</label>
+                    <input type="text" id="咨询师姓名" placeholder="例如：张老师"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">案例状态</label>
+                    <select id="案例状态" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="进行中">进行中</option>
+                        <option value="暂停">暂停</option>
+                        <option value="结案">结案</option>
+                        <option value="转介">转介</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">用药情况</label>
+                    <input type="text" id="用药情况" placeholder="例如：服用抗抑郁药物、无用药"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="md:col-span-4 lg:col-span-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">来访备注</label>
+                    <textarea id="来访备注" rows="2" placeholder="记录其他需要注意的信息..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 来访者主诉 -->
+        <div class="section-box">
+            <h2 class="section-title">
+                <i class="fa fa-comment text-purple-600"></i> 来访者主诉 *
+            </h2>
+            <textarea id="主诉" rows="4" placeholder="来访者用自己的语言描述的问题和困扰..."
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            <p class="text-xs text-gray-500 mt-1">记录来访者最初表达的核心问题</p>
+        </div>
+
+        <!-- 咨询目标 -->
+        <div class="section-box">
+            <h2 class="section-title">
+                <i class="fa fa-bullseye text-orange-600"></i> 咨询目标
+            </h2>
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 mb-1">本次目标设定/回顾</label>
+                <textarea id="咨询目标" rows="3" placeholder="首次接访：明确咨询目标；后续接访：回顾目标进展..."
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+        </div>
+
+        <!-- 既往史 -->
+        <div class="section-box">
+            <h2 class="section-title">
+                <i class="fa fa-file-text-o text-teal-600"></i> 既往咨询/治疗史
+            </h2>
+            <div class="space-y-3">
+                <div>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="有既往咨询史" class="w-4 h-4">
+                        <span class="text-sm font-medium text-gray-700">曾接受过心理咨询</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="有精神科就诊史" class="w-4 h-4">
+                        <span class="text-sm font-medium text-gray-700">有精神科就诊史</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">既往史详情</label>
+                    <textarea id="既往史详情" rows="3" placeholder="既往咨询/治疗的时间、机构、效果等..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 家庭结构 -->
+        <div class="section-box">
+            <h2 class="section-title">
+                <i class="fa fa-users text-pink-600"></i> 家庭结构
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">父亲情况</label>
+                    <input type="text" id="父亲情况" placeholder="例如：55岁，公务员，健在"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">母亲情况</label>
+                    <input type="text" id="母亲情况" placeholder="例如：52岁，教师，健在"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">父母关系</label>
+                    <select id="父母关系" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">未知</option>
+                        <option value="婚姻关系良好">婚姻关系良好</option>
+                        <option value="关系一般">关系一般</option>
+                        <option value="关系紧张">关系紧张</option>
+                        <option value="已离异">已离异</option>
+                        <option value="丧偶">丧偶</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">兄弟姐妹</label>
+                    <input type="text" id="兄弟姐妹" placeholder="例如：独生子女 / 有1个姐姐"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">配偶/子女情况</label>
+                    <input type="text" id="配偶子女情况" placeholder="例如：已婚，配偶35岁，有一子2岁"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- 前情概要（非首次接访） -->
+        <div id="previousSummarySection" class="section-box" style="display: none;">
+            <h2 class="section-title">
+                <i class="fa fa-history text-indigo-600"></i> 前情概要
+            </h2>
+            <div class="mb-3 flex items-center gap-3">
+                <button onclick="loadPreviousSummary()"
+                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                    <i class="fa fa-refresh"></i> 加载历史记录
+                </button>
+                <span id="previousSummaryStatus" class="text-sm text-gray-500"></span>
+            </div>
+            <div id="previousSummaryContent" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <p class="text-gray-500 text-center">点击"加载历史记录"按钮获取该案例的上次咨询概要</p>
+            </div>
+        </div>
+
+        <!-- 已选标签显示区 -->
+        <div id="selectedTagsSection" class="section-box" style="display: none;">
+            <h2 class="section-title">
+                <i class="fa fa-check-square text-green-600"></i> 已选标签
+            </h2>
+            <div id="selectedTagsDisplay" class="flex flex-wrap gap-2">
+                <!-- 动态显示已选标签 -->
+            </div>
+        </div>
+
+        <!-- 关系标签 -->
+        <div class="section-box">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="section-title mb-0">
+                    <i class="fa fa-users text-blue-600"></i> 关系标签（可多选）
+                </h2>
+                <button onclick="toggleAllRelationTags()" class="text-sm text-blue-600 hover:text-blue-800">
+                    <i class="fa fa-expand"></i> 全部展开/收起
+                </button>
+            </div>
+            <div id="relationTagsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+
+        <!-- 症状标签 -->
+        <div class="section-box">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="section-title mb-0">
+                    <i class="fa fa-heartbeat text-red-600"></i> 症状标签（可多选）
+                </h2>
+                <button onclick="toggleAllSymptomTags()" class="text-sm text-red-600 hover:text-red-800">
+                    <i class="fa fa-expand"></i> 全部展开/收起
+                </button>
+            </div>
+            <div id="symptomTagsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+
+        <!-- 生命危机评估 -->
+        <div class="section-box">
+            <h2 class="section-title">
+                <i class="fa fa-exclamation-triangle text-red-600"></i> 生命危机评估（大观学派）
+            </h2>
+            <div class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded">
+                <p class="text-sm text-red-800 mb-2"><strong>评估体系：</strong>A-Z 共26级，分7等4层</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-red-700">
+                    <div><strong>轻度危机：</strong>A-J（事件失控、人际挫败）→ 30分钟结案</div>
+                    <div><strong>中度危机：</strong>K-R（异常动机/情绪）→ 30分钟结案</div>
+                    <div><strong>重度危机：</strong>S-W（自杀方程式）→ 60分钟结案</div>
+                    <div><strong>急迫危机：</strong>X-Z（立刻寻死）→ 不限时，救下来才能挂断</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4">
+                <!-- 危机等级选择 - 7个等别 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">危机等级（必选，可多选）</label>
+
+                    <!-- 第一等 -->
+                    <div class="mb-3 p-3 border-2 border-green-300 rounded-lg bg-green-50">
+                        <div class="flex items-center gap-2 mb-2">
+                            <input type="checkbox" class="crisis-class-checkbox w-5 h-5" data-class="1" onchange="updateSuggestedRating()">
+                            <span class="font-bold text-green-800">🟢 第一等：轻度危机 - 生活事件失控（A-G）</span>
+                        </div>
+                        <div class="ml-7 mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="A" onchange="updateSuggestedRating()"> A - 事理不平</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="B" onchange="updateSuggestedRating()"> B - 人际困扰</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="C" onchange="updateSuggestedRating()"> C - 无解决方案</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="D" onchange="updateSuggestedRating()"> D - 忧思苦恼</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="E" onchange="updateSuggestedRating()"> E - 痛苦绝望</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="F" onchange="updateSuggestedRating()"> F - 冷漠</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="G" onchange="updateSuggestedRating()"> G - 精神困扰</label>
+                        </div>
+                    </div>
+
+                    <!-- 第二等 -->
+                    <div class="mb-3 p-3 border-2 border-green-300 rounded-lg bg-green-50">
+                        <div class="flex items-center gap-2 mb-2">
+                            <input type="checkbox" class="crisis-class-checkbox w-5 h-5" data-class="2" onchange="updateSuggestedRating()">
+                            <span class="font-bold text-green-800">🟢 第二等：轻度危机 - 人际冲突挫败（H-J）</span>
+                        </div>
+                        <div class="ml-7 mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="H" onchange="updateSuggestedRating()"> H - 对环境负向观</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="I" onchange="updateSuggestedRating()"> I - 对他人负向观</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="J" onchange="updateSuggestedRating()"> J - 对自己负向观</label>
+                        </div>
+                    </div>
+
+                    <!-- 第三等 -->
+                    <div class="mb-3 p-3 border-2 border-yellow-400 rounded-lg bg-yellow-50">
+                        <div class="flex items-center gap-2 mb-2">
+                            <input type="checkbox" class="crisis-class-checkbox w-5 h-5" data-class="3" onchange="updateSuggestedRating()">
+                            <span class="font-bold text-yellow-800">🟡 第三等：中度危机 - 异常动机困扰（K-O）</span>
+                        </div>
+                        <div class="ml-7 mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="K" onchange="updateSuggestedRating()"> K - 深度焦虑、恐慌、畏惧、强迫</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="L" onchange="updateSuggestedRating()"> L - 对自己/他人/社会的敌意</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="M" onchange="updateSuggestedRating()"> M - 对生命的敌意</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="N" onchange="updateSuggestedRating()"> N - 家庭责任瓦解</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="O" onchange="updateSuggestedRating()"> O - 生存信念瓦解</label>
+                        </div>
+                    </div>
+
+                    <!-- 第四等 -->
+                    <div class="mb-3 p-3 border-2 border-yellow-400 rounded-lg bg-yellow-50">
+                        <div class="flex items-center gap-2 mb-2">
+                            <input type="checkbox" class="crisis-class-checkbox w-5 h-5" data-class="4" onchange="updateSuggestedRating()">
+                            <span class="font-bold text-yellow-800">🟡 第四等：中度危机 - 异常情绪困扰（P-R）</span>
+                        </div>
+                        <div class="ml-7 mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="P" onchange="updateSuggestedRating()"> P - 重郁、大哭或狂躁</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="Q1" onchange="updateSuggestedRating()"> Q1 - 不快乐</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="Q2" onchange="updateSuggestedRating()"> Q2 - 活不下去</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="R1" onchange="updateSuggestedRating()"> R1 - 太痛苦了</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="R2" onchange="updateSuggestedRating()"> R2 - 死了算了</label>
+                        </div>
+                    </div>
+
+                    <!-- 第五等 -->
+                    <div class="mb-3 p-3 border-2 border-orange-500 rounded-lg bg-orange-50">
+                        <div class="flex items-center gap-2 mb-2">
+                            <input type="checkbox" class="crisis-class-checkbox w-5 h-5" data-class="5" onchange="updateSuggestedRating()">
+                            <span class="font-bold text-orange-800">🔴 第五等：重度危机 - 已启动自杀方程式（S-U）</span>
+                        </div>
+                        <div class="ml-7 mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="S1" onchange="updateSuggestedRating()"> S1 - 自杀动机-过去</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="S2" onchange="updateSuggestedRating()"> S2 - 自杀动机-现在</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="S3" onchange="updateSuggestedRating()"> S3 - 自杀动机-未来</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="T" onchange="updateSuggestedRating()"> T - 自杀意念</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="U" onchange="updateSuggestedRating()"> U - 目的性自杀</label>
+                        </div>
+                    </div>
+
+                    <!-- 第六等 -->
+                    <div class="mb-3 p-3 border-2 border-red-500 rounded-lg bg-red-50">
+                        <div class="flex items-center gap-2 mb-2">
+                            <input type="checkbox" class="crisis-class-checkbox w-5 h-5" data-class="6" onchange="updateSuggestedRating()">
+                            <span class="font-bold text-red-800">🔴 第六等：重度危机 - 准备进入自杀程序（V-W）</span>
+                        </div>
+                        <div class="ml-7 mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="V1" onchange="updateSuggestedRating()"> V1 - 自伤经验</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="V2" onchange="updateSuggestedRating()"> V2 - 无法制止自杀的处境</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="W1" onchange="updateSuggestedRating()"> W1 - 自杀安排</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="W2" onchange="updateSuggestedRating()"> W2 - 临终安排</label>
+                        </div>
+                    </div>
+
+                    <!-- 第七等 -->
+                    <div class="mb-3 p-3 border-2 border-red-700 rounded-lg bg-red-100">
+                        <div class="flex items-center gap-2 mb-2">
+                            <input type="checkbox" class="crisis-class-checkbox w-5 h-5" data-class="7" onchange="updateSuggestedRating()">
+                            <span class="font-bold text-red-900">⛔ 第七等：急迫危机 - 已进入自杀程序（X-Z）</span>
+                        </div>
+                        <div class="ml-7 mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="X" onchange="updateSuggestedRating()"> X - 立刻去死</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="Y" onchange="updateSuggestedRating()"> Y - 病发失控</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="crisis-level-checkbox w-4 h-4" value="Z" onchange="updateSuggestedRating()"> Z - 自杀行为</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 最终评级 -->
+                <div class="p-4 bg-blue-50 border-2 border-blue-500 rounded-lg">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">最终评级（人工确认）</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <select id="最终评级" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">未评级</option>
+                                <option value="A">A - 事理不平</option>
+                                <option value="B">B - 人际困扰</option>
+                                <option value="C">C - 无解决方案</option>
+                                <option value="D">D - 忧思苦恼</option>
+                                <option value="E">E - 痛苦绝望</option>
+                                <option value="F">F - 冷漠</option>
+                                <option value="G">G - 精神困扰</option>
+                                <option value="H">H - 对环境负向观</option>
+                                <option value="I">I - 对他人负向观</option>
+                                <option value="J">J - 对自己负向观</option>
+                                <option value="K">K - 深度焦虑、恐慌、畏惧、强迫</option>
+                                <option value="L">L - 对自己/他人/社会的敌意</option>
+                                <option value="M">M - 对生命的敌意</option>
+                                <option value="N">N - 家庭责任瓦解</option>
+                                <option value="O">O - 生存信念瓦解</option>
+                                <option value="P">P - 重郁、大哭或狂躁</option>
+                                <option value="Q1">Q1 - 不快乐</option>
+                                <option value="Q2">Q2 - 活不下去</option>
+                                <option value="R1">R1 - 太痛苦了</option>
+                                <option value="R2">R2 - 死了算了</option>
+                                <option value="S1">S1 - 自杀动机-过去</option>
+                                <option value="S2">S2 - 自杀动机-现在</option>
+                                <option value="S3">S3 - 自杀动机-未来</option>
+                                <option value="T">T - 自杀意念</option>
+                                <option value="U">U - 目的性自杀</option>
+                                <option value="V1">V1 - 自伤经验</option>
+                                <option value="V2">V2 - 无法制止自杀的处境</option>
+                                <option value="W1">W1 - 自杀安排</option>
+                                <option value="W2">W2 - 临终安排</option>
+                                <option value="X">X - 立刻去死</option>
+                                <option value="Y">Y - 病发失控</option>
+                                <option value="Z">Z - 自杀行为</option>
+                            </select>
+                        </div>
+                        <div id="suggestedRatingBox" class="p-3 bg-gray-50 border border-gray-300 rounded-lg" style="display: none;">
+                            <div class="text-xs text-gray-500 mb-1">💡 系统建议等级：</div>
+                            <div id="suggestedRatingDisplay" class="text-sm font-medium text-gray-700"></div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">请根据实际评估结果人工选择最终评级，系统建议仅供参考</p>
+                </div>
+
+                <!-- 危机评估备注 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">评估依据与观察</label>
+                    <textarea id="危机评估备注" rows="3" placeholder="记录判断危机等级的具体依据、来访者的关键表述、观察到的行为特征等..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    <p class="text-xs text-gray-500 mt-1">建议记录：关键对话、情绪表现、行为特征、前置事件等</p>
+                </div>
+
+                <!-- 六变三托征兆 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fa fa-warning text-orange-500"></i> 六变三托征兆（自杀预警信号）
+                    </label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" id="征兆_性情大变" class="w-4 h-4">
+                            <span>性情大变</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" id="征兆_行为大变" class="w-4 h-4">
+                            <span>行为大变</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" id="征兆_财务大变" class="w-4 h-4">
+                            <span>财务大变</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" id="征兆_语言大变" class="w-4 h-4">
+                            <span>语言大变</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" id="征兆_身体大变" class="w-4 h-4">
+                            <span>身体大变</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" id="征兆_环境大变" class="w-4 h-4">
+                            <span>环境大变</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" id="征兆_托人" class="w-4 h-4">
+                            <span>托人</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" id="征兆_托事" class="w-4 h-4">
+                            <span>托事</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" id="征兆_托物" class="w-4 h-4">
+                            <span>托物</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 关键词 -->
+        <div class="section-box">
+            <h2 class="section-title">
+                <i class="fa fa-tags text-purple-600"></i> 关键词
+            </h2>
+            <div class="mb-3">
+                <input type="text" id="keywordInput" placeholder="输入关键词后按回车添加，例如：青少年、自杀风险、学校霸凌"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div id="keywordTags" class="flex flex-wrap gap-2">
+                <!-- 动态生成关键词标签 -->
+            </div>
+        </div>
+
+        <!-- 使用技巧 -->
+        <div class="section-box">
+            <h2 class="section-title">
+                <i class="fa fa-lightbulb-o text-amber-600"></i> 使用技巧（可多选）
+            </h2>
+            <div id="techniquesContainer">
+                <!-- 动态生成技巧选项 -->
+            </div>
+        </div>
+
+        <!-- 对话记录 -->
+        <div class="section-box">
+            <h2 class="section-title">
+                <i class="fa fa-comments text-green-600"></i> 对话记录 *
+            </h2>
+            <textarea id="dialogue" rows="12" placeholder="在此输入完整的咨询对话记录...
+
+示例：
+善良女孩的求助
+善良的小女孩                                                 16:26-16:52
+小女孩来电，说她朋友失联了，已经半小时没回信息了..."
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 font-mono text-sm"></textarea>
+        </div>
+
+        <!-- 咨询师反思 -->
+        <div class="section-box">
+            <h2 class="section-title">
+                <i class="fa fa-pencil text-indigo-600"></i> 咨询师反思与备注
+            </h2>
+            <textarea id="counselor_reflection" rows="4" placeholder="记录个人反思、督导要点、需要注意的事项..."
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+
+        <!-- 下次接访建议 -->
+        <div class="section-box">
+            <h2 class="section-title">
+                <i class="fa fa-calendar-check-o text-teal-600"></i> 下次接访建议
+            </h2>
+            <textarea id="next_session_plan" rows="3" placeholder="例如：1. 24小时内主动回访；2. 评估来电者本人的自杀风险；3. 探索'你帮了她，谁来帮你？'..."
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"></textarea>
+        </div>
+
+        <!-- 录音上传 -->
+        <div class="section-box">
+            <h2 class="section-title">
+                <i class="fa fa-microphone text-blue-600"></i> 录音文件
+            </h2>
+            <div id="audioDropZone" class="upload-zone">
+                <i class="fa fa-cloud-upload text-5xl text-gray-400 mb-3"></i>
+                <p class="text-lg text-gray-600 mb-2">拖拽录音文件到此处，或点击选择文件</p>
+                <p class="text-sm text-gray-400 mb-4">支持格式: MP3, WAV, M4A, OGG, AAC</p>
+                <input type="file" id="audioFileInput" accept="audio/*" multiple class="hidden">
+                <button onclick="document.getElementById('audioFileInput').click()"
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    <i class="fa fa-folder-open"></i> 选择录音文件
+                </button>
+            </div>
+            <div id="audioFileList" class="mt-4">
+                <!-- 动态显示已选择的录音文件 -->
+            </div>
+        </div>
+
+        <!-- 逐字稿上传 -->
+        <div class="section-box">
+            <h2 class="section-title">
+                <i class="fa fa-file-text text-green-600"></i> 逐字稿
+            </h2>
+            <div id="transcriptDropZone" class="upload-zone">
+                <i class="fa fa-cloud-upload text-5xl text-gray-400 mb-3"></i>
+                <p class="text-lg text-gray-600 mb-2">拖拽逐字稿文件到此处，或点击选择文件</p>
+                <p class="text-sm text-gray-400 mb-4">支持格式: TXT, MD, DOC, DOCX</p>
+                <input type="file" id="transcriptFileInput" accept=".txt,.md,.doc,.docx" multiple class="hidden">
+                <button onclick="document.getElementById('transcriptFileInput').click()"
+                        class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                    <i class="fa fa-folder-open"></i> 选择逐字稿文件
+                </button>
+            </div>
+            <div id="transcriptFileList" class="mt-4">
+                <!-- 动态显示已选择的逐字稿文件 -->
+            </div>
+        </div>
+
+        <!-- 督导资料上传 -->
+        <div class="section-box">
+            <h2 class="section-title">
+                <i class="fa fa-briefcase text-amber-600"></i> 督导资料
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">督导状态</label>
+                    <select id="督导状态" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="未督导">未督导</option>
+                        <option value="已申请督导">已申请督导</option>
+                        <option value="督导完成">督导完成</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">督导师姓名</label>
+                    <input type="text" id="督导师姓名" placeholder="例如：李督导"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">督导日期</label>
+                    <input type="date" id="督导日期"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">督导要点</label>
+                <textarea id="督导要点" rows="3" placeholder="记录督导过程中讨论的关键问题..."
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">督导建议</label>
+                <textarea id="督导建议" rows="3" placeholder="督导师提供的建议和指导..."
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            <div id="supervisionDropZone" class="upload-zone">
+                <i class="fa fa-cloud-upload text-5xl text-gray-400 mb-3"></i>
+                <p class="text-lg text-gray-600 mb-2">拖拽督导资料到此处，或点击选择文件</p>
+                <p class="text-sm text-gray-400 mb-4">支持格式: TXT, MD, PDF, DOC, DOCX, JPG, PNG</p>
+                <input type="file" id="supervisionFileInput" accept=".txt,.md,.pdf,.doc,.docx,.jpg,.jpeg,.png" multiple class="hidden">
+                <button onclick="document.getElementById('supervisionFileInput').click()"
+                        class="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition">
+                    <i class="fa fa-folder-open"></i> 选择督导资料
+                </button>
+            </div>
+            <div id="supervisionFileList" class="mt-4">
+                <!-- 动态显示已选择的督导资料 -->
+            </div>
+        </div>
+
+        <!-- 保存按钮 -->
+        <div class="section-box">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-600">
+                    <i class="fa fa-info-circle text-blue-500"></i>
+                    * 标记为必填项
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="saveDraft()"
+                            class="px-6 py-3 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition">
+                        <i class="fa fa-save"></i> 保存草稿
+                    </button>
+                    <button onclick="resetForm()"
+                            class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                        <i class="fa fa-refresh"></i> 重置表单
+                    </button>
+                    <button onclick="saveCase()"
+                            class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-lg font-bold">
+                        <i class="fa fa-save"></i> 保存案例
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="intake-record-new.js"></script>
+</body>
+</html>

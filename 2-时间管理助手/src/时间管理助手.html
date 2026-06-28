@@ -23,6 +23,7 @@
         <button id="btn-today" class="btn-ghost">本周</button>
       </div>
       <div class="toolbar-right">
+        <button id="btn-week-compare" class="btn-ghost" title="查看多周数据对比">📊 周对比</button>
         <button id="btn-config" class="btn-ghost">⚙ 配置</button>
         <button id="btn-refresh" class="btn-ghost" title="强制刷新页面并更新 Service Worker">🔄 刷新</button>
         <button id="btn-freeze" class="btn-ghost" title="冻结窗格：固定表头和关键事项行">📌 冻结</button>
@@ -122,6 +123,28 @@
     </div>
   </div>
 
+  <!-- ===== 周数据对比弹窗 ===== -->
+  <div id="week-compare-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-box week-compare-modal-box">
+      <div class="wcm-header">
+        <h3>📊 周数据对比</h3>
+        <button type="button" id="btn-close-week-compare" class="btn-ghost">关闭</button>
+      </div>
+      <div class="wcm-controls">
+        <label>对比周数：
+          <select id="sel-compare-weeks">
+            <option value="4">最近 4 周</option>
+            <option value="6">最近 6 周</option>
+            <option value="8">最近 8 周</option>
+            <option value="12">最近 12 周</option>
+          </select>
+        </label>
+        <button type="button" id="btn-export-week-compare" class="btn-primary" style="margin-left: 20px;">📥 导出 Excel</button>
+      </div>
+      <div id="week-compare-content" class="wcm-content"></div>
+    </div>
+  </div>
+
   <!-- ===== 同步设置弹窗（v2.10.0） ===== -->
   <div id="sync-modal" class="modal-overlay" role="dialog" aria-modal="true">
     <div class="modal-box sync-form">
@@ -201,9 +224,11 @@
     </div>
   </div>
 
-  <script src="app-core.js"></script>
+  <script src="app-core.js?v=1782126789"></script>
   <!-- v2.13.0：QR 码生成库（设备绑定二维码）——本地副本，离线可用 -->
-  <script src="qrcode-generator.js"></script>
-<script src="app.js"></script>
+  <script src="qrcode-generator.js?v=1782126789"></script>
+  <!-- ExcelJS 用于生成带样式和图表的 Excel 文件 -->
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
+<script src="app.js?v=1782128400"></script>
 </body>
 </html>

@@ -121,6 +121,7 @@ function init() {
     renderAll();
   };
   $('btn-config').onclick = function() { showPage('page-config'); };
+  $('btn-week-compare').onclick = function() { openWeekCompareModal(); };
   $('btn-refresh').onclick = function() { forceUpdateSW(); };
   $('btn-freeze').onclick = function() {
     frozen = !frozen;
@@ -1318,6 +1319,283 @@ function _resetKiStatus(key) {
   var ws = getISOWeek(new Date(parts[0] + 'T00:00:00Z'));
   var st = getKeyItemStatus(ws.year, ws.week);
   if (st[key]) { delete st[key]; saveKeyItemStatus(ws.year, ws.week, st); }
+}
+
+// ===== 周数据对比弹窗 =====
+function openWeekCompareModal() {
+  console.log('[周对比] 版本: v2024.06.22-fix8 - 修复hasData判断');
+  openModal('week-compare-modal');
+  renderWeekCompareContent();
+
+  // 绑定事件
+  $('btn-close-week-compare').onclick = function() { closeModal('week-compare-modal'); };
+  $('sel-compare-weeks').onchange = renderWeekCompareContent;
+  $('btn-export-week-compare').onclick = exportWeekCompareToExcel;
+}
+
+// 从服务器或本地读取周数据
+function loadWeekDataFromServer(year, week, callback) {
+  // 从服务器的 sync-data 目录读取
+  var url = '/sync-data/' + year + '/w' + week + '.json';
+
+  fetch(url)
+    .then(function(response) {
+      if (!response.ok) throw new Error('File not found');
+      return response.json();
+    })
+    .then(function(data) {
+      callback(null, data);
+    })
+    .catch(function(err) {
+      // 如果读取失败，返回空数据
+      console.log('加载周数据失败:', year, 'w' + week, err.message);
+      callback(null, null);
+    });
+}
+
+// 获取指定周数的历史周数据（智能选择：优先当前周，否则只显示已归档的周）
+function getRecentWeeks(count) {
+  var weeks = [];
+  var current = { year: state.year, week: state.week };
+
+  // 先检查当前周是否有数据（localStorage）
+  var currentCells = getCells(current.year, current.week);
+  var currentHasData = false;
+  for (var key in currentCells) {
+    if (currentCells.hasOwnProperty(key)) {
+      currentHasData = true;
+      break;
+    }
+  }
+
+  // 如果当前周有数据，第一周就是当前周
+  if (currentHasData) {
+    weeks.push({ year: current.year, week: current.week, isCurrent: true });
+    current = getPrevWeek(current.year, current.week);
+    count--; // 已经占用一个位置
+  }
+
+  // 继续往前找已归档的周（从服务器读取），但跳过当前正在编辑的周
+  var maxIterations = count * 3;
+  var iterations = 0;
+  var currentWeekKey = state.year + '_' + state.week;
+
+  while (weeks.length < (currentHasData ? count + 1 : count) && iterations < maxIterations) {
+    iterations++;
+    var weekKey = current.year + '_' + current.week;
+    // 跳过当前周（如果当前周没数据但又往前遍历到了）
+    if (weekKey !== currentWeekKey) {
+      weeks.push({ year: current.year, week: current.week, isCurrent: false });
+    }
+    current = getPrevWeek(current.year, current.week);
+  }
+
+  return weeks;
+}
+
+// 渲染周数据对比内容
+function renderWeekCompareContent() {
+  var weekCount = parseInt($('sel-compare-weeks').value) || 4;
+  var weeks = getRecentWeeks(weekCount);
+
+  console.log('[周对比] 要加载的周:', weeks);
+
+  $('week-compare-content').innerHTML = '<div style="padding:40px;text-align:center;color:#94a3b8;">加载中...</div>';
+
+  // 异步加载所有周的数据
+  var loadCount = 0;
+  var weeksData = [];
+
+  weeks.forEach(function(w, index) {
+    if (w.isCurrent) {
+      // 当前周：从 localStorage 读取
+      var dates = getWeekDates(w.year, w.week);
+      var dateKeys = dates.map(dateKey);
+      var config = getConfig(w.year, w.week);
+      var cells = getCells(w.year, w.week);
+
+      console.log('[周对比] 当前周', w.year, 'w' + w.week, '- cells数量:', Object.keys(cells).length);
+
+      var cellsByDate = {};
+      for (var j = 0; j < dateKeys.length; j++) cellsByDate[dateKeys[j]] = {};
+      for (var id in cells) {
+        var parts = id.split('|');
+        if (cellsByDate[parts[0]]) cellsByDate[parts[0]][parts[1]] = cells[id];
+      }
+
+      var stats = calcWeeklyStats(cellsByDate, dateKeys, config.standard);
+
+      console.log('[周对比] 当前周统计:', stats.totals);
+
+      weeksData[index] = {
+        year: w.year,
+        week: w.week,
+        dates: dates,
+        config: config,
+        stats: stats,
+        hasData: true  // 当前周：只要能获取到数据就设为true
+      };
+
+      loadCount++;
+      if (loadCount === weeks.length) renderTable();
+    } else {
+      // 历史周：从服务器读取
+      loadWeekDataFromServer(w.year, w.week, function(err, data) {
+        console.log('[周对比] 加载历史周', w.year, 'w' + w.week, '- 成功:', !!data, '- cells数量:', data ? Object.keys(data.cells || {}).length : 0);
+
+        if (data && data.cells) {
+          var dates = getWeekDates(w.year, w.week);
+          var dateKeys = dates.map(dateKey);
+          var config = data.config || getConfig(w.year, w.week);
+
+          var cellsByDate = {};
+          for (var j = 0; j < dateKeys.length; j++) cellsByDate[dateKeys[j]] = {};
+          for (var id in data.cells) {
+            var parts = id.split('|');
+            if (cellsByDate[parts[0]]) cellsByDate[parts[0]][parts[1]] = data.cells[id];
+          }
+
+          var stats = calcWeeklyStats(cellsByDate, dateKeys, config.standard);
+
+          console.log('[周对比] 历史周统计:', w.year, 'w' + w.week, 'QW:', stats.totals.qw, 'Proc:', stats.totals.proc, 'qwDetail:', stats.totals.qwDetail);
+
+          weeksData[index] = {
+            year: w.year,
+            week: w.week,
+            dates: dates,
+            config: config,
+            stats: stats,
+            hasData: true  // 只要能加载到数据就设为true
+          };
+        } else {
+          // 无数据
+          var dates = getWeekDates(w.year, w.week);
+          var config = getConfig(w.year, w.week);
+          weeksData[index] = {
+            year: w.year,
+            week: w.week,
+            dates: dates,
+            config: config,
+            stats: { totals: {} },
+            hasData: false
+          };
+        }
+
+        loadCount++;
+        if (loadCount === weeks.length) renderTable();
+      });
+    }
+  });
+
+  function renderTable() {
+    console.log('[周对比] 开始渲染表格, weeksData数量:', weeksData.length);
+    console.log('[周对比] weeksData:', weeksData);
+
+    // 生成表格HTML
+    var html = '<div class="wcm-table-wrapper"><table class="wcm-table">';
+
+    // 表头：项目列 + 各周列 + 差值列
+    html += '<thead><tr>';
+    html += '<th class="wcm-col-item">项目</th>';
+
+    for (var i = 0; i < weeksData.length; i++) {
+      var wd = weeksData[i];
+      var label = String.fromCharCode(65 + i); // A, B, C, D...
+      var dateRange = formatDate(wd.dates[0]).substring(5) + '-' + formatDate(wd.dates[6]).substring(5);
+      html += '<th class="wcm-col-week">' + label + '<br>' + wd.year + '年第' + wd.week + '周<br>' + dateRange + '</th>';
+    }
+
+    // 差值列
+    for (var j = 0; j < weeksData.length - 1; j++) {
+      var labelA = String.fromCharCode(65 + j);
+      var labelB = String.fromCharCode(65 + j + 1);
+      html += '<th class="wcm-col-diff">' + labelA + '-' + labelB + '</th>';
+    }
+
+    html += '</tr></thead><tbody>';
+
+    // 数据行
+    var rows = [
+      { label: 'QW - Quality Work', key: 'qw', isCat: true, color: 'qw' },
+      { label: '1.1-AI', key: 'qwDetail', index: 0, configKey: 'qwNames' },
+      { label: '1.2-心理咨询', key: 'qwDetail', index: 1, configKey: 'qwNames' },
+      { label: '1.3-读书', key: 'qwDetail', index: 2, configKey: 'qwNames' },
+      { label: '1.4-注会变现', key: 'qwDetail', index: 3, configKey: 'qwNames' },
+      { label: '1.5-投资', key: 'qwDetail', index: 4, configKey: 'qwNames' },
+      { label: '1.6-自我管理', key: 'qwDetail', index: 5, configKey: 'qwNames' },
+      { label: '1.7-其他', key: 'qwDetail', index: 6, configKey: 'qwNames' },
+      { label: 'GFP - Guilt Free Play', key: 'gfp', isCat: true, color: 'gfp' },
+      { label: '2.1-演出', key: 'gfpDetail', index: 0, configKey: 'gfpNames' },
+      { label: '2.2-运动', key: 'gfpDetail', index: 1, configKey: 'gfpNames' },
+      { label: '2.3-约会', key: 'gfpDetail', index: 2, configKey: 'gfpNames' },
+      { label: '2.4-旅行', key: 'gfpDetail', index: 3, configKey: 'gfpNames' },
+      { label: '2.5-游戏', key: 'gfpDetail', index: 4, configKey: 'gfpNames' },
+      { label: '2.6-小资', key: 'gfpDetail', index: 5, configKey: 'gfpNames' },
+      { label: '2.7-其他', key: 'gfpDetail', index: 6, configKey: 'gfpNames' },
+      { label: 'Proc - Procrastination', key: 'proc', isCat: true, color: 'proc' },
+      { label: '3.1-睡懒觉', key: 'procDetail', index: 0, configKey: 'procNames' },
+      { label: '3.2-刷手机', key: 'procDetail', index: 1, configKey: 'procNames' },
+      { label: '3.3-拖延', key: 'procDetail', index: 2, configKey: 'procNames' },
+      { label: '3.4-无效/低效社交', key: 'procDetail', index: 3, configKey: 'procNames' },
+      { label: '3.5-其他', key: 'procDetail', index: 4, configKey: 'procNames' },
+      { label: 'Rest', key: 'rest', isCat: true, color: 'rest' },
+      { label: 'MW', key: 'mw', isCat: true, color: 'mw' }
+    ];
+
+    for (var r = 0; r < rows.length; r++) {
+      var row = rows[r];
+      var colorClass = row.isCat && row.color ? 'wcm-row-' + row.color : '';
+      html += '<tr class="' + colorClass + '">';
+
+      // 项目名称
+      var labelDisplay = row.label;
+      if (row.configKey && weeksData[0]) {
+        var idx = row.index;
+        var configVal = weeksData[0].config[row.configKey][idx];
+        labelDisplay = labelDisplay.split('-')[0] + '-' + configVal;
+      }
+      html += '<td class="wcm-col-item' + (row.isCat ? ' wcm-item-bold' : '') + '">' + labelDisplay + '</td>';
+
+      // 各周数据
+      var values = [];
+      for (var w = 0; w < weeksData.length; w++) {
+        var val = 0;
+        console.log('[渲染] row:', r, row.label, 'week:', w, 'hasData:', weeksData[w].hasData, 'totals:', weeksData[w].stats.totals);
+        if (weeksData[w].hasData && weeksData[w].stats.totals) {
+          if (row.index !== undefined) {
+            // 访问明细数组：qwDetail[index], gfpDetail[index], procDetail[index]
+            var detailArray = weeksData[w].stats.totals[row.key];
+            console.log('[渲染] 明细行 -', row.label, 'key:', row.key, 'index:', row.index, 'detailArray:', detailArray);
+            if (Array.isArray(detailArray) && detailArray.length > row.index) {
+              val = detailArray[row.index] || 0;
+            }
+          } else {
+            // 访问汇总数据：qw, gfp, proc, rest, mw
+            val = weeksData[w].stats.totals[row.key] || 0;
+            console.log('[渲染] 汇总行 -', row.label, 'key:', row.key, 'val:', val);
+          }
+        }
+        values.push(val);
+        var cellClass = row.isCat ? 'wcm-cell-cat' : 'wcm-cell-data';
+        html += '<td class="' + cellClass + '">' + val + '</td>';
+      }
+
+      // 差值列
+      for (var d = 0; d < values.length - 1; d++) {
+        var diff = values[d] - values[d + 1];
+        var diffClass = 'wcm-cell-diff';
+        if (diff > 0) diffClass += ' wcm-diff-pos';
+        else if (diff < 0) diffClass += ' wcm-diff-neg';
+        html += '<td class="' + diffClass + '">' + (diff === 0 ? '0' : diff) + '</td>';
+      }
+
+      html += '</tr>';
+    }
+
+    html += '</tbody></table></div>';
+
+    $('week-compare-content').innerHTML = html;
+  }
 }
 
 function saveKeyItem() {
@@ -2939,6 +3217,573 @@ function updateSyncDot(s) {
   // 顺带刷新弹窗内的状态行（若打开）
   if (document.getElementById('sync-modal') && document.getElementById('sync-modal').classList.contains('active')) {
     updateSyncStatusUI();
+  }
+}
+
+// ===== 生成HTML折线图 =====
+function generateChartHTML(weeksData, chartData) {
+  var weekLabels = weeksData.map(function(w) {
+    return w.year + '-W' + w.week;
+  });
+
+  var html = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>周数据对比 - 趋势图表</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f8fafc;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #1e293b;
+      margin-bottom: 30px;
+      font-size: 24px;
+    }
+    .chart-container {
+      position: relative;
+      height: 500px;
+      margin-bottom: 40px;
+    }
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 2px;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 40px;
+    }
+    .data-table th,
+    .data-table td {
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #e2e8f0;
+    }
+    .data-table th {
+      background: #f1f5f9;
+      font-weight: 600;
+      color: #475569;
+    }
+    .data-table tbody tr:hover {
+      background: #f8fafc;
+    }
+    .cat-qw { background: #16a34a; color: white; }
+    .cat-gfp { background: #2563eb; color: white; }
+    .cat-proc { background: #dc2626; color: white; }
+    .cat-rest { background: #4ade80; }
+    .cat-mw { background: #ffff00; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 周数据对比 - 趋势图表</h1>
+
+    <div class="chart-container">
+      <canvas id="trendChart"></canvas>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>项目</th>
+          ${weekLabels.map(function(label) { return '<th>' + label + '</th>'; }).join('')}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="cat-qw">QW - Quality Work</td>
+          ${chartData.qw.values.map(function(v) { return '<td>' + v + '</td>'; }).join('')}
+        </tr>
+        <tr>
+          <td class="cat-gfp">GFP - Guilt Free Play</td>
+          ${chartData.gfp.values.map(function(v) { return '<td>' + v + '</td>'; }).join('')}
+        </tr>
+        <tr>
+          <td class="cat-proc">Proc - Procrastination</td>
+          ${chartData.proc.values.map(function(v) { return '<td>' + v + '</td>'; }).join('')}
+        </tr>
+        <tr>
+          <td class="cat-rest">Rest</td>
+          ${chartData.rest.values.map(function(v) { return '<td>' + v + '</td>'; }).join('')}
+        </tr>
+        <tr>
+          <td class="cat-mw">MW</td>
+          ${chartData.mw.values.map(function(v) { return '<td>' + v + '</td>'; }).join('')}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ${JSON.stringify(weekLabels)},
+        datasets: [
+          {
+            label: 'QW - Quality Work',
+            data: ${JSON.stringify(chartData.qw.values)},
+            borderColor: '#16a34a',
+            backgroundColor: 'rgba(22, 163, 74, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          },
+          {
+            label: 'GFP - Guilt Free Play',
+            data: ${JSON.stringify(chartData.gfp.values)},
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          },
+          {
+            label: 'Proc - Procrastination',
+            data: ${JSON.stringify(chartData.proc.values)},
+            borderColor: '#dc2626',
+            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          },
+          {
+            label: 'Rest',
+            data: ${JSON.stringify(chartData.rest.values)},
+            borderColor: '#4ade80',
+            backgroundColor: 'rgba(74, 222, 128, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          },
+          {
+            label: 'MW',
+            data: ${JSON.stringify(chartData.mw.values)},
+            borderColor: '#eab308',
+            backgroundColor: 'rgba(234, 179, 8, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              padding: 15,
+              font: {
+                size: 13
+              }
+            }
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: 12,
+            titleFont: {
+              size: 14
+            },
+            bodyFont: {
+              size: 13
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 10,
+              font: {
+                size: 12
+              }
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            }
+          },
+          x: {
+            ticks: {
+              font: {
+                size: 12
+              }
+            },
+            grid: {
+              display: false
+            }
+          }
+        },
+        interaction: {
+          mode: 'nearest',
+          axis: 'x',
+          intersect: false
+        }
+      }
+    });
+  </script>
+</body>
+</html>`;
+
+  return html;
+}
+
+// ===== 导出周对比数据到 Excel (CSV格式) =====
+function exportWeekCompareToExcel() {
+  console.log('[导出] exportWeekCompareToExcel 函数被调用');
+  var weekCount = parseInt($('sel-compare-weeks').value) || 4;
+  var weeks = getRecentWeeks(weekCount);
+  console.log('[导出] 准备导出周数:', weekCount, '周数据:', weeks);
+
+  // 收集所有周的数据
+  var loadCount = 0;
+  var weeksData = [];
+
+  weeks.forEach(function(w, index) {
+    if (w.isCurrent) {
+      var dates = getWeekDates(w.year, w.week);
+      var dateKeys = dates.map(dateKey);
+      var config = getConfig(w.year, w.week);
+      var cells = getCells(w.year, w.week);
+
+      var cellsByDate = {};
+      for (var j = 0; j < dateKeys.length; j++) cellsByDate[dateKeys[j]] = {};
+      for (var id in cells) {
+        var parts = id.split('|');
+        if (cellsByDate[parts[0]]) cellsByDate[parts[0]][parts[1]] = cells[id];
+      }
+
+      var stats = calcWeeklyStats(cellsByDate, dateKeys, config.standard);
+      weeksData[index] = { year: w.year, week: w.week, dates: dates, config: config, stats: stats, hasData: true };
+      loadCount++;
+      if (loadCount === weeks.length) generateCSV();
+    } else {
+      loadWeekDataFromServer(w.year, w.week, function(err, data) {
+        if (data && data.cells) {
+          var dates = getWeekDates(w.year, w.week);
+          var dateKeys = dates.map(dateKey);
+          var config = data.config || getConfig(w.year, w.week);
+
+          var cellsByDate = {};
+          for (var j = 0; j < dateKeys.length; j++) cellsByDate[dateKeys[j]] = {};
+          for (var id in data.cells) {
+            var parts = id.split('|');
+            if (cellsByDate[parts[0]]) cellsByDate[parts[0]][parts[1]] = data.cells[id];
+          }
+
+          var stats = calcWeeklyStats(cellsByDate, dateKeys, config.standard);
+          weeksData[index] = { year: w.year, week: w.week, dates: dates, config: config, stats: stats, hasData: true };
+        } else {
+          var dates = getWeekDates(w.year, w.week);
+          var config = getConfig(w.year, w.week);
+          weeksData[index] = { year: w.year, week: w.week, dates: dates, config: config, stats: { totals: {} }, hasData: false };
+        }
+        loadCount++;
+        if (loadCount === weeks.length) generateCSV();
+      });
+    }
+  });
+
+  function generateCSV() {
+    console.log('[导出] 开始生成Excel，周数据:', weeksData.length);
+
+    // 使用 ExcelJS 创建工作簿
+    var workbook = new ExcelJS.Workbook();
+    var worksheet = workbook.addWorksheet('周数据对比');
+
+    // 定义颜色（与界面一致）
+    var colors = {
+      rest: { argb: 'FF4ADE80' },  // 绿色
+      qw: { argb: 'FF16A34A' },    // 深绿
+      gfp: { argb: 'FF2563EB' },   // 蓝色
+      mw: { argb: 'FFFFFF00' },    // 黄色
+      proc: { argb: 'FFDC2626' }   // 红色
+    };
+
+    // 表头行
+    var headerRow = ['项目'];
+    for (var i = 0; i < weeksData.length; i++) {
+      var dateRange = formatDate(weeksData[i].dates[0]).substring(5) + '-' + formatDate(weeksData[i].dates[6]).substring(5);
+      headerRow.push(weeksData[i].year + '年第' + weeksData[i].week + '周 ' + dateRange);
+    }
+    for (var d = 0; d < weeksData.length - 1; d++) {
+      headerRow.push(String.fromCharCode(65 + d) + '-' + String.fromCharCode(65 + d + 1));
+    }
+    worksheet.addRow(headerRow);
+
+    // 设置表头样式
+    var headerRowObj = worksheet.getRow(1);
+    headerRowObj.font = { bold: true };
+    headerRowObj.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } };
+    headerRowObj.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // 定义数据行
+    var rows = [
+      { label: 'QW - Quality Work', key: 'qw', isCat: true, color: colors.qw },
+      { label: '1.1-AI', key: 'qwDetail', index: 0, configKey: 'qwNames' },
+      { label: '1.2-心理咨询', key: 'qwDetail', index: 1, configKey: 'qwNames' },
+      { label: '1.3-读书', key: 'qwDetail', index: 2, configKey: 'qwNames' },
+      { label: '1.4-注会变现', key: 'qwDetail', index: 3, configKey: 'qwNames' },
+      { label: '1.5-投资', key: 'qwDetail', index: 4, configKey: 'qwNames' },
+      { label: '1.6-自我管理', key: 'qwDetail', index: 5, configKey: 'qwNames' },
+      { label: '1.7-其他', key: 'qwDetail', index: 6, configKey: 'qwNames' },
+      { label: 'GFP - Guilt Free Play', key: 'gfp', isCat: true, color: colors.gfp },
+      { label: '2.1-演出', key: 'gfpDetail', index: 0, configKey: 'gfpNames' },
+      { label: '2.2-运动', key: 'gfpDetail', index: 1, configKey: 'gfpNames' },
+      { label: '2.3-约会', key: 'gfpDetail', index: 2, configKey: 'gfpNames' },
+      { label: '2.4-旅行', key: 'gfpDetail', index: 3, configKey: 'gfpNames' },
+      { label: '2.5-游戏', key: 'gfpDetail', index: 4, configKey: 'gfpNames' },
+      { label: '2.6-小资', key: 'gfpDetail', index: 5, configKey: 'gfpNames' },
+      { label: '2.7-其他', key: 'gfpDetail', index: 6, configKey: 'gfpNames' },
+      { label: 'Proc - Procrastination', key: 'proc', isCat: true, color: colors.proc },
+      { label: '3.1-睡懒觉', key: 'procDetail', index: 0, configKey: 'procNames' },
+      { label: '3.2-刷手机', key: 'procDetail', index: 1, configKey: 'procNames' },
+      { label: '3.3-拖延', key: 'procDetail', index: 2, configKey: 'procNames' },
+      { label: '3.4-无效/低效社交', key: 'procDetail', index: 3, configKey: 'procNames' },
+      { label: '3.5-其他', key: 'procDetail', index: 4, configKey: 'procNames' },
+      { label: 'Rest', key: 'rest', isCat: true, color: colors.rest },
+      { label: 'MW', key: 'mw', isCat: true, color: colors.mw }
+    ];
+
+    // 用于图表的五大类数据
+    var chartData = {
+      qw: { label: 'QW - Quality Work', values: [], rowIndex: 2 },
+      gfp: { label: 'GFP - Guilt Free Play', values: [], rowIndex: 10 },
+      proc: { label: 'Proc - Procrastination', values: [], rowIndex: 18 },
+      rest: { label: 'Rest', values: [], rowIndex: 24 },
+      mw: { label: 'MW', values: [], rowIndex: 25 }
+    };
+
+    // 数据行
+    var currentRow = 2;
+    rows.forEach(function(row) {
+      // 项目名称
+      var labelDisplay = row.label;
+      if (row.configKey && weeksData[0]) {
+        var idx = row.index;
+        var configVal = weeksData[0].config[row.configKey][idx];
+        labelDisplay = row.label.split('-')[0] + '-' + configVal;
+      }
+      var rowData = [labelDisplay];
+      var values = [];
+
+      for (var w = 0; w < weeksData.length; w++) {
+        var val = 0;
+        if (weeksData[w].hasData && weeksData[w].stats.totals) {
+          if (row.index !== undefined) {
+            var detailArray = weeksData[w].stats.totals[row.key];
+            if (Array.isArray(detailArray) && detailArray.length > row.index) {
+              val = detailArray[row.index] || 0;
+            }
+          } else {
+            val = weeksData[w].stats.totals[row.key] || 0;
+          }
+        }
+        values.push(val);
+        rowData.push(val);
+      }
+
+      // 差值列
+      for (var d = 0; d < values.length - 1; d++) {
+        var diff = values[d] - values[d + 1];
+        rowData.push(diff);
+      }
+
+      var excelRow = worksheet.addRow(rowData);
+
+      // 应用样式
+      if (row.isCat && row.color) {
+        // 只对有数据的列应用颜色（A列 + 周数据列）
+        // rowData 包含：项目名 + 周数据 + 差值列
+        var dataColumnCount = 1 + weeksData.length; // A列 + 周数据列
+
+        for (var colIdx = 1; colIdx <= dataColumnCount; colIdx++) {
+          var cell = excelRow.getCell(colIdx);
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: row.color };
+          cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+          cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        }
+
+        // 保存五大类数据用于图表
+        if (row.key === 'qw') {
+          chartData.qw.values = values;
+        } else if (row.key === 'gfp') {
+          chartData.gfp.values = values;
+        } else if (row.key === 'proc') {
+          chartData.proc.values = values;
+        } else if (row.key === 'rest') {
+          chartData.rest.values = values;
+        } else if (row.key === 'mw') {
+          chartData.mw.values = values;
+        }
+      } else {
+        // 非分类行（明细行）只设置居中对齐
+        excelRow.eachCell(function(cell) {
+          cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        });
+      }
+
+      currentRow++;
+    });
+
+    // 设置列宽
+    worksheet.getColumn(1).width = 25;
+    for (var c = 2; c <= headerRow.length; c++) {
+      worksheet.getColumn(c).width = 15;
+    }
+
+    // 添加折线图工作表
+    var chartSheet = workbook.addWorksheet('趋势图表');
+
+    // 准备图表数据表格
+    var chartTableHeader = ['周次'];
+    for (var i = 0; i < weeksData.length; i++) {
+      chartTableHeader.push(weeksData[i].year + '-W' + weeksData[i].week);
+    }
+    chartSheet.addRow(chartTableHeader);
+
+    chartSheet.addRow(['QW'].concat(chartData.qw.values));
+    chartSheet.addRow(['GFP'].concat(chartData.gfp.values));
+    chartSheet.addRow(['Proc'].concat(chartData.proc.values));
+    chartSheet.addRow(['Rest'].concat(chartData.rest.values));
+    chartSheet.addRow(['MW'].concat(chartData.mw.values));
+
+    // 设置图表数据表格样式
+    var dataColumnCount = 1 + weeksData.length; // A列 + 周数据列
+
+    // 表头行样式
+    for (var col = 1; col <= dataColumnCount; col++) {
+      var headerCell = chartSheet.getRow(1).getCell(col);
+      headerCell.font = { bold: true };
+      headerCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } };
+    }
+
+    // QW 行
+    for (var col = 1; col <= dataColumnCount; col++) {
+      var cell = chartSheet.getRow(2).getCell(col);
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: colors.qw };
+      cell.font = { color: { argb: 'FFFFFFFF' } };
+    }
+
+    // GFP 行
+    for (var col = 1; col <= dataColumnCount; col++) {
+      var cell = chartSheet.getRow(3).getCell(col);
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: colors.gfp };
+      cell.font = { color: { argb: 'FFFFFFFF' } };
+    }
+
+    // Proc 行
+    for (var col = 1; col <= dataColumnCount; col++) {
+      var cell = chartSheet.getRow(4).getCell(col);
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: colors.proc };
+      cell.font = { color: { argb: 'FFFFFFFF' } };
+    }
+
+    // Rest 行
+    for (var col = 1; col <= dataColumnCount; col++) {
+      var cell = chartSheet.getRow(5).getCell(col);
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: colors.rest };
+    }
+
+    // MW 行
+    for (var col = 1; col <= dataColumnCount; col++) {
+      var cell = chartSheet.getRow(6).getCell(col);
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: colors.mw };
+    }
+
+    chartSheet.getColumn(1).width = 15;
+    for (var c = 2; c <= chartTableHeader.length; c++) {
+      chartSheet.getColumn(c).width = 12;
+    }
+
+    console.log('[导出] Excel生成完成');
+
+    // 生成HTML折线图页面
+    var htmlFilename = '周数据对比_' + new Date().getFullYear() + '_' + (new Date().getMonth() + 1) + '_' + new Date().getDate() + '.html';
+    var htmlContent = generateChartHTML(weeksData, chartData);
+
+    // 导出为二进制
+    workbook.xlsx.writeBuffer().then(function(buffer) {
+      // 转换为 base64
+      var binary = '';
+      var bytes = new Uint8Array(buffer);
+      for (var i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      var base64 = btoa(binary);
+
+      var filename = '周数据对比_' + new Date().getFullYear() + '_' + (new Date().getMonth() + 1) + '_' + new Date().getDate() + '.xlsx';
+      console.log('[导出] 准备发送到服务器，文件名:', filename);
+
+      // 发送到服务器保存
+      fetch('/export-excel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: filename,
+          content: base64,
+          htmlFilename: htmlFilename,
+          htmlContent: htmlContent
+        })
+      })
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(result) {
+        if (result.success) {
+          console.log('[导出] 导出成功，保存路径:', result.path);
+          showToast('已导出到: ' + result.path);
+        } else {
+          console.error('[导出] 导出失败:', result.error);
+          showToast('导出失败: ' + result.error);
+        }
+      })
+      .catch(function(err) {
+        console.error('[导出] 请求失败:', err);
+        showToast('导出失败: ' + err.message);
+      });
+    }).catch(function(err) {
+      console.error('[导出] 生成Excel失败:', err);
+      showToast('生成Excel失败: ' + err.message);
+    });
   }
 }
 

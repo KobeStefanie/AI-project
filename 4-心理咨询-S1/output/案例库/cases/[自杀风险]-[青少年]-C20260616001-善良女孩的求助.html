@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>案例：善良女孩的求助</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        .tab-btn {
+            padding: 12px 24px;
+            border-bottom: 3px solid transparent;
+            color: #6B7280;
+            cursor: pointer;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            color: #1F2937;
+            background: #F9FAFB;
+        }
+        .tab-btn.active {
+            border-bottom-color: #3B82F6;
+            color: #1F2937;
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <!-- 返回按钮 -->
+        <div class="mb-4">
+            <a href="../index.html" class="text-blue-600 hover:text-blue-800">
+                <i class="fa fa-arrow-left"></i> 返回案例库
+            </a>
+        </div>
+
+        <!-- 案例头部 -->
+        <div class="border-b pb-4 mb-6">
+            <div class="flex items-center justify-between mb-3">
+                <h1 class="text-3xl font-bold text-gray-800">善良女孩的求助</h1>
+                <span class="px-4 py-2 bg-red-100 text-red-800 font-bold rounded-lg text-lg">S级 - 自杀风险</span>
+            </div>
+            <div class="text-sm text-gray-600 space-x-4">
+                <span><strong>案例编号：</strong>C20260616001</span>
+                <span><strong>日期：</strong>2026-06-16</span>
+                <span><strong>时长：</strong>约26分钟（16:26-16:52）</span>
+                <span><strong>渠道：</strong>电话热线</span>
+            </div>
+        </div>
+
+        <!-- 基本信息 -->
+        <div class="mb-6">
+            <h2 class="text-xl font-bold text-blue-900 mb-3">📋 基本信息</h2>
+            <div class="bg-blue-50 rounded-lg p-4 grid grid-cols-2 gap-3 text-sm">
+                <div><strong>代号：</strong>善良的小女孩</div>
+                <div><strong>性别：</strong>女</div>
+                <div><strong>年龄：</strong>约14-16岁（青少年）</div>
+                <div><strong>职业：</strong>学生</div>
+                <div><strong>婚姻：</strong>未婚</div>
+            </div>
+        </div>
+
+        <!-- 录音资料 -->
+        <!-- 流派Tab导航 -->
+        <div class="border-b mb-6">
+            <div class="flex gap-2">
+        <!-- 流派Tab导航 -->
+        <div class="border-b mb-6">
+            <div class="flex gap-2">
+                <button class="tab-btn active" data-tab="daguanpai">
+                    <i class="fa fa-compass"></i> 大观学派
+                </button>
+                <button class="tab-btn " data-tab="cbt">
+                    <i class="fa fa-brain"></i> 认知行为疗法
+                </button>
+                <button class="tab-btn " data-tab="psychodynamic">
+                    <i class="fa fa-user-circle"></i> 精神动力学
+                </button>
+                <button class="tab-btn " data-tab="humanistic">
+                    <i class="fa fa-heart"></i> 人本主义
+                </button>
+                <button class="tab-btn " data-tab="existential">
+                    <i class="fa fa-lightbulb-o"></i> 存在主义
+                </button>
+                <button class="tab-btn " data-tab="temp_1">
+                    <i class="fa fa-circle"></i> 拉康
+                </button>
+            </div>
+        </div>
+
+        <!-- 大观学派Tab内容 -->
+        <div class="tab-content active" id="tab-daguanpai">
+            <!-- 危机评估 -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-red-900 mb-3">⚠️ 危机评估</h2>
+                <div class="bg-red-50 border-l-4 border-red-500 rounded p-4 text-sm">
+                    <div class="font-semibold mb-2">S级 - 自杀风险</div>
+                    <div class="text-gray-700">
+                        <strong>证据：</strong>1. 案主朋友14岁，确诊重度抑郁症；2. 已写遗书；3. 有多次自杀尝试史；4. 明确表达'现在特别想死'；5. 失联半小时；6. 已断药数月；7. 缺乏家庭支持系统（父母不在身边、重男轻女）。幸运的是：遗书未发送/未嘱托、朋友最终回复（与母亲在一起）
+                    </div>
+                </div>
+            </div>
+
+            <!-- 关键词 -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-purple-900 mb-3">🏷️ 关键词</h2>
+                <div class="flex flex-wrap gap-2">
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">青少年</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">自杀风险</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">重度抑郁症</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">学校霸凌</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">遗书</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">同伴支持</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">失联</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">断药</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">重男轻女</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">热线求助</span>
+                    <span class="px-3 py-1 bg-purple-100 text-purple-700 text-sm rounded-full">24小时在线</span>
+                </div>
+            </div>
+
+            <!-- 使用技术 -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-green-900 mb-3">🛠️ 使用技术</h2>
+                <div class="bg-green-50 rounded-lg p-4">
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li>同步同理心</li>
+                        <li>六变三托筛查（询问遗书内容、嘱托情况）</li>
+                        <li>逆向倒推（判断是否达到报警程度）</li>
+                        <li>资源引入（提供联系方式和安全网）</li>
+                        <li>现实拉力技术（拒绝成为遗书执行者）</li>
+                        <li>安全承诺（24小时在线、随时可打）</li>
+                        <li>正常化技术（'抑郁症会好的'）</li>
+                        <li>隧道隐喻（'携手走在隧道里，终见阳光'）</li>
+                        <li>督导求助</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- AI分析 -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-indigo-900 mb-3">🤖 AI督导分析</h2>
+
+                <!-- 案例摘要 -->
+                <div class="mb-4">
+                    <h3 class="font-semibold text-gray-800 mb-2">📝 案例摘要</h3>
+                    <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded">14岁女孩的同伴来电求助：朋友确诊重度抑郁症，有多次自杀尝试史，当天写完遗书后失联半小时。来电者本人也有抑郁症史但已药物控制。咨询师在面对'第三方自杀危机'的复杂局面中，通过六变三托筛查（确认遗书未嘱托）、同步同理心陪伴、拒绝成为遗书执行者（制造现实拉力）、隧道隐喻（赋予希望），最终等到了朋友的安全回复。核心议题：青少年同伴支持系统中的自杀危机干预、双重抑郁症青少年的安全网建立。</p>
+                </div>
+
+                <!-- 咨询师优势 -->
+                <div class="mb-4">
+                    <h3 class="font-semibold text-green-800 mb-2">✅ 咨询师优势</h3>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-700">
+                        <li>危机判断精准：快速识别这是'第三方自杀危机'而非来电者本人，复杂局面下的判断力值得肯定</li>
+                        <li>督导求助及时：在自己慌乱时第一时间求助督导，而非硬撑，体现专业自知力</li>
+                        <li>六变三托筛查到位：主动追问遗书内容、嘱托情况，发现这两项均为空白，从而降低立即报警的紧迫性，这个判断非常关键</li>
+                        <li>现实拉力技术精妙：'如果以后你朋友在遗书中嘱咐你帮忙做什么事的时候，我们不答应好吗？我们要让她自己去做，给她一个现实的拉力'——这是本次接访的高光时刻，给一个14岁女孩卸下了沉重的道德负担</li>
+                        <li>隧道隐喻有力：'携手走在一条隧道里，终见阳光'——既承认了困难的真实性（在隧道里），又给予希望（终见阳光），且强调了关系（携手一起）</li>
+                        <li>双向安全网建立：不仅给来电者建立安全网（'记得打我们电话'），还让她帮她朋友也建立同样的安全网，一举两得</li>
+                    </ul>
+                </div>
+
+                <!-- 改进建议 -->
+                <div class="mb-4">
+                    <h3 class="font-semibold text-orange-800 mb-2">💡 改进建议</h3>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-700">
+                        <li>对来电者本人风险的关注不足：来电者明确说'她有抑郁症'，虽然已控制，但14岁、抑郁症、第一次打热线——这三个因素叠加，她本人也是高危群体。建议在朋友危机解除后，花2-3分钟评估她本人的自杀风险</li>
+                        <li>报警权衡的沟通可以更清晰：督导说'确认信息真假'其实是对的思路，但咨询师感到'督导没听懂我的意思'。可以这样理解督导意图：不是要么报警要么不报，而是'先核实→再评估→再决策'的阶梯思维</li>
+                        <li>安全承诺可以更具体：'记得打我们电话'是好的，但可以加上：'如果你或你朋友下次又有这样的念头，可以先做什么？'（如：先深呼吸、先发一条消息给特定的人、先等30分钟再决定）</li>
+                        <li>对来电者为什么'选择不打110而打热线'的深层动力挖掘可更充分：记录中咨询师自行分析了原因（背叛恐惧），但可以邀请来电者自己说：'你觉得她最希望你怎么做？'——这能强化她的自主性</li>
+                    </ul>
+                </div>
+
+                <!-- 下次咨询建议 -->
+                <div>
+                    <h3 class="font-semibold text-blue-800 mb-2">📅 下次咨询建议</h3>
+                    <p class="text-sm text-gray-700 bg-blue-50 p-3 rounded">1. 24小时内主动回访来电者，确认她本人的情绪状态和朋友的后续情况；2. 评估来电者本人的自杀风险（她有抑郁症史，虽然已控制，但本次事件是重大应激）；3. 建议来电者的朋友尽快恢复精神科就诊（已断药数月）；4. 下次接访时可探索：'你帮了她，谁来帮你？'——关注来电者自身的支持系统；5. 如条件允许，鼓励来电者向学校心理老师或可信任的成年人求助，不要把全部责任扛在自己身上</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 认知行为疗法Tab内容 -->
+        <div class="tab-content " id="tab-cbt">
+            <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
+                <i class="fa fa-info-circle text-4xl mb-3"></i>
+                <p>该流派分析暂未添加</p>
+            </div>
+        </div>
+
+        <!-- 精神动力学Tab内容 -->
+        <div class="tab-content " id="tab-psychodynamic">
+            <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
+                <i class="fa fa-info-circle text-4xl mb-3"></i>
+                <p>该流派分析暂未添加</p>
+            </div>
+        </div>
+
+        <!-- 人本主义Tab内容 -->
+        <div class="tab-content " id="tab-humanistic">
+            <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
+                <i class="fa fa-info-circle text-4xl mb-3"></i>
+                <p>该流派分析暂未添加</p>
+            </div>
+        </div>
+
+        <!-- 存在主义Tab内容 -->
+        <div class="tab-content " id="tab-existential">
+            <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
+                <i class="fa fa-info-circle text-4xl mb-3"></i>
+                <p>该流派分析暂未添加</p>
+            </div>
+        </div>
+
+        <!-- 拉康Tab内容 -->
+        <div class="tab-content " id="tab-temp_1">
+            <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
+                <i class="fa fa-info-circle text-4xl mb-3"></i>
+                <p>该流派分析暂未添加</p>
+            </div>
+        </div>
+
+        <!-- 完整对话记录 -->
+        <div class="mb-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-3">💬 完整对话记录</h2>
+            <div class="bg-gray-50 rounded-lg p-4">
+                <pre class="whitespace-pre-wrap text-sm text-gray-800 font-mono">善良女孩的求助
+善良的小女孩                                                 16:26-16:52
+小女孩来电，说她朋友失联了，已经半小时没回信息了，我问发生什么了。她说她朋友14岁，小学和初中遭遇过学校霸凌，确诊了重度抑郁症，现在在家里休养，家里人重男轻女，没人管她，抑郁症发作时，会用手击打头部，之前一直吃药，但已经几个月没去医院开药了，父母不在身边，跟奶奶在。刚才她们聊天，她朋友说她现在特别想死，之前已经尝试过几次，现在她朋友把遗书写好了，然后就失联了半小时。她现在特别慌张，第一次打我们电话。
+此刻我也是慌得，万一真出事了怎么办，我让她先把我们的联系方式留言给她朋友，我又问，她有她朋友的电话和地址吗？她说她有的，她们之间相互送过礼物的。我此刻开始去求助督导，督导首先让我去确认信息的真假，然后需不需要报警，估计是督导没听懂我的意思，另一个就是关乎到是否已经达到报警的程度，因为现在是不确定的情况，一旦报警了就意味着她跟她朋友的秘密公开了，极有可能被她朋友视为，这是她对她朋友的背叛，因为自杀是极其隐私的行为，但万一真出事了，孩子是无法承担这一切，这也是她第一时间没报警而选择打我们电话的根本原因。我又问她，你看过遗书没，你朋友嘱托给你信息没。她说她没看过遗书，也没嘱托过需要她帮忙照顾家人之类的话语。这点可以稍微安下心，她朋友应该还没准备好。此刻我只能陪着小女孩来面对这一切，直到她有了她朋友的信息为止。
+我问，你们是怎么认识的，她说她有抑郁症，但现在吃药，已经得到很好的控制了，我又问她是第一次打电话联系我们吗？她说是的，然后我说，听叔叔的话，如果以后你朋友在遗书中嘱咐你帮忙做什么事的时候，我们不答应好吗？我们要让她自己去做，给她一个现实的拉力，好吗？她说好的，我接着说，一旦你有什么难过的或者解不开的谜题，记得打我们这个电话，这里有一群叔叔阿姨希望你们平平安安长大，我们是免费的，我们也是保密的，好吗？然后她开始抽泣，我接着说，抑郁症会好的，我们要度过很艰难的一两年后，就能看到阳光，我们携手一起走在一条隧道里，记得，一旦自己情绪进入到了死胡同了，一定要打我们的电话，好吗？，她哭着说，嗯。然后她朋友回复了，说她刚在跟她自己的妈妈在一起，瞬间心安了。我又跟他说，记得跟你朋友也这么说，这里有一群叔叔阿姨希望你们平安长大，好吗？她哭腔说嗯，然后你这次很棒，下次有困难记得找我们。我们24小时都在线。</pre>
+            </div>
+        </div>
+
+        <!-- 返回按钮 -->
+        <div class="text-center mt-8">
+            <a href="../../index.html" class="inline-block px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 mr-3">
+                <i class="fa fa-home"></i> 返回项目主页
+            </a>
+            <a href="../index.html" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <i class="fa fa-arrow-left"></i> 返回案例库
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Tab切换
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.dataset.tab;
+                // 切换按钮状态
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                // 切换内容
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById('tab-' + tabId).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

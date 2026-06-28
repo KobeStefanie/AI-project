@@ -1,0 +1,31 @@
+{
+  "id": "existential",
+  "name": "存在主义",
+  "name_en": "Existential Therapy",
+  "description": "存在主义取向，关注生命意义、自由选择、死亡焦虑和存在性孤独等根本性议题",
+  "color": "#ea580c",
+  "icon": "fa-lightbulb-o",
+  "core_concepts": [
+    "存在性焦虑",
+    "自由与责任",
+    "生命意义",
+    "死亡",
+    "孤独与关系"
+  ],
+  "typical_techniques": [
+    "意义探索",
+    "存在性对话",
+    "责任承担",
+    "死亡觉察",
+    "选择分析"
+  ],
+  "focus_areas": [
+    "生命意义探寻",
+    "存在性议题",
+    "自由与选择",
+    "终极关怀"
+  ],
+  "enabled": false,
+  "sort_order": 5,
+  "note": "待学习后启用"
+}

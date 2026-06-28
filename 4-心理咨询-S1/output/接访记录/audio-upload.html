@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>录音上传管理 - 心理咨询案例系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        .upload-zone {
+            border: 2px dashed #cbd5e0;
+            transition: all 0.3s;
+        }
+        .upload-zone:hover {
+            border-color: #4299e1;
+            background-color: #ebf8ff;
+        }
+        .upload-zone.dragging {
+            border-color: #3182ce;
+            background-color: #bee3f8;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <!-- 标题栏 -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">
+                        <i class="fa fa-microphone text-blue-600"></i> 录音上传管理
+                    </h1>
+                    <p class="text-gray-500 mt-1">上传和管理案例录音文件</p>
+                </div>
+                <a href="../index.html" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                    <i class="fa fa-home"></i> 返回首页
+                </a>
+            </div>
+        </div>
+
+        <!-- 案例选择 -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fa fa-folder-open text-blue-600"></i> 选择案例
+            </h2>
+            <div class="flex gap-4">
+                <input
+                    type="text"
+                    id="caseIdInput"
+                    placeholder="输入案例编号，例如: C20260616001"
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <button
+                    onclick="loadCaseAudio()"
+                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    <i class="fa fa-search"></i> 加载案例
+                </button>
+            </div>
+            <div id="caseInfo" class="mt-4 hidden">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p class="text-sm text-gray-700">
+                        <strong>当前案例：</strong><span id="currentCaseId" class="text-blue-700 font-mono"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 上传区域 -->
+        <div id="uploadSection" class="hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fa fa-upload text-green-600"></i> 上传录音
+                </h2>
+
+                <!-- 拖拽上传区 -->
+                <div id="dropZone" class="upload-zone rounded-lg p-8 text-center mb-4">
+                    <i class="fa fa-cloud-upload text-5xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-600 mb-2">拖拽录音文件到此处，或点击选择文件</p>
+                    <p class="text-sm text-gray-400">支持格式: MP3, WAV, M4A, OGG, AAC</p>
+                    <input
+                        type="file"
+                        id="audioFileInput"
+                        accept="audio/*"
+                        class="hidden"
+                    >
+                    <button
+                        onclick="document.getElementById('audioFileInput').click()"
+                        class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <i class="fa fa-folder-open"></i> 选择文件
+                    </button>
+                </div>
+
+                <!-- 上传进度 -->
+                <div id="uploadProgress" class="hidden">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-700">
+                                <i class="fa fa-spinner fa-spin"></i> 正在上传...
+                            </span>
+                            <span id="uploadStatus" class="text-sm text-blue-600"></span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 录音列表 -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fa fa-list text-purple-600"></i> 已上传录音
+                </h2>
+                <div id="audioList" class="space-y-3">
+                    <!-- 动态加载 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8004';
+        let currentCaseId = null;
+
+        // 加载案例录音
+        async function loadCaseAudio() {
+            const caseId = document.getElementById('caseIdInput').value.trim();
+            if (!caseId) {
+                alert('请输入案例编号');
+                return;
+            }
+
+            currentCaseId = caseId;
+            document.getElementById('currentCaseId').textContent = caseId;
+            document.getElementById('caseInfo').classList.remove('hidden');
+            document.getElementById('uploadSection').classList.remove('hidden');
+
+            await refreshAudioList();
+        }
+
+        // 刷新录音列表
+        async function refreshAudioList() {
+            if (!currentCaseId) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/audio/list?case_id=${currentCaseId}`);
+                const audioList = await response.json();
+
+                const container = document.getElementById('audioList');
+
+                if (audioList.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 text-gray-400">
+                            <i class="fa fa-file-audio-o text-4xl mb-3"></i>
+                            <p>暂无录音文件</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = audioList.map(audio => `
+                    <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <i class="fa fa-file-audio-o text-blue-600 text-xl"></i>
+                                    <span class="font-medium text-gray-800">${audio.filename}</span>
+                                </div>
+                                <div class="text-sm text-gray-500 ml-8">
+                                    <span><i class="fa fa-calendar"></i> ${formatDateTime(audio.uploaded_at)}</span>
+                                    <span class="ml-4"><i class="fa fa-hdd-o"></i> ${formatFileSize(audio.size)}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button
+                                    onclick="playAudio('${audio.url}')"
+                                    class="px-3 py-2 bg-green-100 text-green-700 rounded hover:bg-green-200 transition">
+                                    <i class="fa fa-play"></i> 播放
+                                </button>
+                                <button
+                                    onclick="deleteAudio('${audio.filename}')"
+                                    class="px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition">
+                                    <i class="fa fa-trash"></i> 删除
+                                </button>
+                            </div>
+                        </div>
+                        <audio id="player-${audio.filename}" class="w-full mt-3 hidden" controls>
+                            <source src="${API_BASE}${audio.url}" type="audio/mpeg">
+                        </audio>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('加载录音列表失败:', error);
+                alert('加载录音列表失败，请检查服务器是否启动');
+            }
+        }
+
+        // 播放录音
+        function playAudio(url) {
+            const filename = url.split('/').pop();
+            const player = document.getElementById(`player-${filename}`);
+            if (player.classList.contains('hidden')) {
+                // 暂停所有其他播放器
+                document.querySelectorAll('audio').forEach(audio => {
+                    audio.pause();
+                    audio.parentElement.querySelector('audio').classList.add('hidden');
+                });
+                player.classList.remove('hidden');
+                player.play();
+            } else {
+                player.classList.add('hidden');
+                player.pause();
+            }
+        }
+
+        // 删除录音
+        async function deleteAudio(filename) {
+            if (!confirm(`确定要删除录音 "${filename}" 吗？此操作不可恢复。`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/audio/delete`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        case_id: currentCaseId,
+                        filename: filename
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('删除成功');
+                    await refreshAudioList();
+                } else {
+                    alert('删除失败: ' + result.error);
+                }
+            } catch (error) {
+                console.error('删除失败:', error);
+                alert('删除失败，请检查服务器是否启动');
+            }
+        }
+
+        // 文件上传处理
+        document.getElementById('audioFileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                await uploadAudio(file);
+            }
+        });
+
+        // 拖拽上传
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragging');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragging');
+        });
+
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragging');
+
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('audio/')) {
+                await uploadAudio(file);
+            } else {
+                alert('请上传音频文件');
+            }
+        });
+
+        // 上传录音
+        async function uploadAudio(file) {
+            if (!currentCaseId) {
+                alert('请先选择案例');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('case_id', currentCaseId);
+            formData.append('audio_file', file);
+
+            const progressDiv = document.getElementById('uploadProgress');
+            const progressBar = document.getElementById('progressBar');
+            const uploadStatus = document.getElementById('uploadStatus');
+
+            progressDiv.classList.remove('hidden');
+            progressBar.style.width = '0%';
+            uploadStatus.textContent = '准备上传...';
+
+            try {
+                // 模拟进度（实际应使用XMLHttpRequest监听上传进度）
+                progressBar.style.width = '30%';
+                uploadStatus.textContent = '上传中...';
+
+                const response = await fetch(`${API_BASE}/api/audio/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                progressBar.style.width = '100%';
+                uploadStatus.textContent = '上传完成';
+
+                if (response.ok) {
+                    const result = await response.json();
+                    setTimeout(() => {
+                        progressDiv.classList.add('hidden');
+                        alert('上传成功！');
+                        refreshAudioList();
+                        document.getElementById('audioFileInput').value = '';
+                    }, 500);
+                } else {
+                    throw new Error('上传失败');
+                }
+            } catch (error) {
+                console.error('上传失败:', error);
+                progressDiv.classList.add('hidden');
+                alert('上传失败，请检查服务器是否启动');
+            }
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        // 格式化日期时间
+        function formatDateTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>励志文字图片生成器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-4xl w-full">
+        <div class="bg-gray-800 rounded-lg p-6 mb-4">
+            <h1 class="text-2xl font-bold text-white mb-4">励志文字图片生成器</h1>
+            <button id="downloadBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg text-lg">
+                下载图片
+            </button>
+        </div>
+
+        <div class="bg-white rounded-lg p-4">
+            <canvas id="canvas" style="display:none;"></canvas>
+            <img id="preview" class="w-full rounded shadow-2xl">
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const preview = document.getElementById('preview');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // 设置画布尺寸
+        const width = 1080;
+        const height = 1080;
+        canvas.width = width;
+        canvas.height = height;
+
+        function wrapText(text, x, y, maxWidth, lineHeight) {
+            const lines = [];
+            const paragraphs = text.split('\n');
+
+            paragraphs.forEach(paragraph => {
+                if (paragraph.trim() === '') {
+                    lines.push('');
+                    return;
+                }
+
+                const chars = paragraph.split('');
+                let currentLine = '';
+
+                for (let char of chars) {
+                    const testLine = currentLine + char;
+                    const metrics = ctx.measureText(testLine);
+
+                    if (metrics.width > maxWidth && currentLine.length > 0) {
+                        lines.push(currentLine);
+                        currentLine = char;
+                    } else {
+                        currentLine = testLine;
+                    }
+                }
+                if (currentLine) {
+                    lines.push(currentLine);
+                }
+            });
+
+            return lines;
+        }
+
+        function generateImage() {
+            // 填充黑色背景
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, width, height);
+
+            // 设置文字颜色
+            ctx.fillStyle = '#FFFFFF';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+
+            const padding = 80;
+            const maxWidth = width - padding * 2;
+            let y = 150;
+
+            // 标题 "To everyone:"
+            ctx.font = 'bold 50px "Microsoft YaHei", "SimHei", sans-serif';
+            ctx.fillText('To everyone:', padding, y);
+            y += 140;
+
+            // 主要内容
+            const content = `【发生了什么？】
+一个小女孩，在学校被排挤，天塌下来了。
+她跑回家找妈妈。
+妈妈说："这是小事，别想了。"
+那一刻，她学到了：
+" 我的痛苦是不重要的。
+我的情绪是不应该有的。
+我应该把它压下去。"`;
+
+            const fontSize = 38;
+            const lineHeight = fontSize * 1.9;
+
+            ctx.font = `${fontSize}px "Microsoft YaHei", "SimHei", sans-serif`;
+            const lines = wrapText(content, padding, y, maxWidth, lineHeight);
+
+            lines.forEach(line => {
+                // 对引号开头的行增加缩进
+                let indent = 0;
+                if (line.startsWith('"') || line.startsWith('"')) {
+                    indent = 50;
+                }
+                ctx.fillText(line, padding + indent, y);
+                y += lineHeight;
+            });
+
+            // 底部 "收到回复：OK"
+            y = height - 130;
+            ctx.font = 'bold 44px "Microsoft YaHei", "SimHei", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('收到回复：OK', width / 2, y);
+
+            // 显示预览
+            const dataURL = canvas.toDataURL('image/png', 1.0);
+            preview.src = dataURL;
+        }
+
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            link.download = `励志图片-${timestamp}.png`;
+            link.href = canvas.toDataURL('image/png', 1.0);
+            link.click();
+        });
+
+        // 页面加载完成后自动生成
+        window.addEventListener('load', () => {
+            setTimeout(generateImage, 100);
+        });
+    </script>
+</body>
+</html>
