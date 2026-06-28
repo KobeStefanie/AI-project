@@ -226,8 +226,9 @@ def generate_case_detail_html(case_data: Dict, approaches: List[Dict]) -> str:
             border-top: none;
             border-left: none;
             border-right: none;
-            font-size: 14px;
+            font-size: 15px;
             transition: all 0.2s;
+            white-space: nowrap;
         }}
         .tab-btn:hover {{
             color: #1F2937;
@@ -243,6 +244,21 @@ def generate_case_detail_html(case_data: Dict, approaches: List[Dict]) -> str:
         }}
         .tab-content.active {{
             display: block;
+        }}
+        .tab-nav-container {{
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+        }}
+        .tab-nav-container::-webkit-scrollbar {{
+            height: 4px;
+        }}
+        .tab-nav-container::-webkit-scrollbar-track {{
+            background: #F3F4F6;
+        }}
+        .tab-nav-container::-webkit-scrollbar-thumb {{
+            background: #D1D5DB;
+            border-radius: 2px;
         }}
     </style>
 </head>
@@ -425,8 +441,8 @@ def generate_case_detail_html(case_data: Dict, approaches: List[Dict]) -> str:
 """
 
     html += """        <!-- 流派Tab导航 -->
-        <div class="border-b mb-6">
-            <div class="flex gap-2">
+        <div class="border-b mb-6 tab-nav-container">
+            <div class="flex gap-1 min-w-max">
 """
 
     # 生成流派Tab按钮（显示所有流派，不过滤enabled状态）
