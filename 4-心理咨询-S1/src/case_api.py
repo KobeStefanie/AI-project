@@ -21,6 +21,7 @@ ACTIVE_DIR = CASES_DIR / "active"
 CLOSED_DIR = CASES_DIR / "closed"
 PROCESSED_DIR = CASES_DIR / "processed"
 BACKUP_DIR = BASE_DIR / "data" / "backup"
+PENDING_UPDATES_FILE = BASE_DIR / "data" / "pending_updates.json"
 
 # 确保目录存在
 for dir_path in [ACTIVE_DIR, CLOSED_DIR, PROCESSED_DIR, BACKUP_DIR]:
@@ -465,6 +466,40 @@ def generate_summary():
         summary = dialogue[:300] if len(dialogue) > 300 else dialogue
 
         return jsonify({'success': True, 'summary': summary})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/pending_updates', methods=['GET'])
+def get_pending_updates():
+    """获取待处理的更新列表"""
+    try:
+        if not PENDING_UPDATES_FILE.exists():
+            return jsonify([])
+
+        with open(PENDING_UPDATES_FILE, 'r', encoding='utf-8') as f:
+            updates = json.load(f)
+
+        return jsonify(updates if isinstance(updates, list) else [])
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/pending_updates', methods=['POST'])
+def save_pending_updates():
+    """保存待处理的更新列表"""
+    try:
+        updates = request.json
+
+        if not isinstance(updates, list):
+            return jsonify({'success': False, 'error': '数据格式错误，应为数组'}), 400
+
+        with open(PENDING_UPDATES_FILE, 'w', encoding='utf-8') as f:
+            json.dump(updates, f, ensure_ascii=False, indent=2)
+
+        return jsonify({'success': True})
 
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500

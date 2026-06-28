@@ -96,9 +96,6 @@
                 <button class="tab-btn " data-tab="existential">
                     <i class="fa fa-lightbulb-o"></i> 存在主义
                 </button>
-                <button class="tab-btn " data-tab="temp_1">
-                    <i class="fa fa-circle"></i> 拉康
-                </button>
             </div>
         </div>
 
@@ -225,11 +222,17 @@
             </div>
         </div>
 
-        <!-- 拉康Tab内容 -->
-        <div class="tab-content " id="tab-temp_1">
-            <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
-                <i class="fa fa-info-circle text-4xl mb-3"></i>
-                <p>该流派分析暂未添加</p>
+        <!-- 历次感悟 -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-xl font-bold text-teal-900">💭 历次感悟</h2>
+                <button onclick="openAddRecordModal()" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
+                    <i class="fa fa-plus"></i> 添加感悟
+                </button>
+            </div>
+            <div class="bg-gray-100 text-gray-500 rounded-lg p-6 text-center">
+                <i class="fa fa-info-circle text-2xl mb-2"></i>
+                <p>还没有添加任何感悟，点击右上角"添加感悟"按钮开始记录</p>
             </div>
         </div>
 
@@ -237,11 +240,7 @@
         <div class="mb-6">
             <h2 class="text-xl font-bold text-gray-900 mb-3">💬 完整对话记录</h2>
             <div class="bg-gray-50 rounded-lg p-4">
-                <pre class="whitespace-pre-wrap text-sm text-gray-800 font-mono">善良女孩的求助
-善良的小女孩                                                 16:26-16:52
-小女孩来电，说她朋友失联了，已经半小时没回信息了，我问发生什么了。她说她朋友14岁，小学和初中遭遇过学校霸凌，确诊了重度抑郁症，现在在家里休养，家里人重男轻女，没人管她，抑郁症发作时，会用手击打头部，之前一直吃药，但已经几个月没去医院开药了，父母不在身边，跟奶奶在。刚才她们聊天，她朋友说她现在特别想死，之前已经尝试过几次，现在她朋友把遗书写好了，然后就失联了半小时。她现在特别慌张，第一次打我们电话。
-此刻我也是慌得，万一真出事了怎么办，我让她先把我们的联系方式留言给她朋友，我又问，她有她朋友的电话和地址吗？她说她有的，她们之间相互送过礼物的。我此刻开始去求助督导，督导首先让我去确认信息的真假，然后需不需要报警，估计是督导没听懂我的意思，另一个就是关乎到是否已经达到报警的程度，因为现在是不确定的情况，一旦报警了就意味着她跟她朋友的秘密公开了，极有可能被她朋友视为，这是她对她朋友的背叛，因为自杀是极其隐私的行为，但万一真出事了，孩子是无法承担这一切，这也是她第一时间没报警而选择打我们电话的根本原因。我又问她，你看过遗书没，你朋友嘱托给你信息没。她说她没看过遗书，也没嘱托过需要她帮忙照顾家人之类的话语。这点可以稍微安下心，她朋友应该还没准备好。此刻我只能陪着小女孩来面对这一切，直到她有了她朋友的信息为止。
-我问，你们是怎么认识的，她说她有抑郁症，但现在吃药，已经得到很好的控制了，我又问她是第一次打电话联系我们吗？她说是的，然后我说，听叔叔的话，如果以后你朋友在遗书中嘱咐你帮忙做什么事的时候，我们不答应好吗？我们要让她自己去做，给她一个现实的拉力，好吗？她说好的，我接着说，一旦你有什么难过的或者解不开的谜题，记得打我们这个电话，这里有一群叔叔阿姨希望你们平平安安长大，我们是免费的，我们也是保密的，好吗？然后她开始抽泣，我接着说，抑郁症会好的，我们要度过很艰难的一两年后，就能看到阳光，我们携手一起走在一条隧道里，记得，一旦自己情绪进入到了死胡同了，一定要打我们的电话，好吗？，她哭着说，嗯。然后她朋友回复了，说她刚在跟她自己的妈妈在一起，瞬间心安了。我又跟他说，记得跟你朋友也这么说，这里有一群叔叔阿姨希望你们平安长大，好吗？她哭腔说嗯，然后你这次很棒，下次有困难记得找我们。我们24小时都在线。</pre>
+                <pre class="whitespace-pre-wrap text-sm text-gray-800 font-mono">{dialogue}</pre>
             </div>
         </div>
 
@@ -256,10 +255,47 @@
         </div>
     </div>
 
+    <!-- 添加/编辑感悟模态框 -->
+    <div id="recordModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4">
+            <div class="p-6 border-b">
+                <h3 class="text-xl font-bold text-gray-800" id="modalTitle">添加历次感悟</h3>
+            </div>
+            <div class="p-6">
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">流派视角（可选）</label>
+                    <select id="recordApproach" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <option value="">不标注流派</option>
+                        <option value="大观学派">大观学派</option>
+                        <option value="CBT">CBT（认知行为疗法）</option>
+                        <option value="精神动力学">精神动力学</option>
+                        <option value="人本主义">人本主义</option>
+                        <option value="存在主义">存在主义</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">感悟内容</label>
+                    <textarea id="recordContent" rows="8" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="记录你对这个案例的理解、感悟、思考..."></textarea>
+                </div>
+            </div>
+            <div class="p-6 border-t flex justify-end gap-3">
+                <button onclick="closeRecordModal()" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
+                    取消
+                </button>
+                <button onclick="saveRecord()" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
+                    <i class="fa fa-save"></i> 保存
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        const CASE_ID = '{case_id}';
+        let editingRecordId = null;
+
         // Tab切换
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(btn => {{
+            btn.addEventListener('click', () => {{
                 const tabId = btn.dataset.tab;
                 // 切换按钮状态
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -267,8 +303,165 @@
                 // 切换内容
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 document.getElementById('tab-' + tabId).classList.add('active');
-            });
-        });
+            }});
+        }});
+
+        // 打开添加感悟模态框
+        function openAddRecordModal() {{
+            editingRecordId = null;
+            document.getElementById('modalTitle').textContent = '添加历次感悟';
+            document.getElementById('recordApproach').value = '';
+            document.getElementById('recordContent').value = '';
+            document.getElementById('recordModal').classList.remove('hidden');
+        }}
+
+        // 打开编辑感悟模态框
+        function openEditRecordModal(recordId, content, approach) {{
+            editingRecordId = recordId;
+            document.getElementById('modalTitle').textContent = '编辑历次感悟';
+            document.getElementById('recordApproach').value = approach || '';
+            document.getElementById('recordContent').value = content;
+            document.getElementById('recordModal').classList.remove('hidden');
+        }}
+
+        // 关闭模态框
+        function closeRecordModal() {{
+            document.getElementById('recordModal').classList.add('hidden');
+            editingRecordId = null;
+        }}
+
+        // 保存感悟
+        async function saveRecord() {{
+            const approach = document.getElementById('recordApproach').value || null;
+            const content = document.getElementById('recordContent').value.trim();
+
+            if (!content) {{
+                alert('请输入感悟内容');
+                return;
+            }}
+
+            const update = {{
+                case_id: CASE_ID,
+                content: content,
+                approach: approach
+            }};
+
+            if (editingRecordId) {{
+                // 编辑模式
+                update.type = 'supervision_record_edit';
+                update.record_id = editingRecordId;
+            }} else {{
+                // 添加模式
+                update.type = 'supervision_record_add';
+            }}
+
+            // 读取现有的 pending_updates.json
+            let updates = [];
+            try {{
+                const response = await fetch('http://localhost:5001/api/pending_updates');
+                if (response.ok) {{
+                    updates = await response.json();
+                }}
+            }} catch (e) {{
+                // 文件不存在，使用空数组
+            }}
+
+            // 添加新的更新
+            updates.push(update);
+
+            // 保存到 pending_updates.json
+            try {{
+                const response = await fetch('http://localhost:5001/api/pending_updates', {{
+                    method: 'POST',
+                    headers: {{
+                        'Content-Type': 'application/json'
+                    }},
+                    body: JSON.stringify(updates)
+                }});
+
+                if (response.ok) {{
+                    closeRecordModal();
+                    showNotification('感悟已保存到待处理队列');
+                }} else {{
+                    alert('保存失败，请重试');
+                }}
+            }} catch (e) {{
+                alert('无法连接到服务器：' + e.message);
+            }}
+        }}
+
+        // 删除感悟
+        async function deleteRecord(recordId) {{
+            if (!confirm('确定要删除这条感悟吗？此操作不可恢复。')) {{
+                return;
+            }}
+
+            const update = {{
+                type: 'supervision_record_delete',
+                case_id: CASE_ID,
+                record_id: recordId
+            }};
+
+            // 读取现有的 pending_updates.json
+            let updates = [];
+            try {{
+                const response = await fetch('http://localhost:5001/api/pending_updates');
+                if (response.ok) {{
+                    updates = await response.json();
+                }}
+            }} catch (e) {{
+                // 文件不存在，使用空数组
+            }}
+
+            // 添加删除请求
+            updates.push(update);
+
+            // 保存到 pending_updates.json
+            try {{
+                const response = await fetch('http://localhost:5001/api/pending_updates', {{
+                    method: 'POST',
+                    headers: {{
+                        'Content-Type': 'application/json'
+                    }},
+                    body: JSON.stringify(updates)
+                }});
+
+                if (response.ok) {{
+                    showNotification('删除请求已保存到待处理队列');
+                }} else {{
+                    alert('删除失败，请重试');
+                }}
+            }} catch (e) {{
+                alert('无法连接到服务器：' + e.message);
+            }}
+        }}
+
+        // 显示提示消息
+        function showNotification(message) {{
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-teal-600 text-white px-6 py-4 rounded-lg shadow-lg z-50';
+            notification.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i class="fa fa-check-circle"></i>
+                    <div>
+                        <p class="font-semibold">${{message}}</p>
+                        <p class="text-sm mt-1">请在终端运行：<code class="bg-teal-700 px-2 py-1 rounded">python src/process_updates.py</code></p>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {{
+                notification.remove();
+            }}, 8000);
+        }}
+
+        // 点击模态框外部关闭
+        document.getElementById('recordModal').addEventListener('click', (e) => {{
+            if (e.target.id === 'recordModal') {{
+                closeRecordModal();
+            }}
+        }});
     </script>
 </body>
 </html>

@@ -1267,6 +1267,7 @@ function autoSaveDraft() {
         if (formData.basic_info.代号 || formData.主诉 || formData.dialogue) {
             localStorage.setItem('intake_draft', JSON.stringify(formData));
             localStorage.setItem('intake_draft_timestamp', new Date().toISOString());
+            localStorage.removeItem('intake_draft_ignored'); // 清除忽略标记
             console.log('草稿已自动保存');
         }
     } catch (error) {
@@ -1280,6 +1281,7 @@ function saveDraft() {
         const formData = collectFormData();
         localStorage.setItem('intake_draft', JSON.stringify(formData));
         localStorage.setItem('intake_draft_timestamp', new Date().toISOString());
+        localStorage.removeItem('intake_draft_ignored'); // 清除忽略标记
         alert('草稿已保存！');
     } catch (error) {
         console.error('保存草稿失败:', error);
@@ -1291,14 +1293,15 @@ function saveDraft() {
 function checkAndLoadDraft() {
     const draft = localStorage.getItem('intake_draft');
     const timestamp = localStorage.getItem('intake_draft_timestamp');
+    const draftIgnored = localStorage.getItem('intake_draft_ignored');
 
     if (draft && timestamp) {
         const draftTime = new Date(timestamp);
         const now = new Date();
         const hoursDiff = (now - draftTime) / 1000 / 60 / 60;
 
-        // 草稿在24小时内
-        if (hoursDiff < 24) {
+        // 草稿在24小时内，且未被忽略
+        if (hoursDiff < 24 && draftIgnored !== timestamp) {
             const loadDraft = confirm(`发现 ${Math.floor(hoursDiff)} 小时前保存的草稿\n\n是否恢复？`);
             if (loadDraft) {
                 try {
@@ -1309,11 +1312,15 @@ function checkAndLoadDraft() {
                     console.error('加载草稿失败:', error);
                     alert('加载草稿失败：' + error.message);
                 }
+            } else {
+                // 点击取消，记录此草稿已被忽略，不再提示
+                localStorage.setItem('intake_draft_ignored', timestamp);
             }
-        } else {
+        } else if (hoursDiff >= 24) {
             // 清除过期草稿
             localStorage.removeItem('intake_draft');
             localStorage.removeItem('intake_draft_timestamp');
+            localStorage.removeItem('intake_draft_ignored');
         }
     }
 }

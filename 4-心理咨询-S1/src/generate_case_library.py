@@ -560,7 +560,87 @@ def generate_case_detail_html(case_data: Dict, approaches: List[Dict]) -> str:
 
 """
 
-    html += f"""        <!-- 完整对话记录 -->
+    # 生成历次感悟区域
+    supervision_records = case_data.get('supervision_records', [])
+    html += f"""        <!-- 历次感悟 -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-xl font-bold text-teal-900">💭 历次感悟</h2>
+                <button onclick="openAddRecordModal()" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
+                    <i class="fa fa-plus"></i> 添加感悟
+                </button>
+            </div>
+"""
+
+    if supervision_records:
+        # 按创建时间倒序排列（最新的在前）
+        sorted_records = sorted(supervision_records, key=lambda x: x.get('created_at', ''), reverse=True)
+
+        for record in sorted_records:
+            record_id = record.get('record_id', '')
+            content = record.get('content', '')
+            approach = record.get('approach')
+            created_at = record.get('created_at', '')
+            updated_at = record.get('updated_at', '')
+
+            # 格式化时间
+            try:
+                created_dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                created_str = created_dt.strftime('%Y-%m-%d %H:%M')
+            except:
+                created_str = created_at
+
+            try:
+                updated_dt = datetime.fromisoformat(updated_at.replace('Z', '+00:00'))
+                updated_str = updated_dt.strftime('%Y-%m-%d %H:%M')
+            except:
+                updated_str = updated_at
+
+            # 流派标签
+            approach_badge = ''
+            if approach:
+                approach_badge = f'<span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">{approach}</span>'
+            else:
+                approach_badge = '<span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">无流派标注</span>'
+
+            # 时间显示（如果创建和修改时间不同，显示"已编辑"）
+            time_info = f'创建：{created_str}'
+            if created_str != updated_str:
+                time_info += f' · 编辑：{updated_str}'
+
+            # 转义内容中的特殊字符，防止破坏HTML结构
+            content_escaped = content.replace('\\', '\\\\').replace('"', '\\"').replace("'", "\\'").replace('\n', '\\n')
+
+            html += f"""            <div class="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-3">
+                <div class="flex items-start justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        {approach_badge}
+                        <span class="text-xs text-gray-500">{time_info}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick='openEditRecordModal("{record_id}", "{content_escaped}", "{approach if approach else ""}")'
+                                class="text-blue-600 hover:text-blue-800 text-sm">
+                            <i class="fa fa-edit"></i> 编辑
+                        </button>
+                        <button onclick='deleteRecord("{record_id}")'
+                                class="text-red-600 hover:text-red-800 text-sm">
+                            <i class="fa fa-trash"></i> 删除
+                        </button>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-800 whitespace-pre-wrap">{content}</div>
+            </div>
+"""
+    else:
+        html += """            <div class="bg-gray-100 text-gray-500 rounded-lg p-6 text-center">
+                <i class="fa fa-info-circle text-2xl mb-2"></i>
+                <p>还没有添加任何感悟，点击右上角"添加感悟"按钮开始记录</p>
+            </div>
+"""
+
+    html += """        </div>
+
+        <!-- 完整对话记录 -->
         <div class="mb-6">
             <h2 class="text-xl font-bold text-gray-900 mb-3">💬 完整对话记录</h2>
             <div class="bg-gray-50 rounded-lg p-4">
@@ -579,7 +659,44 @@ def generate_case_detail_html(case_data: Dict, approaches: List[Dict]) -> str:
         </div>
     </div>
 
+    <!-- 添加/编辑感悟模态框 -->
+    <div id="recordModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4">
+            <div class="p-6 border-b">
+                <h3 class="text-xl font-bold text-gray-800" id="modalTitle">添加历次感悟</h3>
+            </div>
+            <div class="p-6">
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">流派视角（可选）</label>
+                    <select id="recordApproach" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <option value="">不标注流派</option>
+                        <option value="大观学派">大观学派</option>
+                        <option value="CBT">CBT（认知行为疗法）</option>
+                        <option value="精神动力学">精神动力学</option>
+                        <option value="人本主义">人本主义</option>
+                        <option value="存在主义">存在主义</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">感悟内容</label>
+                    <textarea id="recordContent" rows="8" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="记录你对这个案例的理解、感悟、思考..."></textarea>
+                </div>
+            </div>
+            <div class="p-6 border-t flex justify-end gap-3">
+                <button onclick="closeRecordModal()" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
+                    取消
+                </button>
+                <button onclick="saveRecord()" class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
+                    <i class="fa fa-save"></i> 保存
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        const CASE_ID = '{case_id}';
+        let editingRecordId = null;
+
         // Tab切换
         document.querySelectorAll('.tab-btn').forEach(btn => {{
             btn.addEventListener('click', () => {{
@@ -591,6 +708,163 @@ def generate_case_detail_html(case_data: Dict, approaches: List[Dict]) -> str:
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 document.getElementById('tab-' + tabId).classList.add('active');
             }});
+        }});
+
+        // 打开添加感悟模态框
+        function openAddRecordModal() {{
+            editingRecordId = null;
+            document.getElementById('modalTitle').textContent = '添加历次感悟';
+            document.getElementById('recordApproach').value = '';
+            document.getElementById('recordContent').value = '';
+            document.getElementById('recordModal').classList.remove('hidden');
+        }}
+
+        // 打开编辑感悟模态框
+        function openEditRecordModal(recordId, content, approach) {{
+            editingRecordId = recordId;
+            document.getElementById('modalTitle').textContent = '编辑历次感悟';
+            document.getElementById('recordApproach').value = approach || '';
+            document.getElementById('recordContent').value = content;
+            document.getElementById('recordModal').classList.remove('hidden');
+        }}
+
+        // 关闭模态框
+        function closeRecordModal() {{
+            document.getElementById('recordModal').classList.add('hidden');
+            editingRecordId = null;
+        }}
+
+        // 保存感悟
+        async function saveRecord() {{
+            const approach = document.getElementById('recordApproach').value || null;
+            const content = document.getElementById('recordContent').value.trim();
+
+            if (!content) {{
+                alert('请输入感悟内容');
+                return;
+            }}
+
+            const update = {{
+                case_id: CASE_ID,
+                content: content,
+                approach: approach
+            }};
+
+            if (editingRecordId) {{
+                // 编辑模式
+                update.type = 'supervision_record_edit';
+                update.record_id = editingRecordId;
+            }} else {{
+                // 添加模式
+                update.type = 'supervision_record_add';
+            }}
+
+            // 读取现有的 pending_updates.json
+            let updates = [];
+            try {{
+                const response = await fetch('http://localhost:5001/api/pending_updates');
+                if (response.ok) {{
+                    updates = await response.json();
+                }}
+            }} catch (e) {{
+                // 文件不存在，使用空数组
+            }}
+
+            // 添加新的更新
+            updates.push(update);
+
+            // 保存到 pending_updates.json
+            try {{
+                const response = await fetch('http://localhost:5001/api/pending_updates', {{
+                    method: 'POST',
+                    headers: {{
+                        'Content-Type': 'application/json'
+                    }},
+                    body: JSON.stringify(updates)
+                }});
+
+                if (response.ok) {{
+                    closeRecordModal();
+                    showNotification('感悟已保存到待处理队列');
+                }} else {{
+                    alert('保存失败，请重试');
+                }}
+            }} catch (e) {{
+                alert('无法连接到服务器：' + e.message);
+            }}
+        }}
+
+        // 删除感悟
+        async function deleteRecord(recordId) {{
+            if (!confirm('确定要删除这条感悟吗？此操作不可恢复。')) {{
+                return;
+            }}
+
+            const update = {{
+                type: 'supervision_record_delete',
+                case_id: CASE_ID,
+                record_id: recordId
+            }};
+
+            // 读取现有的 pending_updates.json
+            let updates = [];
+            try {{
+                const response = await fetch('http://localhost:5001/api/pending_updates');
+                if (response.ok) {{
+                    updates = await response.json();
+                }}
+            }} catch (e) {{
+                // 文件不存在，使用空数组
+            }}
+
+            // 添加删除请求
+            updates.push(update);
+
+            // 保存到 pending_updates.json
+            try {{
+                const response = await fetch('http://localhost:5001/api/pending_updates', {{
+                    method: 'POST',
+                    headers: {{
+                        'Content-Type': 'application/json'
+                    }},
+                    body: JSON.stringify(updates)
+                }});
+
+                if (response.ok) {{
+                    showNotification('删除请求已保存到待处理队列');
+                }} else {{
+                    alert('删除失败，请重试');
+                }}
+            }} catch (e) {{
+                alert('无法连接到服务器：' + e.message);
+            }}
+        }}
+
+        // 显示提示消息
+        function showNotification(message) {{
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-teal-600 text-white px-6 py-4 rounded-lg shadow-lg z-50';
+            notification.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i class="fa fa-check-circle"></i>
+                    <div>
+                        <p class="font-semibold">${{message}}</p>
+                        <p class="text-sm mt-1">请在终端运行：<code class="bg-teal-700 px-2 py-1 rounded">python src/process_updates.py</code></p>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {{
+                notification.remove();
+            }}, 8000);
+        }}
+
+        // 点击模态框外部关闭
+        document.getElementById('recordModal').addEventListener('click', (e) => {{
+            if (e.target.id === 'recordModal') {{
+                closeRecordModal();
+            }}
         }});
     </script>
 </body>

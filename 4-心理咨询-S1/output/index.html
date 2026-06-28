@@ -37,6 +37,16 @@
                 <span><i class="fa fa-calendar"></i> 最后更新: 2026-06-27</span>
                 <span><i class="fa fa-folder"></i> 版本: v1.1 - 案例管理系统</span>
             </div>
+
+            <!-- 启动服务器按钮 -->
+            <div class="mt-6">
+                <button onclick="startServers()"
+                        class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-lg">
+                    <i class="fa fa-power-off mr-2"></i>
+                    <span id="serverBtnText">启动所有服务器</span>
+                </button>
+                <div id="serverStatus" class="mt-3 text-sm"></div>
+            </div>
         </div>
 
         <!-- 核心功能 -->
@@ -471,5 +481,79 @@
             </p>
         </div>
     </div>
+
+    <script>
+        // 启动所有服务器
+        function startServers() {
+            const btn = document.getElementById('serverBtnText');
+            const status = document.getElementById('serverStatus');
+
+            btn.textContent = '正在启动...';
+            status.innerHTML = '<span class="text-blue-600"><i class="fa fa-spinner fa-spin"></i> 正在启动所有服务器...</span>';
+
+            // 获取项目根目录路径（去掉 /output）
+            const rootPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/output'));
+            const batPath = rootPath + '/start_servers.bat';
+
+            // 在Windows上，通过创建一个临时的协议处理来执行bat文件
+            // 由于浏览器安全限制，无法直接执行本地文件，所以提示用户手动执行
+            status.innerHTML = `
+                <div class="inline-block bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-left">
+                    <p class="text-yellow-800 font-semibold mb-2">
+                        <i class="fa fa-info-circle"></i> 请手动执行启动脚本
+                    </p>
+                    <p class="text-sm text-gray-700 mb-2">
+                        浏览器安全限制无法直接启动服务器，请双击以下文件：
+                    </p>
+                    <p class="text-sm font-mono bg-gray-100 p-2 rounded mb-2">
+                        ${decodeURIComponent(window.location.pathname.replace('/output/index.html', '/start_servers.bat'))}
+                    </p>
+                    <p class="text-xs text-gray-600">
+                        或在项目根目录找到 <strong>start_servers.bat</strong> 文件并双击运行
+                    </p>
+                </div>
+            `;
+
+            btn.textContent = '启动所有服务器';
+        }
+
+        // 页面加载时检查服务器状态
+        async function checkServerStatus() {
+            const servers = [
+                { port: 5001, name: '案例API' },
+                { port: 8003, name: '配置服务' },
+                { port: 8004, name: '音频服务' },
+                { port: 8005, name: '转录服务' },
+                { port: 8006, name: '督导服务' },
+                { port: 8007, name: '案例处理' }
+            ];
+
+            let runningCount = 0;
+
+            for (const server of servers) {
+                try {
+                    const response = await fetch(`http://localhost:${server.port}/`, {
+                        method: 'HEAD',
+                        mode: 'no-cors'
+                    });
+                    runningCount++;
+                } catch (e) {
+                    // 服务未运行
+                }
+            }
+
+            const status = document.getElementById('serverStatus');
+            if (runningCount === servers.length) {
+                status.innerHTML = '<span class="text-green-600"><i class="fa fa-check-circle"></i> 所有服务器运行正常</span>';
+            } else if (runningCount > 0) {
+                status.innerHTML = `<span class="text-yellow-600"><i class="fa fa-exclamation-triangle"></i> 部分服务器运行中 (${runningCount}/${servers.length})</span>`;
+            } else {
+                status.innerHTML = '<span class="text-red-600"><i class="fa fa-times-circle"></i> 服务器未启动，请点击上方按钮启动</span>';
+            }
+        }
+
+        // 页面加载完成后检查服务器状态
+        window.addEventListener('DOMContentLoaded', checkServerStatus);
+    </script>
 </body>
 </html>
