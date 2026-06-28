@@ -53,6 +53,38 @@
             background: #D1D5DB;
             border-radius: 2px;
         }
+        .collapsible-section {
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .collapsible-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #F9FAFB;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        .collapsible-header:hover {
+            background: #F3F4F6;
+        }
+        .collapsible-content {
+            padding: 16px;
+            background: white;
+        }
+        .collapsible-section.collapsed .collapsible-content {
+            display: none;
+        }
+        .collapsible-arrow {
+            transition: transform 0.2s;
+        }
+        .collapsible-section.collapsed .collapsible-arrow {
+            transform: rotate(-90deg);
+        }
     </style>
 </head>
 <body class="bg-gray-50 p-8">
@@ -78,45 +110,71 @@
             </div>
         </div>
 
-        <!-- 基本信息 -->
-        <div class="mb-6">
-            <h2 class="text-xl font-bold text-blue-900 mb-3">📋 基本信息</h2>
-            <div class="bg-blue-50 rounded-lg p-4 grid grid-cols-2 gap-3 text-sm">
-                <div><strong>代号：</strong>女老板</div>
-                <div><strong>性别：</strong>女</div>
-                <div><strong>年龄：</strong>40-50岁（更年期）</div>
-                <div><strong>职业：</strong>企业主（有厂子）</div>
-                <div><strong>婚姻：</strong>已婚</div>
-            </div>
-        </div>
-
-        <!-- 录音资料 -->
-        <!-- 流派Tab导航 -->
-        <div class="border-b mb-6">
-            <div class="flex gap-2">
         <!-- 流派Tab导航 -->
         <div class="border-b mb-6 tab-nav-container">
             <div class="flex gap-1 min-w-max">
-                <button class="tab-btn active" data-tab="daguanpai">
+                <button class="tab-btn active" data-tab="overview">
+                    <i class="fa fa-file-text-o"></i> 案例总览
+                </button>
+                <button class="tab-btn" data-tab="daguanpai">
                     <i class="fa fa-compass"></i> 大观学派
                 </button>
-                <button class="tab-btn " data-tab="cbt">
+                <button class="tab-btn" data-tab="cbt">
                     <i class="fa fa-brain"></i> 认知行为疗法
                 </button>
-                <button class="tab-btn " data-tab="psychodynamic">
+                <button class="tab-btn" data-tab="psychodynamic">
                     <i class="fa fa-user-circle"></i> 精神动力学
                 </button>
-                <button class="tab-btn " data-tab="humanistic">
+                <button class="tab-btn" data-tab="humanistic">
                     <i class="fa fa-heart"></i> 人本主义
                 </button>
-                <button class="tab-btn " data-tab="existential">
+                <button class="tab-btn" data-tab="existential">
                     <i class="fa fa-lightbulb-o"></i> 存在主义
                 </button>
             </div>
         </div>
 
+        <!-- 案例总览Tab内容 -->
+        <div class="tab-content active" id="tab-overview">
+            <!-- 基本信息（可折叠，默认展开） -->
+            <div class="collapsible-section mb-4">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <h2 class="text-xl font-bold text-blue-900">
+                        <i class="fa fa-user-circle"></i> 基本信息
+                    </h2>
+                    <i class="fa fa-chevron-down collapsible-arrow text-gray-600"></i>
+                </div>
+                <div class="collapsible-content">
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div><strong>代号：</strong>女老板</div>
+                        <div><strong>性别：</strong>女</div>
+                        <div><strong>年龄：</strong>40-50岁（更年期）</div>
+                        <div><strong>职业：</strong>企业主（有厂子）</div>
+                        <div><strong>婚姻：</strong>已婚</div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- 流派Tab导航 -->
+        <div class="border-b mb-6">
+            <div class="flex gap-2">
+            <!-- 完整对话记录 -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-3"><i class="fa fa-comments"></i> 完整对话记录</h2>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <pre class="whitespace-pre-wrap text-sm text-gray-800 font-mono">压垮人的是，一直都这样
+2、抑郁的女老板                                                   15:17-16:03
+一上来就说自己更年期，被医院确诊了抑郁症和焦虑症，目前已经在家休息了两个月，有自己的厂子，目前由厂长在管着，觉得活着没有意思，有点想轻生。主要的现实压力是账目收不回来，时代变化太快，不想学习，不想当老板了，想当个平凡人。我表示共情并理解，这年头大环境不好，变化又快，的确当老板压力很大。目前长期服药，越想越害怕，想去厂里但是身体怎么挪也挪不动，这时我建议能不能就只是去厂外看看【我应该问你做过哪些努力呢，以探索代替给建议】，她回复说她做不到。一度抽泣了两分钟，我说这是身体躯体化了，她表示赞同。
+这时候我开始上场，我说这是你的内在小孩，心累了已经无法支持你了。你以前的模式是对自己总是应该这应该那得，用理性去应对客户，去应对员工，内在小孩会受很多委屈，但是也取得了很多成就，现在你的内在小孩罢工了，她受了很多伤害，现在任凭理性如何使唤都已经无法让她获得动力了。所以她的动力源枯竭了，这也是你面对的新的课题，如何让她获得动力再次站起来，这个比你的工厂，比你的客户的优先级都重要，一旦解决了，你可以在你六十，八十生命都能获得丰盈。我们要改变模式，以前的理性总是去满足外人的需求委屈自己，现在我们反过来，让理性满足内在小孩的需求，让理性去想办法，比如我们休息这两个月，如果不去工厂就不去了，那如何能干点让内在小孩的开心的事儿，实在不知道去哪，你可以把中国的城市清单打开，闭着眼睛划，划到哪个去哪个，让理性去想办法去满足内在小孩，也可以换个发型，染个红发之类的，都可以。然后我们在内在小孩开心的时候，然后批准理性如何有效的干预工厂【让她干预工厂感觉有点欠妥】。
+她觉得自己是个懒人，工人还等着她吃饭，客户还等着她去维护，我又说，你担心的不是你因抑郁症休息了两个月，而是一直这样，怕自己一直这样。我说你可以这么想，老娘努力了二十多年，从零开始打拼到现在，休息两个月怎么了，然后赦免了自己休息两个月的耻辱感，然后你的今天是从零开始的，很多人只能做一方面工作，比如市场人员只会做市场，销售人员只会销售，你一路走来，你的能力很优秀，所以你的能力很棒，要对自己的能力有信心，即使你再休息半年之类，你要相信自己能处理的。【这个建议会不会很冒险，万一经营有事了，会不会连累到我】
+最后挂电话前，她又说，这个是不是更年期的影响。我瞬间知道更年期是她的保护壳，我回复说，更年期各种激素有变化，会有影响的。
+最大的感受是所有精神病人不是担心过去的日子，而是担心自己一直这么下去，以一种泛化或者灾难化的思维来考虑问题。</pre>
+                </div>
+            </div>
+        </div>
+
         <!-- 大观学派Tab内容 -->
-        <div class="tab-content active" id="tab-daguanpai">
+        <div class="tab-content" id="tab-daguanpai">
             <!-- 危机评估 -->
             <div class="mb-6">
                 <h2 class="text-xl font-bold text-red-900 mb-3">⚠️ 危机评估</h2>
@@ -209,7 +267,7 @@
         </div>
 
         <!-- 认知行为疗法Tab内容 -->
-        <div class="tab-content " id="tab-cbt">
+        <div class="tab-content" id="tab-cbt">
             <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
                 <i class="fa fa-info-circle text-4xl mb-3"></i>
                 <p>该流派分析暂未添加</p>
@@ -217,7 +275,7 @@
         </div>
 
         <!-- 精神动力学Tab内容 -->
-        <div class="tab-content " id="tab-psychodynamic">
+        <div class="tab-content" id="tab-psychodynamic">
             <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
                 <i class="fa fa-info-circle text-4xl mb-3"></i>
                 <p>该流派分析暂未添加</p>
@@ -225,7 +283,7 @@
         </div>
 
         <!-- 人本主义Tab内容 -->
-        <div class="tab-content " id="tab-humanistic">
+        <div class="tab-content" id="tab-humanistic">
             <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
                 <i class="fa fa-info-circle text-4xl mb-3"></i>
                 <p>该流派分析暂未添加</p>
@@ -233,7 +291,7 @@
         </div>
 
         <!-- 存在主义Tab内容 -->
-        <div class="tab-content " id="tab-existential">
+        <div class="tab-content" id="tab-existential">
             <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
                 <i class="fa fa-info-circle text-4xl mb-3"></i>
                 <p>该流派分析暂未添加</p>
@@ -251,14 +309,6 @@
             <div class="bg-gray-100 text-gray-500 rounded-lg p-6 text-center">
                 <i class="fa fa-info-circle text-2xl mb-2"></i>
                 <p>还没有添加任何感悟，点击右上角"添加感悟"按钮开始记录</p>
-            </div>
-        </div>
-
-        <!-- 完整对话记录 -->
-        <div class="mb-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-3">💬 完整对话记录</h2>
-            <div class="bg-gray-50 rounded-lg p-4">
-                <pre class="whitespace-pre-wrap text-sm text-gray-800 font-mono">{dialogue}</pre>
             </div>
         </div>
 
@@ -323,6 +373,12 @@
                 document.getElementById('tab-' + tabId).classList.add('active');
             }});
         }});
+
+        // 折叠/展开功能
+        function toggleCollapsible(headerElement) {{
+            const section = headerElement.parentElement;
+            section.classList.toggle('collapsed');
+        }}
 
         // 打开添加感悟模态框
         function openAddRecordModal() {{

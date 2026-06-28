@@ -260,6 +260,38 @@ def generate_case_detail_html(case_data: Dict, approaches: List[Dict]) -> str:
             background: #D1D5DB;
             border-radius: 2px;
         }}
+        .collapsible-section {{
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }}
+        .collapsible-header {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #F9FAFB;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }}
+        .collapsible-header:hover {{
+            background: #F3F4F6;
+        }}
+        .collapsible-content {{
+            padding: 16px;
+            background: white;
+        }}
+        .collapsible-section.collapsed .collapsible-content {{
+            display: none;
+        }}
+        .collapsible-arrow {{
+            transition: transform 0.2s;
+        }}
+        .collapsible-section.collapsed .collapsible-arrow {{
+            transform: rotate(-90deg);
+        }}
     </style>
 </head>
 <body class="bg-gray-50 p-8">
@@ -285,19 +317,52 @@ def generate_case_detail_html(case_data: Dict, approaches: List[Dict]) -> str:
             </div>
         </div>
 
-        <!-- 基本信息 -->
-        <div class="mb-6">
-            <h2 class="text-xl font-bold text-blue-900 mb-3">📋 基本信息</h2>
-            <div class="bg-blue-50 rounded-lg p-4 grid grid-cols-2 gap-3 text-sm">
-                <div><strong>代号：</strong>{basic_info.get('代号', '')}</div>
-                <div><strong>性别：</strong>{basic_info.get('性别', '')}</div>
-                <div><strong>年龄：</strong>{basic_info.get('年龄', '')}</div>
-                <div><strong>职业：</strong>{basic_info.get('职业', '')}</div>
-                <div><strong>婚姻：</strong>{basic_info.get('婚姻状况', '')}</div>
-            </div>
+        <!-- 流派Tab导航 -->
+        <div class="border-b mb-6 tab-nav-container">
+            <div class="flex gap-1 min-w-max">
+                <button class="tab-btn active" data-tab="overview">
+                    <i class="fa fa-file-text-o"></i> 案例总览
+                </button>
+"""
+
+    # 生成流派Tab按钮
+    for approach in approaches:
+        approach_id = approach.get('id', '')
+        approach_name = approach.get('name', '')
+        approach_icon = approach.get('icon', 'fa-circle')
+        html += f"""                <button class="tab-btn" data-tab="{approach_id}">
+                    <i class="fa {approach_icon}"></i> {approach_name}
+                </button>
+"""
+
+    html += """            </div>
         </div>
 
-        <!-- 录音资料 -->
+        <!-- 案例总览Tab内容 -->
+        <div class="tab-content active" id="tab-overview">
+            <!-- 基本信息（可折叠，默认展开） -->
+            <div class="collapsible-section mb-4">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <h2 class="text-xl font-bold text-blue-900">
+                        <i class="fa fa-user-circle"></i> 基本信息
+                    </h2>
+                    <i class="fa fa-chevron-down collapsible-arrow text-gray-600"></i>
+                </div>
+                <div class="collapsible-content">
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+"""
+
+    html += f"""                        <div><strong>代号：</strong>{basic_info.get('代号', '')}</div>
+                        <div><strong>性别：</strong>{basic_info.get('性别', '')}</div>
+                        <div><strong>年龄：</strong>{basic_info.get('年龄', '')}</div>
+                        <div><strong>职业：</strong>{basic_info.get('职业', '')}</div>
+                        <div><strong>婚姻：</strong>{basic_info.get('婚姻状况', '')}</div>
+"""
+
+    html += """                    </div>
+                </div>
+            </div>
+
 """
 
     # 生成录音区域
@@ -440,32 +505,22 @@ def generate_case_detail_html(case_data: Dict, approaches: List[Dict]) -> str:
 
 """
 
-    html += """        <!-- 流派Tab导航 -->
-        <div class="border-b mb-6 tab-nav-container">
-            <div class="flex gap-1 min-w-max">
-"""
-
-    # 生成流派Tab按钮（显示所有流派，不过滤enabled状态）
-    for i, approach in enumerate(approaches):
-        approach_id = approach.get('id', '')
-        approach_name = approach.get('name', '')
-        approach_icon = approach.get('icon', 'fa-circle')
-        active_class = 'active' if i == 0 else ''
-        html += f"""                <button class="tab-btn {active_class}" data-tab="{approach_id}">
-                    <i class="fa {approach_icon}"></i> {approach_name}
-                </button>
-"""
-
-    html += f"""            </div>
+    # 添加完整对话记录到案例总览Tab
+    html += f"""            <!-- 完整对话记录 -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-3"><i class="fa fa-comments"></i> 完整对话记录</h2>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <pre class="whitespace-pre-wrap text-sm text-gray-800 font-mono">{dialogue}</pre>
+                </div>
+            </div>
         </div>
 
 """
 
     # 动态生成所有流派的Tab内容
-    for i, approach in enumerate(approaches):
+    for approach in approaches:
         approach_id = approach.get('id', '')
         approach_name = approach.get('name', '')
-        active_class = 'active' if i == 0 else ''
 
         # 获取该流派的分析数据
         approach_analysis = analyses.get(approach_id, {})
@@ -486,7 +541,7 @@ def generate_case_detail_html(case_data: Dict, approaches: List[Dict]) -> str:
             approach_crisis_border_class = f"border-{approach_crisis_bg}-500"
 
             html += f"""        <!-- {approach_name}Tab内容 -->
-        <div class="tab-content {active_class}" id="tab-{approach_id}">
+        <div class="tab-content" id="tab-{approach_id}">
             <!-- 危机评估 -->
             <div class="mb-6">
                 <h2 class="text-xl font-bold text-red-900 mb-3">⚠️ 危机评估</h2>
@@ -567,7 +622,7 @@ def generate_case_detail_html(case_data: Dict, approaches: List[Dict]) -> str:
         else:
             # 该流派暂无分析数据，显示占位符
             html += f"""        <!-- {approach_name}Tab内容 -->
-        <div class="tab-content {active_class}" id="tab-{approach_id}">
+        <div class="tab-content" id="tab-{approach_id}">
             <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
                 <i class="fa fa-info-circle text-4xl mb-3"></i>
                 <p>该流派分析暂未添加</p>
@@ -656,14 +711,6 @@ def generate_case_detail_html(case_data: Dict, approaches: List[Dict]) -> str:
 
     html += """        </div>
 
-        <!-- 完整对话记录 -->
-        <div class="mb-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-3">💬 完整对话记录</h2>
-            <div class="bg-gray-50 rounded-lg p-4">
-                <pre class="whitespace-pre-wrap text-sm text-gray-800 font-mono">{dialogue}</pre>
-            </div>
-        </div>
-
         <!-- 返回按钮 -->
         <div class="text-center mt-8">
             <a href="../../index.html" class="inline-block px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 mr-3">
@@ -725,6 +772,12 @@ def generate_case_detail_html(case_data: Dict, approaches: List[Dict]) -> str:
                 document.getElementById('tab-' + tabId).classList.add('active');
             }});
         }});
+
+        // 折叠/展开功能
+        function toggleCollapsible(headerElement) {{
+            const section = headerElement.parentElement;
+            section.classList.toggle('collapsed');
+        }}
 
         // 打开添加感悟模态框
         function openAddRecordModal() {{

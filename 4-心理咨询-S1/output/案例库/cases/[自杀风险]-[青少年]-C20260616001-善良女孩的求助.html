@@ -53,6 +53,38 @@
             background: #D1D5DB;
             border-radius: 2px;
         }
+        .collapsible-section {
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .collapsible-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #F9FAFB;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        .collapsible-header:hover {
+            background: #F3F4F6;
+        }
+        .collapsible-content {
+            padding: 16px;
+            background: white;
+        }
+        .collapsible-section.collapsed .collapsible-content {
+            display: none;
+        }
+        .collapsible-arrow {
+            transition: transform 0.2s;
+        }
+        .collapsible-section.collapsed .collapsible-arrow {
+            transform: rotate(-90deg);
+        }
     </style>
 </head>
 <body class="bg-gray-50 p-8">
@@ -78,45 +110,69 @@
             </div>
         </div>
 
-        <!-- 基本信息 -->
-        <div class="mb-6">
-            <h2 class="text-xl font-bold text-blue-900 mb-3">📋 基本信息</h2>
-            <div class="bg-blue-50 rounded-lg p-4 grid grid-cols-2 gap-3 text-sm">
-                <div><strong>代号：</strong>善良的小女孩</div>
-                <div><strong>性别：</strong>女</div>
-                <div><strong>年龄：</strong>约14-16岁（青少年）</div>
-                <div><strong>职业：</strong>学生</div>
-                <div><strong>婚姻：</strong>未婚</div>
-            </div>
-        </div>
-
-        <!-- 录音资料 -->
-        <!-- 流派Tab导航 -->
-        <div class="border-b mb-6">
-            <div class="flex gap-2">
         <!-- 流派Tab导航 -->
         <div class="border-b mb-6 tab-nav-container">
             <div class="flex gap-1 min-w-max">
-                <button class="tab-btn active" data-tab="daguanpai">
+                <button class="tab-btn active" data-tab="overview">
+                    <i class="fa fa-file-text-o"></i> 案例总览
+                </button>
+                <button class="tab-btn" data-tab="daguanpai">
                     <i class="fa fa-compass"></i> 大观学派
                 </button>
-                <button class="tab-btn " data-tab="cbt">
+                <button class="tab-btn" data-tab="cbt">
                     <i class="fa fa-brain"></i> 认知行为疗法
                 </button>
-                <button class="tab-btn " data-tab="psychodynamic">
+                <button class="tab-btn" data-tab="psychodynamic">
                     <i class="fa fa-user-circle"></i> 精神动力学
                 </button>
-                <button class="tab-btn " data-tab="humanistic">
+                <button class="tab-btn" data-tab="humanistic">
                     <i class="fa fa-heart"></i> 人本主义
                 </button>
-                <button class="tab-btn " data-tab="existential">
+                <button class="tab-btn" data-tab="existential">
                     <i class="fa fa-lightbulb-o"></i> 存在主义
                 </button>
             </div>
         </div>
 
+        <!-- 案例总览Tab内容 -->
+        <div class="tab-content active" id="tab-overview">
+            <!-- 基本信息（可折叠，默认展开） -->
+            <div class="collapsible-section mb-4">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <h2 class="text-xl font-bold text-blue-900">
+                        <i class="fa fa-user-circle"></i> 基本信息
+                    </h2>
+                    <i class="fa fa-chevron-down collapsible-arrow text-gray-600"></i>
+                </div>
+                <div class="collapsible-content">
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div><strong>代号：</strong>善良的小女孩</div>
+                        <div><strong>性别：</strong>女</div>
+                        <div><strong>年龄：</strong>约14-16岁（青少年）</div>
+                        <div><strong>职业：</strong>学生</div>
+                        <div><strong>婚姻：</strong>未婚</div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- 流派Tab导航 -->
+        <div class="border-b mb-6">
+            <div class="flex gap-2">
+            <!-- 完整对话记录 -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-3"><i class="fa fa-comments"></i> 完整对话记录</h2>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <pre class="whitespace-pre-wrap text-sm text-gray-800 font-mono">善良女孩的求助
+善良的小女孩                                                 16:26-16:52
+小女孩来电，说她朋友失联了，已经半小时没回信息了，我问发生什么了。她说她朋友14岁，小学和初中遭遇过学校霸凌，确诊了重度抑郁症，现在在家里休养，家里人重男轻女，没人管她，抑郁症发作时，会用手击打头部，之前一直吃药，但已经几个月没去医院开药了，父母不在身边，跟奶奶在。刚才她们聊天，她朋友说她现在特别想死，之前已经尝试过几次，现在她朋友把遗书写好了，然后就失联了半小时。她现在特别慌张，第一次打我们电话。
+此刻我也是慌得，万一真出事了怎么办，我让她先把我们的联系方式留言给她朋友，我又问，她有她朋友的电话和地址吗？她说她有的，她们之间相互送过礼物的。我此刻开始去求助督导，督导首先让我去确认信息的真假，然后需不需要报警，估计是督导没听懂我的意思，另一个就是关乎到是否已经达到报警的程度，因为现在是不确定的情况，一旦报警了就意味着她跟她朋友的秘密公开了，极有可能被她朋友视为，这是她对她朋友的背叛，因为自杀是极其隐私的行为，但万一真出事了，孩子是无法承担这一切，这也是她第一时间没报警而选择打我们电话的根本原因。我又问她，你看过遗书没，你朋友嘱托给你信息没。她说她没看过遗书，也没嘱托过需要她帮忙照顾家人之类的话语。这点可以稍微安下心，她朋友应该还没准备好。此刻我只能陪着小女孩来面对这一切，直到她有了她朋友的信息为止。
+我问，你们是怎么认识的，她说她有抑郁症，但现在吃药，已经得到很好的控制了，我又问她是第一次打电话联系我们吗？她说是的，然后我说，听叔叔的话，如果以后你朋友在遗书中嘱咐你帮忙做什么事的时候，我们不答应好吗？我们要让她自己去做，给她一个现实的拉力，好吗？她说好的，我接着说，一旦你有什么难过的或者解不开的谜题，记得打我们这个电话，这里有一群叔叔阿姨希望你们平平安安长大，我们是免费的，我们也是保密的，好吗？然后她开始抽泣，我接着说，抑郁症会好的，我们要度过很艰难的一两年后，就能看到阳光，我们携手一起走在一条隧道里，记得，一旦自己情绪进入到了死胡同了，一定要打我们的电话，好吗？，她哭着说，嗯。然后她朋友回复了，说她刚在跟她自己的妈妈在一起，瞬间心安了。我又跟他说，记得跟你朋友也这么说，这里有一群叔叔阿姨希望你们平安长大，好吗？她哭腔说嗯，然后你这次很棒，下次有困难记得找我们。我们24小时都在线。</pre>
+                </div>
+            </div>
+        </div>
+
         <!-- 大观学派Tab内容 -->
-        <div class="tab-content active" id="tab-daguanpai">
+        <div class="tab-content" id="tab-daguanpai">
             <!-- 危机评估 -->
             <div class="mb-6">
                 <h2 class="text-xl font-bold text-red-900 mb-3">⚠️ 危机评估</h2>
@@ -207,7 +263,7 @@
         </div>
 
         <!-- 认知行为疗法Tab内容 -->
-        <div class="tab-content " id="tab-cbt">
+        <div class="tab-content" id="tab-cbt">
             <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
                 <i class="fa fa-info-circle text-4xl mb-3"></i>
                 <p>该流派分析暂未添加</p>
@@ -215,7 +271,7 @@
         </div>
 
         <!-- 精神动力学Tab内容 -->
-        <div class="tab-content " id="tab-psychodynamic">
+        <div class="tab-content" id="tab-psychodynamic">
             <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
                 <i class="fa fa-info-circle text-4xl mb-3"></i>
                 <p>该流派分析暂未添加</p>
@@ -223,7 +279,7 @@
         </div>
 
         <!-- 人本主义Tab内容 -->
-        <div class="tab-content " id="tab-humanistic">
+        <div class="tab-content" id="tab-humanistic">
             <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
                 <i class="fa fa-info-circle text-4xl mb-3"></i>
                 <p>该流派分析暂未添加</p>
@@ -231,7 +287,7 @@
         </div>
 
         <!-- 存在主义Tab内容 -->
-        <div class="tab-content " id="tab-existential">
+        <div class="tab-content" id="tab-existential">
             <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
                 <i class="fa fa-info-circle text-4xl mb-3"></i>
                 <p>该流派分析暂未添加</p>
@@ -249,14 +305,6 @@
             <div class="bg-gray-100 text-gray-500 rounded-lg p-6 text-center">
                 <i class="fa fa-info-circle text-2xl mb-2"></i>
                 <p>还没有添加任何感悟，点击右上角"添加感悟"按钮开始记录</p>
-            </div>
-        </div>
-
-        <!-- 完整对话记录 -->
-        <div class="mb-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-3">💬 完整对话记录</h2>
-            <div class="bg-gray-50 rounded-lg p-4">
-                <pre class="whitespace-pre-wrap text-sm text-gray-800 font-mono">{dialogue}</pre>
             </div>
         </div>
 
@@ -321,6 +369,12 @@
                 document.getElementById('tab-' + tabId).classList.add('active');
             }});
         }});
+
+        // 折叠/展开功能
+        function toggleCollapsible(headerElement) {{
+            const section = headerElement.parentElement;
+            section.classList.toggle('collapsed');
+        }}
 
         // 打开添加感悟模态框
         function openAddRecordModal() {{
