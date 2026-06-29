@@ -1,0 +1,2 @@
+- [JavaScript函数加载顺序修复](js-function-load-order-fix.md) — HTML生成顺序问题导致按钮失效的根本原因与解决方案
+- [Context压缩前后的对话整理规则](context-compact-workflow.md) — 压缩前整理保存、压缩后自动读取，保持上下文连续性
