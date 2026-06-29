@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>对比视图 - </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .chart-container { position: relative; height: 300px; }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <div class="bg-white shadow-sm mb-6">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="profile.html" class="text-indigo-600 hover:text-indigo-800">
+                <i class="fa fa-arrow-left"></i> 返回来访者档案
+            </a>
+            <a href="../index.html" class="text-gray-600 hover:text-gray-800">
+                <i class="fa fa-home"></i> 来访者库
+            </a>
+        </div>
+    </div>
+<div class="container mx-auto px-4 py-8">
+
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">对比视图</h1>
+        <p class="text-gray-600"> · 跨来访趋势分析</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">
+            <i class="fa fa-line-chart"></i> 症状严重程度趋势
+        </h2>
+        <div class="chart-container">
+            <canvas id="symptomChart"></canvas>
+        </div>
+        <p class="text-sm text-gray-600 mt-4 text-center">
+            评分范围：1（轻微） - 10（严重）
+        </p>
+    </div>
+
+    <script>
+    const symptomCtx = document.getElementById('symptomChart').getContext('2d');
+    new Chart(symptomCtx, {{
+        type: 'line',
+        data: {{
+            labels: {dates},
+            datasets: [{{
+                label: '症状严重程度',
+                data: {severity},
+                borderColor: 'rgb(99, 102, 241)',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                tension: 0.3,
+                fill: true
+            }}]
+        }},
+        options: {{
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {{
+                y: {{
+                    beginAtZero: true,
+                    max: 10,
+                    ticks: {{
+                        stepSize: 1
+                    }}
+                }}
+            }},
+            plugins: {{
+                legend: {{
+                    display: true,
+                    position: 'top'
+                }}
+            }}
+        }}
+    }});
+    </script>
+
+    <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">
+            <i class="fa fa-exclamation-triangle"></i> 风险等级趋势
+        </h2>
+        <div class="chart-container">
+            <canvas id="riskChart"></canvas>
+        </div>
+        <p class="text-sm text-gray-600 mt-4 text-center">
+            风险类型：待评估
+        </p>
+    </div>
+
+    <script>
+    const riskCtx = document.getElementById('riskChart').getContext('2d');
+    new Chart(riskCtx, {
+        type: 'line',
+        data: {
+            labels: ['2026-06-20'],
+            datasets: [{
+                label: '风险等级',
+                data: [2],
+                borderColor: 'rgb(239, 68, 68)',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                tension: 0.3,
+                fill: true,
+                stepped: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 3,
+                    ticks: {
+                        stepSize: 1,
+                        callback: function(value) {
+                            const labels = ['无', '低', '中', '高'];
+                            return labels[value];
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            }
+        }
+    });
+    </script>
+
+    <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">
+            <i class="fa fa-table"></i> 来访对比
+        </h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">次数</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日期</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">主要问题</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">风险等级</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">咨询师</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">时长</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">第 1 次</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2026-06-20</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">情绪困扰</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">中</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">咨询师A</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">50分钟</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <a href="visit_001.html" class="text-indigo-600 hover:text-indigo-900">查看详情</a>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">
+            <i class="fa fa-stethoscope"></i> 整体评估
+        </h2>
+        <div class="space-y-4">
+            <div class="p-4 bg-blue-50 rounded">
+                <h3 class="font-semibold text-gray-800 mb-2">治疗进展</h3>
+                <p class="text-gray-700">初次来访，建立咨访关系阶段</p>
+            </div>
+            <div class="p-4 bg-green-50 rounded">
+                <h3 class="font-semibold text-gray-800 mb-2">咨访关系</h3>
+                <p class="text-gray-700">初步建立信任</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

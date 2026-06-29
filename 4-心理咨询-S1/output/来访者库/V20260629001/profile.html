@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帅哥 - 来访者档案</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .collapsible { cursor: pointer; }
+        .collapsible:hover { background-color: #f3f4f6; }
+        .content { display: none; overflow: hidden; }
+        .content.show { display: block; }
+        .timeline-item { position: relative; padding-left: 2rem; }
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 0.4rem;
+            top: 2rem;
+            bottom: -1rem;
+            width: 2px;
+            background: #e5e7eb;
+        }
+        .timeline-item:last-child:before { display: none; }
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #6366f1;
+        }
+        .tab-button { cursor: pointer; transition: all 0.2s; }
+        .tab-button.active {
+            background-color: #6366f1;
+            color: white;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <div class="bg-white shadow-sm mb-6">
+        <div class="container mx-auto px-4 py-4">
+            <a href="../index.html" class="text-indigo-600 hover:text-indigo-800">
+                <i class="fa fa-arrow-left"></i> 返回来访者库
+            </a>
+        </div>
+    </div>
+<div class="container mx-auto px-4 py-8">
+
+    <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">帅哥</h1>
+                <p class="text-gray-600">来访者档案 · V20260629001</p>
+            </div>
+            <a href="comparison.html" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                <i class="fa fa-bar-chart"></i> 对比视图
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-1">年龄 / 性别</p>
+                <p class="text-lg font-semibold"> · </p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-1">职业</p>
+                <p class="text-lg font-semibold"></p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-1">婚姻状况</p>
+                <p class="text-lg font-semibold"></p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-1">性取向</p>
+                <p class="text-lg font-semibold">未填写</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-1">宗教信仰</p>
+                <p class="text-lg font-semibold">未填写</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-1">紧急联系人</p>
+                <p class="text-lg font-semibold">未填写</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-1">联系电话</p>
+                <p class="text-lg font-semibold">未填写</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-1">总来访次数</p>
+                <p class="text-lg font-semibold">1 次</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="p-4 bg-blue-50 rounded">
+                <p class="text-sm text-gray-600 mb-1">首次接访日期</p>
+                <p class="text-base font-semibold text-blue-800">未知</p>
+            </div>
+            <div class="p-4 bg-blue-50 rounded">
+                <p class="text-sm text-gray-600 mb-1">咨询渠道</p>
+                <p class="text-base font-semibold text-blue-800">未知</p>
+            </div>
+            <div class="p-4 bg-blue-50 rounded">
+                <p class="text-sm text-gray-600 mb-1">咨询师</p>
+                <p class="text-base font-semibold text-blue-800">未知</p>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">背景信息</h3>
+            <p class="text-gray-700 leading-relaxed">暂无</p>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">来访主诉</h3>
+            <p class="text-gray-700 leading-relaxed">暂无</p>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">咨询目标</h3>
+            <p class="text-gray-700 leading-relaxed">待设定</p>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3"><i class="fa fa-users text-pink-600"></i> 家庭结构</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-3 bg-gray-50 rounded">
+                    <p class="text-sm text-gray-600 mb-1">父亲情况</p>
+                    <p class="text-gray-800">未填写</p>
+                </div>
+                <div class="p-3 bg-gray-50 rounded">
+                    <p class="text-sm text-gray-600 mb-1">母亲情况</p>
+                    <p class="text-gray-800">未填写</p>
+                </div>
+                <div class="p-3 bg-gray-50 rounded">
+                    <p class="text-sm text-gray-600 mb-1">父母关系</p>
+                    <p class="text-gray-800">未填写</p>
+                </div>
+                <div class="p-3 bg-gray-50 rounded">
+                    <p class="text-sm text-gray-600 mb-1">兄弟姐妹</p>
+                    <p class="text-gray-800">未填写</p>
+                </div>
+                <div class="p-3 bg-gray-50 rounded md:col-span-2">
+                    <p class="text-sm text-gray-600 mb-1">配偶/子女情况</p>
+                    <p class="text-gray-800">未填写</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">用药情况</h3>
+            <p class="text-gray-700 leading-relaxed">暂无</p>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">来访备注</h3>
+            <p class="text-gray-700 leading-relaxed">暂无</p>
+        </div>
+
+        <div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">整体进展评估</h3>
+            <p class="text-gray-700 mb-4">暂无</p>
+            <p class="text-gray-700">暂无</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">来访历史</h2>
+        <div class="space-y-6">
+
+        <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="bg-gray-50 rounded-lg p-6 hover:shadow-md transition">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800">第 1 次来访</h3>
+                        <p class="text-sm text-gray-600">2026-06-29 ·  · 0分钟</p>
+                    </div>
+                    <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">
+                        未评估风险
+                    </span>
+                </div>
+                <p class="text-gray-700 mb-4"><strong>主要问题：</strong>未知</p>
+                <a href="visit_001.html" class="inline-block px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+                    <i class="fa fa-file-text-o"></i> 查看详细记录
+                </a>
+            </div>
+        </div>
+
+        </div>
+    </div>
+</div>
+
+    <script>
+        // 折叠功能
+        document.querySelectorAll('.collapsible').forEach(item => {
+            item.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const content = this.nextElementSibling;
+                content.classList.toggle('show');
+            });
+        });
+
+        // 标签页切换
+        function switchTab(tabName) {
+            // 隐藏所有标签内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            // 移除所有按钮的active状态
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            // 显示选中的标签内容
+            document.getElementById(tabName).classList.add('active');
+            // 激活选中的按钮
+            event.target.classList.add('active');
+        }
+
+        // 默认激活第一个标签
+        window.addEventListener('DOMContentLoaded', function() {
+            const firstTab = document.querySelector('.tab-button');
+            if (firstTab) {
+                firstTab.classList.add('active');
+                const firstContent = document.querySelector('.tab-content');
+                if (firstContent) {
+                    firstContent.classList.add('active');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

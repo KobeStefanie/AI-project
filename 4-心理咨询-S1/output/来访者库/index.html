@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>来访者库</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .collapsible { cursor: pointer; }
+        .collapsible:hover { background-color: #f3f4f6; }
+        .content { display: none; overflow: hidden; }
+        .content.show { display: block; }
+        .timeline-item { position: relative; padding-left: 2rem; }
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 0.4rem;
+            top: 2rem;
+            bottom: -1rem;
+            width: 2px;
+            background: #e5e7eb;
+        }
+        .timeline-item:last-child:before { display: none; }
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #6366f1;
+        }
+        .tab-button { cursor: pointer; transition: all 0.2s; }
+        .tab-button.active {
+            background-color: #6366f1;
+            color: white;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">来访者库</h1>
+            <p class="text-gray-600">以来访者为中心的咨询案例管理系统</p>
+        </div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <a href="V20260616001/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">善良的小女孩</h3>
+                <span class="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
+                    中风险
+                </span>
+            </div>
+            <div class="space-y-2 text-sm text-gray-600">
+                <p><i class="fa fa-user"></i> 约14-16岁（青少年） · 女</p>
+                <p><i class="fa fa-briefcase"></i> 学生</p>
+                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
+                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-16</p>
+            </div>
+            <div class="mt-4 pt-4 border-t">
+                <p class="text-sm text-gray-500 line-clamp-2">14岁女孩的同伴来电求助：朋友确诊重度抑郁症，有多次自杀尝试史，当天写完遗书后失联半小时。来电者本人也有抑郁症史但已药物控制。咨询师在面对'第三方自杀危机'的复杂局面中，通过六变三托筛查（确认遗书未嘱...</p>
+            </div>
+        </a>
+
+        <a href="V20260620001/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">L001</h3>
+                <span class="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
+                    中风险
+                </span>
+            </div>
+            <div class="space-y-2 text-sm text-gray-600">
+                <p><i class="fa fa-user"></i> 16-17岁（高二） · 女</p>
+                <p><i class="fa fa-briefcase"></i> 学生</p>
+                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
+                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-20</p>
+            </div>
+            <div class="mt-4 pt-4 border-t">
+                <p class="text-sm text-gray-500 line-clamp-2">高二女生确诊重度抑郁症+焦虑症，伴有双相情感障碍发展倾向、幻听幻影、严重进食障碍（厌食+催吐）、频繁抑郁躯体化、自伤行为。咨询师使用了多种技术（情绪承接、赋能、隐喻、重新框架），其中'我是国王'隐喻对...</p>
+            </div>
+        </a>
+
+        <a href="V20260620002/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">女老板</h3>
+                <span class="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
+                    中风险
+                </span>
+            </div>
+            <div class="space-y-2 text-sm text-gray-600">
+                <p><i class="fa fa-user"></i> 40-50岁（更年期） · 女</p>
+                <p><i class="fa fa-briefcase"></i> 企业主（有厂子）</p>
+                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
+                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-20</p>
+            </div>
+            <div class="mt-4 pt-4 border-t">
+                <p class="text-sm text-gray-500 line-clamp-2">女企业主确诊抑郁症+焦虑症，更年期叠加，已休息两个月，有轻生想法但无明确计划。主要压力来自账目收不回、时代变化快、不想学习。咨询师使用了'内在小孩'理论进行重新框架，强调动力枯竭是新课题，建议让理性满...</p>
+            </div>
+        </a>
+
+        <a href="V20260629001/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">帅哥</h3>
+                <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">
+                    未评估风险
+                </span>
+            </div>
+            <div class="space-y-2 text-sm text-gray-600">
+                <p><i class="fa fa-user"></i>  · </p>
+                <p><i class="fa fa-briefcase"></i> </p>
+                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
+                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-29</p>
+            </div>
+            <div class="mt-4 pt-4 border-t">
+                <p class="text-sm text-gray-500 line-clamp-2">...</p>
+            </div>
+        </a>
+
+        <a href="V20260629007/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">阿萨法阿萨德</h3>
+                <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">
+                    未评估风险
+                </span>
+            </div>
+            <div class="space-y-2 text-sm text-gray-600">
+                <p><i class="fa fa-user"></i>  · </p>
+                <p><i class="fa fa-briefcase"></i> </p>
+                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
+                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-29</p>
+            </div>
+            <div class="mt-4 pt-4 border-t">
+                <p class="text-sm text-gray-500 line-clamp-2">...</p>
+            </div>
+        </a>
+
+        <a href="V20260629008/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">阿萨法阿萨法</h3>
+                <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">
+                    未评估风险
+                </span>
+            </div>
+            <div class="space-y-2 text-sm text-gray-600">
+                <p><i class="fa fa-user"></i>  · </p>
+                <p><i class="fa fa-briefcase"></i> </p>
+                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
+                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-29</p>
+            </div>
+            <div class="mt-4 pt-4 border-t">
+                <p class="text-sm text-gray-500 line-clamp-2">...</p>
+            </div>
+        </a>
+
+        <a href="V20260629009/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">阿是萨阿德</h3>
+                <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">
+                    未评估风险
+                </span>
+            </div>
+            <div class="space-y-2 text-sm text-gray-600">
+                <p><i class="fa fa-user"></i>  · </p>
+                <p><i class="fa fa-briefcase"></i> </p>
+                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
+                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-29</p>
+            </div>
+            <div class="mt-4 pt-4 border-t">
+                <p class="text-sm text-gray-500 line-clamp-2">...</p>
+            </div>
+        </a>
+
+        <a href="V20260629010/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">111</h3>
+                <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">
+                    未评估风险
+                </span>
+            </div>
+            <div class="space-y-2 text-sm text-gray-600">
+                <p><i class="fa fa-user"></i>  · </p>
+                <p><i class="fa fa-briefcase"></i> </p>
+                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
+                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-29</p>
+            </div>
+            <div class="mt-4 pt-4 border-t">
+                <p class="text-sm text-gray-500 line-clamp-2">...</p>
+            </div>
+        </a>
+</div>
+</div>
+
+    <script>
+        // 折叠功能
+        document.querySelectorAll('.collapsible').forEach(item => {
+            item.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const content = this.nextElementSibling;
+                content.classList.toggle('show');
+            });
+        });
+
+        // 标签页切换
+        function switchTab(tabName) {
+            // 隐藏所有标签内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            // 移除所有按钮的active状态
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            // 显示选中的标签内容
+            document.getElementById(tabName).classList.add('active');
+            // 激活选中的按钮
+            event.target.classList.add('active');
+        }
+
+        // 默认激活第一个标签
+        window.addEventListener('DOMContentLoaded', function() {
+            const firstTab = document.querySelector('.tab-button');
+            if (firstTab) {
+                firstTab.classList.add('active');
+                const firstContent = document.querySelector('.tab-content');
+                if (firstContent) {
+                    firstContent.classList.add('active');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
