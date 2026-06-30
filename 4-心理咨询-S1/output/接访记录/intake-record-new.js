@@ -1,9 +1,11 @@
 // API配置
 const CONFIG_API = 'http://localhost:8003';
 const AUDIO_API = 'http://localhost:8004';
-const TRANSCRIPT_API = 'http://localhost:8005';
+const TRANSCRIPT_API = 'http://localhost:8005';  // 旧的逐字稿API（保留兼容）
 const SUPERVISION_API = 'http://localhost:8006';
-const CASE_API = 'http://localhost:5001/api';
+const INTAKE_API = 'http://localhost:8768';  // 接访记录保存服务器
+const RECORDING_API = 'http://localhost:8767';  // 录音管理服务器
+const TRANSCRIPT_UPLOAD_API = 'http://localhost:8769';  // 新的逐字稿上传API（与来访档案统一）
 
 // 全局变量
 let tagsLibrary = null;
@@ -13,6 +15,37 @@ let selectedSupervisionFiles = [];
 let keywords = [];
 let currentCase = null;  // 当前加载的案例
 let isFollowUpSession = false;  // 是否为后续会谈模式
+let childrenList = [];  // 孩子信息列表
+let psychTestsList = [];  // 心理测评列表
+
+// 常用心理测评量表
+const PSYCH_TESTS = [
+    { name: 'SCL-90', fullName: '症状自评量表', description: '评估心理症状严重程度' },
+    { name: 'SDS', fullName: '抑郁自评量表', description: '评估抑郁程度' },
+    { name: 'SAS', fullName: '焦虑自评量表', description: '评估焦虑程度' },
+    { name: 'PHQ-9', fullName: '患者健康问卷', description: '抑郁症筛查' },
+    { name: 'GAD-7', fullName: '广泛性焦虑量表', description: '焦虑症筛查' },
+    { name: 'MMPI', fullName: '明尼苏达多相人格测验', description: '人格特征评估' },
+    { name: 'EPQ', fullName: '艾森克人格问卷', description: '人格维度评估' },
+    { name: 'BDI', fullName: '贝克抑郁量表', description: '抑郁情绪评估' },
+    { name: 'BAI', fullName: '贝克焦虑量表', description: '焦虑情绪评估' },
+    { name: '16PF', fullName: '卡特尔16种人格因素问卷', description: '人格特质评估' },
+    { name: 'HAMA', fullName: '汉密尔顿焦虑量表', description: '焦虑严重度评估' },
+    { name: 'HAMD', fullName: '汉密尔顿抑郁量表', description: '抑郁严重度评估' },
+    { name: 'BPRS', fullName: '简明精神病评定量表', description: '精神病性症状评估' },
+    { name: 'PANSS', fullName: '阳性和阴性症状量表', description: '精神分裂症症状评估' },
+    { name: 'YMRS', fullName: '杨氏躁狂评定量表', description: '躁狂症状评估' },
+    { name: 'CGI', fullName: '临床总体印象量表', description: '疾病严重度评估' },
+    { name: 'Y-BOCS', fullName: '耶鲁布朗强迫量表', description: '强迫症状评估' },
+    { name: 'SCARED', fullName: '儿童焦虑相关情绪障碍筛查量表', description: '儿童焦虑筛查' },
+    { name: 'CDI', fullName: '儿童抑郁量表', description: '儿童抑郁评估' },
+    { name: 'CBCL', fullName: '儿童行为量表', description: '儿童行为问题评估' },
+    { name: 'Conners', fullName: 'Conners父母量表', description: 'ADHD评估' },
+    { name: 'WCST', fullName: '威斯康星卡片分类测验', description: '执行功能评估' },
+    { name: 'TMT', fullName: '连线测验', description: '注意力和认知灵活性' },
+    { name: 'WAIS', fullName: '韦氏成人智力量表', description: '智力评估' },
+    { name: 'WISC', fullName: '韦氏儿童智力量表', description: '儿童智力评估' }
+];
 
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', async () => {
@@ -55,10 +88,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 自动保存草稿（每30秒）
-    setInterval(() => {
-        autoSaveDraft();
-    }, 30000);
+    // 自动保存草稿（每30秒）- 暂时禁用，避免错误
+    // setInterval(() => {
+    //     autoSaveDraft();
+    // }, 30000);
 });
 
 // 加载标签库
@@ -379,22 +412,30 @@ async function processWordFile(file, statusDiv) {
     statusDiv.innerHTML = '<div class="text-blue-600"><i class="fa fa-spinner fa-spin"></i> 正在识别文档...</div>';
 
     try {
+        console.log('[Word上传] 开始处理文件:', file.name);
+
         const formData = new FormData();
         formData.append('file', file);
 
+        console.log('[Word上传] 发送请求到:', `${CONFIG_API}/api/word/parse`);
         const response = await fetch(`${CONFIG_API}/api/word/parse`, {
             method: 'POST',
             body: formData
         });
 
+        console.log('[Word上传] 响应状态:', response.status, response.statusText);
+
         if (!response.ok) {
-            throw new Error('文档解析失败');
+            throw new Error('文档解析失败: ' + response.status);
         }
 
         const data = await response.json();
+        console.log('[Word上传] 解析后的数据:', JSON.stringify(data, null, 2));
 
         // 自动填充表单
+        console.log('[Word上传] 开始填充表单...');
         fillFormFromWordData(data);
+        console.log('[Word上传] 表单填充完成');
 
         statusDiv.innerHTML = '<div class="text-green-600"><i class="fa fa-check-circle"></i> 文档识别成功，已自动填充表单</div>';
 
@@ -404,15 +445,18 @@ async function processWordFile(file, statusDiv) {
         }, 3000);
 
     } catch (error) {
-        console.error('Word文档处理失败:', error);
+        console.error('[Word上传] 处理失败:', error);
         statusDiv.innerHTML = '<div class="text-red-600"><i class="fa fa-times-circle"></i> 文档识别失败: ' + error.message + '</div>';
     }
 }
 
 // 从Word数据填充表单
 function fillFormFromWordData(data) {
-    // 基本信息
-    if (data.basic_info) {
+    // 判断是否为后续接访模式
+    const isFollowUp = isFollowUpSession && currentCase;
+
+    // 基本信息（后续接访时跳过静态字段）
+    if (!isFollowUp && data.basic_info) {
         if (data.basic_info.代号) document.getElementById('代号').value = data.basic_info.代号;
         if (data.basic_info.性别) document.getElementById('性别').value = data.basic_info.性别;
         if (data.basic_info.年龄) document.getElementById('年龄').value = data.basic_info.年龄;
@@ -420,45 +464,121 @@ function fillFormFromWordData(data) {
         if (data.basic_info.婚姻状况) document.getElementById('婚姻状况').value = data.basic_info.婚姻状况;
         if (data.basic_info.性取向) document.getElementById('性取向').value = data.basic_info.性取向;
         if (data.basic_info.宗教信仰) document.getElementById('宗教信仰').value = data.basic_info.宗教信仰;
+        if (data.basic_info.来访者联系电话) document.getElementById('来访者联系电话').value = data.basic_info.来访者联系电话;
+        if (data.basic_info.background) document.getElementById('背景信息').value = data.basic_info.background;
+    }
+
+    // 动态信息（后续接访时也可以更新）
+    if (data.basic_info) {
         if (data.basic_info.紧急联系人) document.getElementById('紧急联系人').value = data.basic_info.紧急联系人;
-        if (data.basic_info.紧急联系电话) document.getElementById('紧急联系电话').value = data.basic_info.紧急联系电话;
+        if (data.basic_info.紧急联系人关系) document.getElementById('紧急联系人关系').value = data.basic_info.紧急联系人关系;
+        if (data.basic_info.紧急联系人电话) document.getElementById('紧急联系人电话').value = data.basic_info.紧急联系人电话;
         if (data.basic_info.用药情况) document.getElementById('用药情况').value = data.basic_info.用药情况;
         if (data.basic_info.来访备注) document.getElementById('来访备注').value = data.basic_info.来访备注;
     }
 
-    // 接访信息
+    // 接访信息（后续接访时只更新部分字段）
     if (data.session_info) {
         if (data.session_info.接访日期) document.getElementById('接访日期').value = data.session_info.接访日期;
-        if (data.session_info.接访次数) document.getElementById('接访次数').value = data.session_info.接访次数;
+        if (!isFollowUp && data.session_info.接访次数) document.getElementById('接访次数').value = data.session_info.接访次数;
         if (data.session_info.通话时长) document.getElementById('通话时长').value = data.session_info.通话时长;
         if (data.session_info.咨询渠道) document.getElementById('咨询渠道').value = data.session_info.咨询渠道;
         if (data.session_info.咨询师姓名) document.getElementById('咨询师姓名').value = data.session_info.咨询师姓名;
         if (data.session_info.案例状态) document.getElementById('案例状态').value = data.session_info.案例状态;
     }
 
-    // 主诉和目标
-    if (data.主诉) document.getElementById('主诉').value = data.主诉;
-    if (data.咨询目标) document.getElementById('咨询目标').value = data.咨询目标;
+    // 主诉和目标 - 优先使用AI分析后的核心诉求
+    if (data.complaint_analysis && data.complaint_analysis.summarized_complaint) {
+        const complaintField = document.getElementById('主诉');
+        if (complaintField) {
+            // 使用AI提炼后的核心诉求
+            let complaintText = data.complaint_analysis.summarized_complaint;
 
-    // 既往史
-    if (data.既往史) {
+            // 添加核心问题和情绪状态标注
+            if (data.complaint_analysis.core_issue) {
+                complaintText = `【核心问题】${data.complaint_analysis.core_issue}\n\n${complaintText}`;
+            }
+            if (data.complaint_analysis.emotional_state) {
+                complaintText += `\n\n【情绪状态】${data.complaint_analysis.emotional_state}`;
+            }
+
+            complaintField.value = complaintText;
+            console.log('[主诉] 已填充AI分析后的核心诉求:', data.complaint_analysis.core_issue);
+        }
+    } else if (data.complaint) {
+        // 降级：没有AI分析时使用原始主诉
+        const complaintField = document.getElementById('主诉');
+        if (complaintField) {
+            complaintField.value = data.complaint;
+            console.log('[主诉] 已填充原始主诉内容');
+        }
+    }
+
+    // 咨询目标（后续接访时跳过）
+    if (!isFollowUp && data.咨询目标) {
+        document.getElementById('咨询目标').value = data.咨询目标;
+    }
+
+    // 既往史（后续接访时跳过）
+    if (!isFollowUp && data.既往史) {
         if (data.既往史.有既往咨询史) document.getElementById('有既往咨询史').checked = true;
         if (data.既往史.有精神科就诊史) document.getElementById('有精神科就诊史').checked = true;
         if (data.既往史.既往史详情) document.getElementById('既往史详情').value = data.既往史.既往史详情;
     }
 
-    // 家庭结构
-    if (data.家庭结构) {
-        if (data.家庭结构.父亲情况) document.getElementById('父亲情况').value = data.家庭结构.父亲情况;
-        if (data.家庭结构.母亲情况) document.getElementById('母亲情况').value = data.家庭结构.母亲情况;
-        if (data.家庭结构.父母关系) document.getElementById('父母关系').value = data.家庭结构.父母关系;
-        if (data.家庭结构.兄弟姐妹) document.getElementById('兄弟姐妹').value = data.家庭结构.兄弟姐妹;
-        if (data.家庭结构.配偶子女情况) document.getElementById('配偶子女情况').value = data.家庭结构.配偶子女情况;
+    // 心理测评（后续接访时跳过）
+    if (!isFollowUp && data.心理测评 && Array.isArray(data.心理测评)) {
+        psychTestsList = data.心理测评;
+        renderPsychTestsList();
     }
 
-    // 对话记录
+    // 家庭结构（后续接访时跳过）- 兼容family_structure和家庭结构两种格式
+    const familyData = data.family_structure || data.家庭结构;
+    if (!isFollowUp && familyData) {
+        console.log('[家庭结构] 开始填充家庭结构:', familyData);
+        if (familyData.父亲年龄) document.getElementById('父亲年龄').value = familyData.父亲年龄;
+        if (familyData.父亲职业) document.getElementById('父亲职业').value = familyData.父亲职业;
+        if (familyData.父亲身体情况) document.getElementById('父亲身体情况').value = familyData.父亲身体情况;
+        if (familyData.母亲年龄) document.getElementById('母亲年龄').value = familyData.母亲年龄;
+        if (familyData.母亲职业) document.getElementById('母亲职业').value = familyData.母亲职业;
+        if (familyData.母亲身体情况) document.getElementById('母亲身体情况').value = familyData.母亲身体情况;
+        if (familyData.父母关系) document.getElementById('父母关系').value = familyData.父母关系;
+        if (familyData.兄弟姐妹) document.getElementById('兄弟姐妹').value = familyData.兄弟姐妹;
+        if (familyData.配偶性别) document.getElementById('配偶性别').value = familyData.配偶性别;
+        if (familyData.配偶年龄) document.getElementById('配偶年龄').value = familyData.配偶年龄;
+        if (familyData.配偶职业) document.getElementById('配偶职业').value = familyData.配偶职业;
+        if (familyData.配偶身体情况) document.getElementById('配偶身体情况').value = familyData.配偶身体情况;
+        if (familyData.家庭备注) document.getElementById('家庭备注').value = familyData.家庭备注;
+        console.log('[家庭结构] 家庭结构填充完成');
+
+        // 加载孩子列表
+        if (familyData.孩子列表 && Array.isArray(familyData.孩子列表)) {
+            childrenList = familyData.孩子列表;
+            renderChildrenList();
+        }
+    }
+
+    // 咨询师复盘 - 填充Word原始对话内容
     if (data.dialogue) {
-        document.getElementById('dialogue').value = data.dialogue;
+        const dialogueField = document.getElementById('dialogue');
+        if (dialogueField) {
+            dialogueField.value = data.dialogue;
+            console.log('[咨询师复盘] 已填充对话内容，长度:', data.dialogue.length);
+
+            // 同步到来访者档案的咨询师复盘
+            // 在保存接访记录时，dialogue内容会同步到对应来访者档案
+        } else {
+            console.warn('[咨询师复盘] 未找到dialogue字段元素');
+        }
+    }
+
+    // 咨询师小结
+    if (data.counselor_reflection) {
+        const reflectionField = document.getElementById('counselor_reflection') || document.getElementById('咨询师小结');
+        if (reflectionField) {
+            reflectionField.value = data.counselor_reflection;
+            console.log('[咨询师小结] 已填充小结内容');
+        }
     }
 
     // 关系标签
@@ -477,13 +597,78 @@ function fillFormFromWordData(data) {
         });
     }
 
-    // 危机等级
-    if (data.crisis_level) {
+    // 危机等级 - 支持大观学派A-Z 26级连续评估
+    if (data.crisis_assessment && data.crisis_assessment.all_matched) {
+        console.log('[危机等级] 开始处理危机等级（连续评估）:', data.crisis_assessment);
+
+        // 1. 勾选所有匹配到的等级（连续评估的所有落脚点）
+        const allMatched = data.crisis_assessment.all_matched; // 格式: ["L-L-敌意/报复", "E-E-痛苦绝望"]
+
+        allMatched.forEach(matched => {
+            // 提取等级代码（如 "L-L-敌意/报复" -> "L"）
+            const levelCode = matched.split('-')[0];
+
+            const checkbox = document.querySelector(`input.crisis-level-checkbox[value="${levelCode}"]`);
+            console.log('[危机等级] 勾选匹配等级:', levelCode, checkbox);
+
+            if (checkbox) {
+                checkbox.checked = true;
+
+                // 勾选所属的等级组
+                const parentDiv = checkbox.closest('.border-2');
+                if (parentDiv) {
+                    const groupCheckbox = parentDiv.querySelector('input.crisis-class-checkbox');
+                    if (groupCheckbox) {
+                        groupCheckbox.checked = true;
+                    }
+                }
+            }
+        });
+
+        // 2. 标记最终落脚点（最严重的等级）
+        if (data.crisis_assessment.level) {
+            const finalLevel = data.crisis_assessment.level;
+            const finalCheckbox = document.querySelector(`input.crisis-level-checkbox[value="${finalLevel}"]`);
+
+            if (finalCheckbox) {
+                // 给最终落脚点添加特殊样式
+                const label = finalCheckbox.closest('label');
+                if (label) {
+                    label.style.fontWeight = 'bold';
+                    label.style.backgroundColor = '#fef3c7';
+                    label.style.padding = '2px 6px';
+                    label.style.borderRadius = '4px';
+                    label.style.border = '2px solid #f59e0b';
+                }
+                console.log('[危机等级] 最终落脚点:', finalLevel);
+            }
+        }
+
+        // 3. 填充评估依据
+        if (data.crisis_assessment.evidence && data.crisis_assessment.evidence.length > 0) {
+            const evidenceField = document.getElementById('危机评估备注') || document.getElementById('crisis_evidence') || document.getElementById('crisis_assessment_notes');
+            console.log('[危机等级] 查找评估依据字段:', evidenceField);
+            if (evidenceField) {
+                const allMatchedText = data.crisis_assessment.all_matched.join('\n  · ');
+                evidenceField.value = `【大观学派连续评估】\n\n` +
+                    `最终落脚点：${data.crisis_assessment.level} - ${data.crisis_assessment.name} (${data.crisis_assessment.layer})\n\n` +
+                    `连续评估过程（所有触及等级）：\n  · ${allMatchedText}\n\n` +
+                    `证据关键词：${data.crisis_assessment.evidence.join('、')}`;
+                console.log('[危机等级] 已填充评估依据:', evidenceField.value);
+            }
+        }
+    }
+    // 兼容旧格式
+    else if (data.crisis_level) {
+        console.log('[危机等级] 使用旧格式:', data.crisis_level);
         const radio = document.getElementById(`crisis_${data.crisis_level}`);
         if (radio) radio.checked = true;
+    } else {
+        console.log('[危机等级] 没有危机等级数据');
     }
     if (data.crisis_evidence) {
-        document.getElementById('crisis_evidence').value = data.crisis_evidence;
+        const evidenceField = document.getElementById('crisis_evidence');
+        if (evidenceField) evidenceField.value = data.crisis_evidence;
     }
 
     // 使用技巧
@@ -509,10 +694,20 @@ function fillFormFromWordData(data) {
         renderKeywords();
     }
 
-    // 咨询师反思和建议
-    if (data.counselor_reflection) {
-        document.getElementById('counselor_reflection').value = data.counselor_reflection;
+    // 咨询师复盘（HTML中ID为'dialogue'）
+    if (data.dialogue) {
+        document.getElementById('dialogue').value = data.dialogue;
     }
+
+    // 咨询师反思（如果有单独的字段）
+    if (data.counselor_reflection) {
+        const dialogueElem = document.getElementById('dialogue');
+        if (dialogueElem && !dialogueElem.value) {
+            dialogueElem.value = data.counselor_reflection;
+        }
+    }
+
+    // 下一步计划
     if (data.next_session_plan) {
         document.getElementById('next_session_plan').value = data.next_session_plan;
     }
@@ -758,10 +953,13 @@ function collectFormData() {
         婚姻状况: document.getElementById('婚姻状况').value,
         性取向: document.getElementById('性取向').value,
         宗教信仰: document.getElementById('宗教信仰').value,
+        来访者联系电话: document.getElementById('来访者联系电话').value.trim(),
         紧急联系人: document.getElementById('紧急联系人').value.trim(),
-        紧急联系电话: document.getElementById('紧急联系电话').value.trim(),
+        紧急联系人关系: document.getElementById('紧急联系人关系').value.trim(),
+        紧急联系人电话: document.getElementById('紧急联系人电话').value.trim(),
         用药情况: document.getElementById('用药情况').value.trim(),
-        来访备注: document.getElementById('来访备注').value.trim()
+        来访备注: document.getElementById('来访备注').value.trim(),
+        background: document.getElementById('背景信息').value.trim()
     };
 
     // 接访信息
@@ -808,13 +1006,25 @@ function collectFormData() {
         既往史详情: document.getElementById('既往史详情').value.trim()
     };
 
+    // 心理测评
+    const 心理测评 = psychTestsList;
+
     // 家庭结构
     const 家庭结构 = {
-        父亲情况: document.getElementById('父亲情况').value.trim(),
-        母亲情况: document.getElementById('母亲情况').value.trim(),
+        父亲年龄: document.getElementById('父亲年龄').value.trim(),
+        父亲职业: document.getElementById('父亲职业').value.trim(),
+        父亲身体情况: document.getElementById('父亲身体情况').value.trim(),
+        母亲年龄: document.getElementById('母亲年龄').value.trim(),
+        母亲职业: document.getElementById('母亲职业').value.trim(),
+        母亲身体情况: document.getElementById('母亲身体情况').value.trim(),
         父母关系: document.getElementById('父母关系').value,
         兄弟姐妹: document.getElementById('兄弟姐妹').value.trim(),
-        配偶子女情况: document.getElementById('配偶子女情况').value.trim()
+        配偶性别: document.getElementById('配偶性别').value,
+        配偶年龄: document.getElementById('配偶年龄').value.trim(),
+        配偶职业: document.getElementById('配偶职业').value.trim(),
+        配偶身体情况: document.getElementById('配偶身体情况').value.trim(),
+        孩子列表: childrenList,
+        家庭备注: document.getElementById('家庭备注').value.trim()
     };
 
     // 关系标签
@@ -841,19 +1051,40 @@ function collectFormData() {
     // 对话记录
     const dialogue = document.getElementById('dialogue').value.trim();
 
+    // 咨询结果
+    const consultationResult = document.getElementById('consultation_result').value.trim();
+
+    // 布置任务
+    const assignedTasks = document.getElementById('assigned_tasks').value.trim();
+
+    // 下一步计划
+    const nextStepPlan = document.getElementById('next_step_plan').value.trim();
+
+    // 症状变化
+    const symptomChanges = document.getElementById('symptom_changes').value.trim();
+
     // 咨询师反思
     const counselorReflection = document.getElementById('counselor_reflection').value.trim();
 
     // 下次接访建议
     const nextSessionPlan = document.getElementById('next_session_plan').value.trim();
 
+    // 本次目标
+    const 本次目标 = document.getElementById('本次目标')?.value.trim() || '';
+
+    // 咨询进度
+    const 咨询进度 = document.getElementById('咨询进度')?.value.trim() || '';
+
     return {
         basic_info: basicInfo,
         session_info: sessionInfo,
         主诉: 主诉,
         咨询目标: 咨询目标,
+        本次目标: 本次目标,
+        咨询进度: 咨询进度,
         危机评估: 危机评估,
         既往史: 既往史,
+        心理测评: 心理测评,
         家庭结构: 家庭结构,
         tags: {
             relation: relationTags,
@@ -863,6 +1094,10 @@ function collectFormData() {
         督导信息: 督导信息,
         keywords: keywords,
         dialogue: dialogue,
+        consultation_result: consultationResult,
+        assigned_tasks: assignedTasks,
+        next_step_plan: nextStepPlan,
+        symptom_changes: symptomChanges,
         counselor_reflection: counselorReflection,
         next_session_plan: nextSessionPlan
     };
@@ -876,8 +1111,20 @@ function validateForm(data) {
         errors.push('请填写案例代号');
     }
 
+    if (!data.basic_info.性别) {
+        errors.push('请选择性别');
+    }
+
+    if (!data.basic_info.年龄) {
+        errors.push('请填写年龄');
+    }
+
     if (!data.session_info.接访日期) {
         errors.push('请选择接访日期');
+    }
+
+    if (!data.session_info.咨询师姓名 || data.session_info.咨询师姓名.trim() === '') {
+        errors.push('请填写咨询师姓名');
     }
 
     if (!data.主诉) {
@@ -885,7 +1132,12 @@ function validateForm(data) {
     }
 
     if (!data.dialogue) {
-        errors.push('请填写对话记录');
+        errors.push('请填写咨询师复盘');
+    }
+
+    // 危机评估：至少选择一个等级或填写最终评级
+    if (data.危机评估.选中等级.length === 0 && !data.危机评估.最终评级) {
+        errors.push('请至少选择一个危机等级或填写最终评级');
     }
 
     return errors;
@@ -1017,58 +1269,11 @@ async function saveCase() {
 
 // 保存新案例（首次接访）
 async function saveNewCase(formData) {
-    const caseData = {
-        static_info: {
-            代号: formData.basic_info.代号,
-            性别: formData.basic_info.性别,
-            年龄: formData.basic_info.年龄,
-            出生日期: estimateBirthDate(formData.basic_info.年龄),
-            职业: formData.basic_info.职业,
-            婚姻状况: formData.basic_info.婚姻状况,
-            性取向: formData.basic_info.性取向,
-            宗教信仰: formData.basic_info.宗教信仰,
-            主诉: formData.主诉,
-            既往史: formData.既往史,
-            家庭结构: formData.家庭结构
-        },
-        dynamic_info: {
-            紧急联系人: formData.basic_info.紧急联系人,
-            紧急联系电话: formData.basic_info.紧急联系电话,
-            用药情况: formData.basic_info.用药情况,  // 后端会自动包装成 {current, history}
-            咨询目标: formData.咨询目标,              // 后端会自动包装成 {current, history}
-            来访备注: formData.basic_info.来访备注
-        },
-        session: {  // 注意：是单数 session，不是 sessions
-            date: formData.session_info.接访日期,
-            duration: formData.session_info.通话时长,
-            channel: formData.session_info.咨询渠道,
-            counselor: formData.session_info.咨询师姓名,
-            dialogue: formData.dialogue,
-            relation_tags: formData.tags.relation,
-            symptom_tags: formData.tags.symptom,
-            crisis_assessment: {
-                level: formData.crisis_level,
-                evidence: formData.crisis_evidence
-            },
-            techniques_used: formData.techniques_used,
-            keywords: formData.keywords,
-            counselor_reflection: formData.counselor_reflection,
-            next_session_plan: formData.next_session_plan,
-            summary: '',  // 后续由AI生成
-            supervision: {
-                status: formData.督导信息.督导状态,
-                supervisor: formData.督导信息.督导师姓名,
-                date: formData.督导信息.督导日期,
-                key_points: formData.督导信息.督导要点,
-                suggestions: formData.督导信息.督导建议
-            }
-        }
-    };
-
-    const response = await fetch(`${CASE_API}/cases`, {
+    // 调用新的接访记录保存API
+    const response = await fetch(`${INTAKE_API}/save_new_case`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(caseData)
+        body: JSON.stringify(formData)
     });
 
     const result = await response.json();
@@ -1076,99 +1281,152 @@ async function saveNewCase(formData) {
         throw new Error(result.error || '创建案例失败');
     }
 
-    alert(`案例创建成功！\n案例代号：${result.case_id}`);
+    const visitorId = result.visitor_id;
+    const visitId = result.visit_id;
+
+    // 上传录音文件
+    if (selectedAudioFiles.length > 0) {
+        console.log(`开始上传 ${selectedAudioFiles.length} 个录音文件...`);
+        for (const file of selectedAudioFiles) {
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('visitor_id', visitorId);
+                formData.append('visit_id', visitId);
+                formData.append('description', `接访记录上传 - ${file.name}`);
+
+                const uploadResponse = await fetch(`${RECORDING_API}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const uploadResult = await uploadResponse.json();
+                if (uploadResult.success) {
+                    console.log(`✓ 录音上传成功: ${file.name}`);
+                } else {
+                    console.error(`✗ 录音上传失败: ${file.name}`, uploadResult.error);
+                }
+            } catch (error) {
+                console.error('录音上传失败:', file.name, error);
+            }
+        }
+    }
+
+    alert(`案例创建成功！\n来访者ID：${visitorId}\n来访ID：${visitId}`);
 }
 
 // 保存后续会谈
 async function saveFollowUpSession(formData) {
-    const caseId = currentCase.case_id;
+    const visitorId = currentCase.case_id;
 
-    // 检测咨访目标是否变化
-    const oldGoal = currentCase.dynamic_info.咨询目标?.current || '';
-    const newGoal = formData.咨询目标;
-    let goalChangeReason = null;
-
-    if (newGoal !== oldGoal && newGoal.trim() !== '') {
-        goalChangeReason = prompt('检测到咨询目标发生变化，请说明修改原因（必填）：\n\n旧目标：' + oldGoal + '\n新目标：' + newGoal);
-        if (!goalChangeReason || goalChangeReason.trim() === '') {
-            throw new Error('咨询目标修改原因为必填项');
-        }
-    }
-
-    // 检测用药情况是否变化
+    // 检测用药情况是否变化（包括新增、修改、停药）
     const oldMedication = currentCase.dynamic_info.用药情况?.current || '';
     const newMedication = formData.basic_info.用药情况;
-    let medicationChangeReason = null;
 
-    if (newMedication !== oldMedication && newMedication.trim() !== '') {
-        medicationChangeReason = prompt('检测到用药情况发生变化，请说明修改原因（必填）：\n\n旧用药：' + oldMedication + '\n新用药：' + newMedication);
+    if (newMedication !== oldMedication && (newMedication.trim() !== '' || oldMedication.trim() !== '')) {
+        const changeType = !oldMedication ? '新增用药' : !newMedication ? '停止用药' : '修改用药';
+        const medicationChangeReason = prompt(`检测到用药情况发生变化（${changeType}），请说明原因（必填）：\n\n旧用药：${oldMedication || '无'}\n新用药：${newMedication || '无'}`);
         if (!medicationChangeReason || medicationChangeReason.trim() === '') {
             throw new Error('用药情况修改原因为必填项');
         }
+        // 将变更原因添加到来访备注中
+        formData.basic_info.来访备注 = (formData.basic_info.来访备注 || '') + `\n[${changeType}] ${medicationChangeReason}`;
     }
 
-    // 构建会谈数据
-    const sessionData = {
-        date: formData.session_info.接访日期,
-        duration: formData.session_info.通话时长,
-        channel: formData.session_info.咨询渠道,
-        counselor: formData.session_info.咨询师姓名,
-        dialogue: formData.dialogue,
-        relation_tags: formData.tags.relation,
-        symptom_tags: formData.tags.symptom,
-        crisis_assessment: {
-            level: formData.crisis_level,
-            evidence: formData.crisis_evidence
-        },
+    // 构建后续会谈数据（匹配后端API格式）
+    const followUpData = {
+        visitor_id: visitorId,
+        session_info: formData.session_info,
+        主诉: formData.主诉,
+        本次目标: formData.本次目标,
+        咨询进度: formData.咨询进度,
+        危机评估: formData.危机评估,
+        tags: formData.tags,
         techniques_used: formData.techniques_used,
         keywords: formData.keywords,
+        dialogue: formData.dialogue,
+        consultation_result: formData.consultation_result,
+        assigned_tasks: formData.assigned_tasks,
+        next_step_plan: formData.next_step_plan,
+        symptom_changes: formData.symptom_changes,
         counselor_reflection: formData.counselor_reflection,
         next_session_plan: formData.next_session_plan,
-        summary: '',  // 后续由AI生成
-        supervision: {
-            status: formData.督导信息.督导状态,
-            supervisor: formData.督导信息.督导师姓名,
-            date: formData.督导信息.督导日期,
-            key_points: formData.督导信息.督导要点,
-            suggestions: formData.督导信息.督导建议
-        },
-        // 动态信息更新
-        dynamic_updates: {
-            紧急联系人: formData.basic_info.紧急联系人,
-            紧急联系电话: formData.basic_info.紧急联系电话,
-            来访备注: formData.basic_info.来访备注
-        }
+        督导信息: formData.督导信息,
+        basic_info: formData.basic_info  // 包含动态信息更新
     };
 
-    // 如果目标有变化，添加变更记录
-    if (goalChangeReason) {
-        sessionData.goal_change = {
-            new_goal: newGoal,
-            reason: goalChangeReason
-        };
-    }
-
-    // 如果用药有变化，添加变更记录
-    if (medicationChangeReason) {
-        sessionData.medication_change = {
-            new_medication: newMedication,
-            reason: medicationChangeReason
-        };
-    }
-
-    const response = await fetch(`${CASE_API}/cases/${caseId}/sessions`, {
+    // 调用后续会谈保存API
+    const response = await fetch(`${INTAKE_API}/save_follow_up`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sessionData)
+        body: JSON.stringify(followUpData)
     });
 
     const result = await response.json();
     if (!result.success) {
-        throw new Error(result.error || '添加会谈记录失败');
+        throw new Error(result.error || '保存后续会谈失败');
     }
 
-    const sessionNum = currentCase.sessions.length + 1;
-    alert(`会谈记录保存成功！\n案例代号：${caseId}\n本次为第 ${sessionNum} 次会谈`);
+    const visitId = result.visit_id;
+    const visitNumber = result.visit_number;
+
+    // 上传录音文件
+    if (selectedAudioFiles.length > 0) {
+        console.log(`开始上传 ${selectedAudioFiles.length} 个录音文件...`);
+        for (const file of selectedAudioFiles) {
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('visitor_id', visitorId);
+                formData.append('visit_id', visitId);
+                formData.append('description', `第${visitNumber}次接访 - ${file.name}`);
+
+                const uploadResponse = await fetch(`${RECORDING_API}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const uploadResult = await uploadResponse.json();
+                if (uploadResult.success) {
+                    console.log(`✓ 录音上传成功: ${file.name}`);
+                } else {
+                    console.error(`✗ 录音上传失败: ${file.name}`, uploadResult.error);
+                }
+            } catch (error) {
+                console.error('录音上传失败:', file.name, error);
+            }
+        }
+    }
+
+    // 上传逐字稿文件（使用新的8769端口API）
+    if (selectedTranscriptFiles.length > 0) {
+        console.log(`开始上传 ${selectedTranscriptFiles.length} 个逐字稿文件...`);
+        for (const file of selectedTranscriptFiles) {
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('visitor_id', visitorId);
+                formData.append('visit_id', visitId);
+                formData.append('description', `第${visitNumber}次接访 - ${file.name}`);
+
+                const uploadResponse = await fetch(`${TRANSCRIPT_UPLOAD_API}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const uploadResult = await uploadResponse.json();
+                if (uploadResult.success) {
+                    console.log(`✓ 逐字稿上传成功: ${file.name}`);
+                } else {
+                    console.error(`✗ 逐字稿上传失败: ${file.name}`, uploadResult.error);
+                }
+            } catch (error) {
+                console.error('逐字稿上传失败:', file.name, error);
+            }
+        }
+    }
+
+    alert(`后续会谈保存成功！\n来访者ID：${visitorId}\n来访ID：${visitId}\n本次为第 ${visitNumber} 次会谈`);
 }
 
 // 估算出生日期（根据年龄）
@@ -1190,7 +1448,8 @@ function resetForm() {
     document.getElementById('性取向').value = '';
     document.getElementById('宗教信仰').value = '';
     document.getElementById('紧急联系人').value = '';
-    document.getElementById('紧急联系电话').value = '';
+    document.getElementById('紧急联系人关系').value = '';
+    document.getElementById('紧急联系人电话').value = '';
     document.getElementById('用药情况').value = '';
     document.getElementById('来访备注').value = '';
     document.getElementById('接访日期').valueAsDate = new Date();
@@ -1209,19 +1468,35 @@ function resetForm() {
     document.getElementById('有精神科就诊史').checked = false;
     document.getElementById('既往史详情').value = '';
 
+    // 清空心理测评
+    psychTestsList = [];
+    renderPsychTestsList();
+
     // 清空家庭结构
-    document.getElementById('父亲情况').value = '';
-    document.getElementById('母亲情况').value = '';
+    document.getElementById('父亲年龄').value = '';
+    document.getElementById('父亲职业').value = '';
+    document.getElementById('父亲身体情况').value = '';
+    document.getElementById('母亲年龄').value = '';
+    document.getElementById('母亲职业').value = '';
+    document.getElementById('母亲身体情况').value = '';
     document.getElementById('父母关系').value = '';
     document.getElementById('兄弟姐妹').value = '';
-    document.getElementById('配偶子女情况').value = '';
+    document.getElementById('配偶性别').value = '';
+    document.getElementById('配偶年龄').value = '';
+    document.getElementById('配偶职业').value = '';
+    document.getElementById('配偶身体情况').value = '';
+    document.getElementById('家庭备注').value = '';
+
+    // 清空孩子列表
+    childrenList = [];
+    renderChildrenList();
 
     // 清空标签选择
     document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
 
-    // 重置危机等级
-    document.getElementById('crisis_C').checked = true;
-    document.getElementById('crisis_evidence').value = '';
+    // 重置危机评级
+    document.getElementById('最终评级').value = '';
+    document.getElementById('危机评估备注').value = '';
 
     // 清空关键词
     keywords = [];
@@ -1358,6 +1633,12 @@ function fillFormFromData(data) {
         if (data.既往史.既往史详情) document.getElementById('既往史详情').value = data.既往史.既往史详情;
     }
 
+    // 心理测评
+    if (data.心理测评 && Array.isArray(data.心理测评)) {
+        psychTestsList = data.心理测评;
+        renderPsychTestsList();
+    }
+
     // 家庭结构
     if (data.家庭结构) {
         Object.keys(data.家庭结构).forEach(key => {
@@ -1439,7 +1720,7 @@ async function loadCase() {
     statusDiv.innerHTML = '<div class="text-blue-600"><i class="fa fa-spinner fa-spin"></i> 正在加载案例...</div>';
 
     try {
-        const response = await fetch(`${CASE_API}/cases/${caseId}`);
+        const response = await fetch(`http://localhost:8768/api/load_case/${caseId}`);
         const result = await response.json();
 
         if (!result.success) {
@@ -1447,12 +1728,18 @@ async function loadCase() {
             return;
         }
 
-        currentCase = result.case;
+        currentCase = {
+            case_id: result.case_id,
+            static_info: result.static_info,
+            dynamic_info: result.dynamic_info,
+            total_sessions: result.total_sessions,
+            next_session: result.next_session
+        };
         isFollowUpSession = true;
 
         // 显示成功信息
-        const totalSessions = currentCase.sessions.length;
-        const nextSession = totalSessions + 1;
+        const totalSessions = result.total_sessions;
+        const nextSession = result.next_session;
         statusDiv.innerHTML = `
             <div class="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div class="flex items-start gap-3">
@@ -1507,22 +1794,46 @@ function fillFormForFollowUp() {
     const 宗教信仰Elem = document.getElementById('宗教信仰');
     if (宗教信仰Elem) 宗教信仰Elem.value = staticInfo.宗教信仰 || '';
 
-    const 联系方式Elem = document.getElementById('联系方式');
-    if (联系方式Elem) 联系方式Elem.value = staticInfo.联系方式 || '';
+    const 来访者联系电话Elem = document.getElementById('来访者联系电话');
+    if (来访者联系电话Elem) {
+        来访者联系电话Elem.value = staticInfo.联系方式 || '';
+        来访者联系电话Elem.readOnly = true;
+        来访者联系电话Elem.style.backgroundColor = '#f3f4f6';
+    }
+
+    // 背景信息（后续接访只读，从档案读取）
+    const backgroundElem = document.getElementById('背景信息');
+    if (backgroundElem) {
+        backgroundElem.value = staticInfo.background || '';
+        backgroundElem.readOnly = true;
+        backgroundElem.style.backgroundColor = '#f3f4f6';
+        backgroundElem.style.cursor = 'not-allowed';
+        const backgroundHint = document.getElementById('background-readonly-hint');
+        if (backgroundHint) backgroundHint.style.display = 'inline';
+    }
 
     // 2. 动态信息（可修改）
     const dynamicInfo = currentCase.dynamic_info;
     document.getElementById('紧急联系人').value = dynamicInfo.紧急联系人 || '';
-    document.getElementById('紧急联系电话').value = dynamicInfo.紧急联系电话 || '';
+    document.getElementById('紧急联系人关系').value = dynamicInfo.紧急联系人关系 || '';
+    document.getElementById('紧急联系人电话').value = dynamicInfo.紧急联系人电话 || '';
     document.getElementById('用药情况').value = dynamicInfo.用药情况?.current || '';
     document.getElementById('来访备注').value = dynamicInfo.来访备注 || '';
 
-    // 3. 主诉（只读显示）
-    document.getElementById('主诉').value = staticInfo.主诉 || '';
-    document.getElementById('主诉').readOnly = true;
+    // 3. 主诉（不加载，每次接访重新填写）
+    document.getElementById('主诉').value = '';
+    document.getElementById('主诉').placeholder = '请描述来访者本次会谈的主诉内容...';
 
-    // 4. 咨询目标（显示当前值，可修改）
-    document.getElementById('咨询目标').value = dynamicInfo.咨询目标?.current || '';
+    // 4. 整体咨询目标（后续接访只读，从档案读取）
+    const counselingGoalElem = document.getElementById('咨询目标');
+    if (counselingGoalElem) {
+        counselingGoalElem.value = staticInfo.counseling_goal || '';
+        counselingGoalElem.readOnly = true;
+        counselingGoalElem.style.backgroundColor = '#f3f4f6';
+        counselingGoalElem.style.cursor = 'not-allowed';
+        const counselingGoalHint = document.getElementById('counseling-goal-readonly-hint');
+        if (counselingGoalHint) counselingGoalHint.style.display = 'inline';
+    }
 
     // 5. 既往史（只读）
     if (staticInfo.既往史) {
@@ -1536,28 +1847,50 @@ function fillFormForFollowUp() {
 
     // 6. 家庭结构（只读）
     if (staticInfo.家庭结构) {
-        Object.keys(staticInfo.家庭结构).forEach(key => {
-            const elem = document.getElementById(key);
-            if (elem) {
-                elem.value = staticInfo.家庭结构[key] || '';
+        const familyMapping = {
+            'father_age': '父亲年龄',
+            'father_occupation': '父亲职业',
+            'father_health': '父亲身体情况',
+            'mother_age': '母亲年龄',
+            'mother_occupation': '母亲职业',
+            'mother_health': '母亲身体情况',
+            'parents_relationship': '父母关系',
+            'siblings': '兄弟姐妹',
+            'spouse_gender': '配偶性别',
+            'spouse_age': '配偶年龄',
+            'spouse_occupation': '配偶职业',
+            'spouse_health': '配偶身体情况',
+            'family_notes': '家庭备注'
+        };
+
+        Object.keys(familyMapping).forEach(enKey => {
+            const cnKey = familyMapping[enKey];
+            const elem = document.getElementById(cnKey);
+            if (elem && staticInfo.家庭结构[enKey] !== undefined) {
+                elem.value = staticInfo.家庭结构[enKey] || '';
                 elem.readOnly = true;
+                elem.style.backgroundColor = '#f3f4f6';
             }
         });
+
+        // 处理孩子列表
+        if (staticInfo.家庭结构.children && Array.isArray(staticInfo.家庭结构.children)) {
+            childrenList = staticInfo.家庭结构.children;
+            renderChildrenList();
+            // 孩子列表在后续接访时也设为只读
+            const addChildBtn = document.querySelector('button[onclick="addChild()"]');
+            if (addChildBtn) addChildBtn.style.display = 'none';
+        }
     }
 
     // 7. 接访信息（自动填充）
-    const nextSessionNum = currentCase.sessions.length + 1;
-    document.getElementById('接访次数').value = nextSessionNum;
+    const totalSessions = currentCase.total_sessions || 0;
+    const nextSessionNum = totalSessions + 1;
+    document.getElementById('接访次数').value = `第${nextSessionNum}次`;
     document.getElementById('接访日期').valueAsDate = new Date();
 
-    // 8. 显示上次会谈概要
-    if (currentCase.sessions.length > 0) {
-        const lastSession = currentCase.sessions[currentCase.sessions.length - 1];
-        showPreviousSummary(lastSession);
-    }
-
-    // 9. 隐藏Word导入区域
-    document.getElementById('wordImportSection').style.display = 'none';
+    // 8. Word上传区域（保留，用于后续接访的AI分析）
+    // 不隐藏，允许上传Word进行本次会谈的AI分析
 
     // 10. 滚动到接访信息区域
     setTimeout(() => {
@@ -1686,5 +2019,187 @@ function updateSuggestedRating() {
     `;
 
     suggestedBox.style.display = 'block';
+}
+
+// ==================== 孩子信息管理 ====================
+
+function addChild() {
+    const child = {
+        id: Date.now(),
+        gender: '',
+        age: '',
+        health: '',
+        education: '',
+        occupation: ''
+    };
+    childrenList.push(child);
+    console.log('添加孩子后，当前孩子数量：', childrenList.length);
+    renderChildrenList();
+}
+
+function removeChild(childId) {
+    childrenList = childrenList.filter(c => c.id !== childId);
+    renderChildrenList();
+}
+
+function updateChild(childId, field, value) {
+    const child = childrenList.find(c => c.id === childId);
+    if (child) {
+        child[field] = value;
+    }
+}
+
+function renderChildrenList() {
+    const container = document.getElementById('childrenList');
+    const noChildrenText = document.getElementById('noChildrenText');
+
+    if (childrenList.length === 0) {
+        noChildrenText.style.display = 'block';
+        return;
+    }
+
+    noChildrenText.style.display = 'none';
+
+    container.innerHTML = childrenList.map((child, index) => `
+        <div class="border border-gray-300 rounded-lg p-3 bg-gray-50">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-gray-700">孩子 ${index + 1}</span>
+                <button type="button" onclick="removeChild(${child.id})" class="text-red-600 hover:text-red-800 text-sm">
+                    <i class="fa fa-trash"></i> 删除
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">性别</label>
+                    <select onchange="updateChild(${child.id}, 'gender', this.value)"
+                            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-pink-500">
+                        <option value="" ${child.gender === '' ? 'selected' : ''}>未知</option>
+                        <option value="男" ${child.gender === '男' ? 'selected' : ''}>男</option>
+                        <option value="女" ${child.gender === '女' ? 'selected' : ''}>女</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">年龄</label>
+                    <input type="text" value="${child.age}"
+                           onchange="updateChild(${child.id}, 'age', this.value)"
+                           placeholder="例如：2岁"
+                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-pink-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">身体情况</label>
+                    <input type="text" value="${child.health}"
+                           onchange="updateChild(${child.id}, 'health', this.value)"
+                           placeholder="例如：健康"
+                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-pink-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">在读情况</label>
+                    <input type="text" value="${child.education}"
+                           onchange="updateChild(${child.id}, 'education', this.value)"
+                           placeholder="例如：幼儿园"
+                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-pink-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">职业</label>
+                    <input type="text" value="${child.occupation}"
+                           onchange="updateChild(${child.id}, 'occupation', this.value)"
+                           placeholder="例如：学生"
+                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-pink-500">
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ==================== 心理测评管理 ====================
+
+function addPsychTest() {
+    const test = {
+        id: Date.now(),
+        name: '',
+        date: '',
+        score: '',
+        result: '',
+        interpretation: ''
+    };
+    psychTestsList.push(test);
+    renderPsychTestsList();
+}
+
+function removePsychTest(testId) {
+    psychTestsList = psychTestsList.filter(t => t.id !== testId);
+    renderPsychTestsList();
+}
+
+function updatePsychTest(testId, field, value) {
+    const test = psychTestsList.find(t => t.id === testId);
+    if (test) {
+        test[field] = value;
+    }
+}
+
+function renderPsychTestsList() {
+    const container = document.getElementById('psychTestsList');
+    const noPsychTestsText = document.getElementById('noPsychTestsText');
+
+    if (psychTestsList.length === 0) {
+        noPsychTestsText.style.display = 'block';
+        return;
+    }
+
+    noPsychTestsText.style.display = 'none';
+
+    container.innerHTML = psychTestsList.map((test, index) => `
+        <div class="border border-indigo-300 rounded-lg p-4 bg-indigo-50">
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-sm font-semibold text-indigo-700">测评 ${index + 1}</span>
+                <button type="button" onclick="removePsychTest(${test.id})" class="text-red-600 hover:text-red-800 text-sm">
+                    <i class="fa fa-trash"></i> 删除
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">量表名称</label>
+                    <select onchange="updatePsychTest(${test.id}, 'name', this.value)"
+                            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">选择量表</option>
+                        ${PSYCH_TESTS.map(pt => `
+                            <option value="${pt.name}" ${test.name === pt.name ? 'selected' : ''}>
+                                ${pt.name} - ${pt.fullName}
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">测评日期</label>
+                    <input type="date" value="${test.date}"
+                           onchange="updatePsychTest(${test.id}, 'date', this.value)"
+                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">得分/结果</label>
+                    <input type="text" value="${test.score}"
+                           onchange="updatePsychTest(${test.id}, 'score', this.value)"
+                           placeholder="例如：总分72分"
+                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">评估结果</label>
+                    <input type="text" value="${test.result}"
+                           onchange="updatePsychTest(${test.id}, 'result', this.value)"
+                           placeholder="例如：轻度抑郁"
+                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">结果解读</label>
+                <textarea value="${test.interpretation}"
+                          onchange="updatePsychTest(${test.id}, 'interpretation', this.value)"
+                          rows="2"
+                          placeholder="测评结果的详细解读和说明..."
+                          class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500">${test.interpretation}</textarea>
+            </div>
+        </div>
+    `).join('');
 }
 
