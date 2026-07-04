@@ -1,0 +1,11 @@
+{
+  "model": "gpt-4",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Bug分析与修复方案：\n\n**Bug描述**：\n用户上传Word文档后，刷新页面发现内容丢失\n\n**复现步骤**：\n1. 点击"上传Word"按钮\n2. 选择文档并上传\n3. 显示成功提示\n4. 刷新浏览器\n5. 发现内容消失\n\n**错误日志**：\n```\nTypeError: Cannot read property 'buffer' of undefined\n    at saveDocument (utils.js:42)\n    at processUpload (upload.js:18)\n```\n\n**相关代码**：\n```javascript\n// utils.js\nasync function saveDocument(file) {\n  const buffer = file.buffer;\n  const base64 = buffer.toString('base64');\n  await db.cases.update(caseId, {\n    wordContent: base64\n  });\n}\n\n// upload.js\nfunction processUpload(event) {\n  const file = event.target.files[0];\n  saveDocument(file);\n  showSuccessMessage();\n}\n```\n\n**环境信息**：\n- 浏览器：Chrome 120\n- 数据库：IndexedDB\n- 框架：原生JavaScript\n\n请分析：\n1. 根本原因是什么？\n2. 为什么会出现 'buffer' undefined？\n3. 如何修复这个问题？\n4. 如何避免类似问题？\n\n给出详细的修复方案和代码示例。"
+    }
+  ],
+  "temperature": 0.3,
+  "max_tokens": 2500
+}

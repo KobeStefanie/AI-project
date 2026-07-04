@@ -1,0 +1,69 @@
+{
+  "visitor_id": "V20260620002",
+  "basic_info": {
+    "name": "女老板",
+    "age": "40-50岁（更年期）",
+    "gender": "女",
+    "occupation": "企业主（有厂子）",
+    "marital_status": "已婚",
+    "sexual_orientation": "",
+    "religion": "",
+    "emergency_contact": "",
+    "contact_phone": "",
+    "background": "女企业主确诊抑郁症+焦虑症，更年期叠加，已休息两个月，有轻生想法但无明确计划。主要压力来自账目收不回、时代变化快、不想学习。咨询师使用了'内在小孩'理论进行重新框架，强调动力枯竭是新课题，建议让理性满足内在小孩需求而非外界需求。咨询师有两处自我质疑：1）建议'去厂里看看'过于直接；2）建议'休息半年'担心经营风险。案主用'更年期'作为保护壳。危机等级M（中度），需持续跟进。",
+    "initial_complaint": "女企业主确诊抑郁症+焦虑症，更年期叠加，已休息两个月，有轻生想法但无明确计划。主要压力来自账目收不回、时代变化快、不想学习。咨询师使用了'内在小孩'理论进行重新框架，强调动力枯竭是新课题，建议让理性满足内在小孩需求而非外界需求。咨询师有两处自我质疑：1）建议'去厂里看看'过于直接；2）建议'休息半年'担心经营风险。案主用'更年期'作为保护壳。危机等级M（中度），需持续跟进。",
+    "initial_assessment": "待评估",
+    "counseling_goal": "",
+    "medication": "",
+    "notes": ""
+  },
+  "family_structure": {
+    "father": "",
+    "mother": "",
+    "parents_relationship": "",
+    "siblings": "",
+    "spouse_children": ""
+  },
+  "session_info": {
+    "first_session_date": "2026-06-16",
+    "channel": "电话/线上",
+    "counselor": "咨询师A"
+  },
+  "overall_progress": {
+    "symptom_trend": [
+      {
+        "visit_number": 1,
+        "date": "2026-06-20",
+        "severity": 5,
+        "description": "初次评估"
+      }
+    ],
+    "risk_trend": [
+      {
+        "visit_number": 1,
+        "date": "2026-06-20",
+        "risk_level": "中",
+        "risk_type": "待评估"
+      }
+    ],
+    "treatment_progress": "初次来访，建立咨访关系阶段",
+    "therapeutic_relationship": "初步建立信任"
+  },
+  "visit_history": [
+    {
+      "visit_number": 1,
+      "visit_id": "visit_001",
+      "date": "2026-06-20",
+      "counselor": "咨询师A",
+      "duration": 50,
+      "main_issue": "情绪困扰",
+      "risk_level": "中"
+    }
+  ],
+  "metadata": {
+    "created_at": "2026-06-28T23:19:20.195630",
+    "updated_at": "2026-06-29T00:29:42.454701",
+    "total_visits": 1
+  },
+  "supervision_records": []
+}

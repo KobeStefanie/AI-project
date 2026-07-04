@@ -1,31 +1,44 @@
 {
   "id": "existential",
   "name": "存在主义",
-  "name_en": "Existential Therapy",
-  "description": "存在主义取向，关注生命意义、自由选择、死亡焦虑和存在性孤独等根本性议题",
-  "color": "#ea580c",
-  "icon": "fa-lightbulb-o",
-  "core_concepts": [
-    "存在性焦虑",
-    "自由与责任",
-    "生命意义",
-    "死亡",
-    "孤独与关系"
-  ],
-  "typical_techniques": [
+  "name_short": "存在",
+  "enabled": true,
+  "color": "#06b6d4",
+  "icon": "🌌",
+  "description": "存在主义取向，关注生命意义和终极关怀",
+  "fields": {
+    "existential_themes": {
+      "label": "存在主题",
+      "type": "text",
+      "required": true,
+      "description": "死亡、自由、孤独、无意义等终极关怀"
+    },
+    "meaning_exploration": {
+      "label": "意义探索",
+      "type": "text",
+      "required": true,
+      "description": "来访者如何为生命创造意义"
+    },
+    "authentic_living": {
+      "label": "真实存在",
+      "type": "text",
+      "required": true,
+      "description": "如何活得更真实和有意义"
+    }
+  },
+  "techniques": [
+    "苏格拉底对话",
+    "此时此地",
+    "存在焦虑正常化",
     "意义探索",
-    "存在性对话",
     "责任承担",
-    "死亡觉察",
-    "选择分析"
+    "选择与自由"
   ],
-  "focus_areas": [
-    "生命意义探寻",
-    "存在性议题",
-    "自由与选择",
-    "终极关怀"
-  ],
-  "enabled": false,
-  "sort_order": 5,
-  "note": "待学习后启用"
+  "metadata": {
+    "created_at": "2026-06-28",
+    "version": "1.0",
+    "author": "系统生成",
+    "note": "可通过AI分析后上传内容启用"
+  },
+  "sort_order": 3
 }

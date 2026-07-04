@@ -1,0 +1,93 @@
+{
+  "cbt.json": {
+    "count": 11,
+    "fields": [
+      "id",
+      "name",
+      "name_short",
+      "enabled",
+      "color",
+      "icon",
+      "description",
+      "fields",
+      "techniques",
+      "metadata",
+      "sort_order"
+    ]
+  },
+  "daguanpai.json": {
+    "count": 11,
+    "fields": [
+      "id",
+      "name",
+      "name_short",
+      "enabled",
+      "color",
+      "icon",
+      "description",
+      "fields",
+      "crisis_levels",
+      "techniques",
+      "metadata"
+    ]
+  },
+  "existential.json": {
+    "count": 11,
+    "fields": [
+      "id",
+      "name",
+      "name_short",
+      "enabled",
+      "color",
+      "icon",
+      "description",
+      "fields",
+      "techniques",
+      "metadata",
+      "sort_order"
+    ]
+  },
+  "humanistic.json": {
+    "count": 11,
+    "fields": [
+      "id",
+      "name",
+      "name_short",
+      "enabled",
+      "color",
+      "icon",
+      "description",
+      "fields",
+      "techniques",
+      "metadata",
+      "sort_order"
+    ]
+  },
+  "psychodynamic.json": {
+    "count": 11,
+    "fields": [
+      "id",
+      "name",
+      "name_short",
+      "enabled",
+      "color",
+      "icon",
+      "description",
+      "fields",
+      "techniques",
+      "metadata",
+      "sort_order"
+    ]
+  },
+  "temp_1.json": {
+    "count": 6,
+    "fields": [
+      "id",
+      "name",
+      "color",
+      "icon",
+      "enabled",
+      "sort_order"
+    ]
+  }
+}

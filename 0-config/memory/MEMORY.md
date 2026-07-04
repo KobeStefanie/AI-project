@@ -1,2 +1,5 @@
-- [JavaScript函数加载顺序修复](js-function-load-order-fix.md) — HTML生成顺序问题导致按钮失效的根本原因与解决方案
-- [Context压缩前后的对话整理规则](context-compact-workflow.md) — 压缩前整理保存、压缩后自动读取，保持上下文连续性
+- [JavaScript 函数加载顺序修复](js-function-load-order-fix.md) — HTML 生成顺序问题导致按钮失效的根本原因与解决方案
+- [Context 压缩前后的对话整理规则](context-compact-workflow.md) — 压缩前整理保存、压缩后自动读取，保持上下文连续性
+- [对话历史导出技能](export-conversation-skill.md) — 将 Claude Code 会话导出为 Markdown 或 Word 文档，清晰展示问答内容
+- [心理咨询-S1 首页集成要求](psych-s1-homepage-integration.md) — 所有功能页面必须集成到主页 index.html，未集成的功能视为未完工
+- [删除文件必须使用回收站](file-deletion-must-use-recycle-bin.md) — ⚠️ 禁止直接 rm 删除，必须移到回收站确保可恢复

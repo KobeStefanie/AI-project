@@ -117,19 +117,25 @@
                     <i class="fa fa-file-text-o"></i> 案例总览
                 </button>
                 <button class="tab-btn" data-tab="daguanpai">
-                    <i class="fa fa-compass"></i> 大观学派
+                    <i class="fa 🚨"></i> 大观学派（危机干预）
                 </button>
                 <button class="tab-btn" data-tab="cbt">
-                    <i class="fa fa-brain"></i> 认知行为疗法
+                    <i class="fa 🧠"></i> 认知行为疗法 (CBT)
                 </button>
                 <button class="tab-btn" data-tab="psychodynamic">
-                    <i class="fa fa-user-circle"></i> 精神动力学
-                </button>
-                <button class="tab-btn" data-tab="humanistic">
-                    <i class="fa fa-heart"></i> 人本主义
+                    <i class="fa 🔮"></i> 精神动力学
                 </button>
                 <button class="tab-btn" data-tab="existential">
-                    <i class="fa fa-lightbulb-o"></i> 存在主义
+                    <i class="fa 🌌"></i> 存在主义
+                </button>
+                <button class="tab-btn" data-tab="humanistic">
+                    <i class="fa 💖"></i> 人本主义
+                </button>
+                <button class="tab-btn" data-tab="temp_1">
+                    <i class="fa fa-circle"></i> 拉康精分
+                </button>
+                <button class="tab-btn" data-tab="temp_2">
+                    <i class="fa fa-circle"></i> 布莱尼
                 </button>
             </div>
         </div>
@@ -158,9 +164,16 @@
         <!-- 流派Tab导航 -->
         <div class="border-b mb-6">
             <div class="flex gap-2">
-            <!-- 完整对话记录 -->
+            <!-- 咨询师复盘 -->
             <div class="mb-6">
-                <h2 class="text-xl font-bold text-gray-900 mb-3"><i class="fa fa-comments"></i> 完整对话记录</h2>
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-xl font-bold text-gray-900"><i class="fa fa-comments"></i> 咨询师复盘</h2>
+                    <a href="../downloads/C20260616001/C20260616001_复盘.docx"
+                       download
+                       class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition">
+                        <i class="fa fa-download"></i> 下载Word
+                    </a>
+                </div>
                 <div class="bg-gray-50 rounded-lg p-4">
                     <pre class="whitespace-pre-wrap text-sm text-gray-800 font-mono">善良女孩的求助
 善良的小女孩                                                 16:26-16:52
@@ -169,10 +182,101 @@
 我问，你们是怎么认识的，她说她有抑郁症，但现在吃药，已经得到很好的控制了，我又问她是第一次打电话联系我们吗？她说是的，然后我说，听叔叔的话，如果以后你朋友在遗书中嘱咐你帮忙做什么事的时候，我们不答应好吗？我们要让她自己去做，给她一个现实的拉力，好吗？她说好的，我接着说，一旦你有什么难过的或者解不开的谜题，记得打我们这个电话，这里有一群叔叔阿姨希望你们平平安安长大，我们是免费的，我们也是保密的，好吗？然后她开始抽泣，我接着说，抑郁症会好的，我们要度过很艰难的一两年后，就能看到阳光，我们携手一起走在一条隧道里，记得，一旦自己情绪进入到了死胡同了，一定要打我们的电话，好吗？，她哭着说，嗯。然后她朋友回复了，说她刚在跟她自己的妈妈在一起，瞬间心安了。我又跟他说，记得跟你朋友也这么说，这里有一群叔叔阿姨希望你们平安长大，好吗？她哭腔说嗯，然后你这次很棒，下次有困难记得找我们。我们24小时都在线。</pre>
                 </div>
             </div>
+
+            <!-- 录音资料（可折叠，空也显示） -->
+            <div class="collapsible-section collapsed mb-4">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <div class="flex items-center justify-between flex-1">
+                        <h2 class="text-xl font-bold text-orange-900">
+                            <i class="fa fa-microphone"></i> 🎙️ 录音资料
+                        </h2>
+                        <div class="flex items-center gap-2">
+                            <a href="../downloads/C20260616001/C20260616001_录音.mp3"
+                               download
+                               onclick="event.stopPropagation()"
+                               class="px-3 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700 transition">
+                                <i class="fa fa-download"></i> 下载MP3
+                            </a>
+                            <i class="fa fa-chevron-down collapsible-arrow text-gray-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                    <p class="text-sm text-gray-500 text-center py-4">暂无录音资料</p>
+                </div>
+            </div>
+
+            <!-- 逐字稿（可折叠，空也显示） -->
+            <div class="collapsible-section collapsed mb-4">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <div class="flex items-center justify-between flex-1">
+                        <h2 class="text-xl font-bold text-green-900">
+                            <i class="fa fa-file-text"></i> 📝 逐字稿
+                        </h2>
+                        <div class="flex items-center gap-2">
+                            <a href="../downloads/C20260616001/C20260616001_逐字稿.xlsx"
+                               download
+                               onclick="event.stopPropagation()"
+                               class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition">
+                                <i class="fa fa-download"></i> 下载Excel
+                            </a>
+                            <i class="fa fa-chevron-down collapsible-arrow text-gray-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                    <p class="text-sm text-gray-500 text-center py-4">暂无逐字稿</p>
+                </div>
+            </div>
+
+            <!-- 案例概要（中性） -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-indigo-900 mb-3"><i class="fa fa-file-text-o"></i> 案例概要</h2>
+                <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                    <p class="text-sm text-gray-800 leading-relaxed">14岁女孩的同伴来电求助：朋友确诊重度抑郁症，有多次自杀尝试史，当天写完遗书后失联半小时。来电者本人也有抑郁症史但已药物控制。咨询师在面对'第三方自杀危机'的复杂局面中，通过六变三托筛查（确认遗书未嘱托）、同步同理心陪伴、拒绝成为遗书执行者（制造现实拉力）、隧道隐喻（赋予希望），最终等到了朋友的安全回复。核心议题：青少年同伴支持系统中的自杀危机干预、双重抑郁症青少年的安全网建立。</p>
+                </div>
+            </div>
+
+            <!-- 标签（中性） -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-purple-900 mb-3"><i class="fa fa-tags"></i> 标签</h2>
+                <div class="space-y-3">
+                    <!-- 关系标签 -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700 mb-2">关系标签：</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full">社交关系-友谊-危机干预</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full">社交关系-友谊-青少年同伴支持</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full">家庭关系-亲子关系-青少年-重男轻女</span>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full">家庭关系-亲子关系-父母缺位</span>
+                        </div>
+                    </div>
+                    <!-- 症状标签 -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700 mb-2">症状标签：</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-full">行为问题-自杀风险-自杀计划</span>
+                            <span class="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-full">行为问题-自杀风险-自杀未遂（多次尝试）</span>
+                            <span class="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-full">行为问题-自伤行为-击中头部</span>
+                            <span class="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-full">情绪障碍-抑郁症-重度（案主朋友）</span>
+                            <span class="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-full">情绪障碍-抑郁症-已控制（来电者本人）</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- 大观学派Tab内容 -->
+        <!-- 大观学派（危机干预）Tab内容 -->
         <div class="tab-content" id="tab-daguanpai">
+            <!-- 下载该流派分析 -->
+            <div class="mb-4 flex justify-end">
+                <a href="../downloads/C20260616001/C20260616001_大观学派（危机干预）.md"
+                   download
+                   class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition">
+                    <i class="fa fa-download"></i> 下载大观学派（危机干预）分析
+                </a>
+            </div>
+
             <!-- 危机评估 -->
             <div class="mb-6">
                 <h2 class="text-xl font-bold text-red-900 mb-3">⚠️ 危机评估</h2>
@@ -262,7 +366,7 @@
             </div>
         </div>
 
-        <!-- 认知行为疗法Tab内容 -->
+        <!-- 认知行为疗法 (CBT)Tab内容 -->
         <div class="tab-content" id="tab-cbt">
             <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
                 <i class="fa fa-info-circle text-4xl mb-3"></i>
@@ -278,6 +382,14 @@
             </div>
         </div>
 
+        <!-- 存在主义Tab内容 -->
+        <div class="tab-content" id="tab-existential">
+            <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
+                <i class="fa fa-info-circle text-4xl mb-3"></i>
+                <p>该流派分析暂未添加</p>
+            </div>
+        </div>
+
         <!-- 人本主义Tab内容 -->
         <div class="tab-content" id="tab-humanistic">
             <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
@@ -286,8 +398,16 @@
             </div>
         </div>
 
-        <!-- 存在主义Tab内容 -->
-        <div class="tab-content" id="tab-existential">
+        <!-- 拉康精分Tab内容 -->
+        <div class="tab-content" id="tab-temp_1">
+            <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
+                <i class="fa fa-info-circle text-4xl mb-3"></i>
+                <p>该流派分析暂未添加</p>
+            </div>
+        </div>
+
+        <!-- 布莱尼Tab内容 -->
+        <div class="tab-content" id="tab-temp_2">
             <div class="bg-gray-100 text-gray-500 rounded-lg p-8 text-center">
                 <i class="fa fa-info-circle text-4xl mb-3"></i>
                 <p>该流派分析暂未添加</p>

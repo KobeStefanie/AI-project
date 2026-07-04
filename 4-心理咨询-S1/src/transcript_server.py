@@ -170,8 +170,18 @@ class TranscriptHandler(BaseHTTPRequestHandler):
         if not os.path.exists(case_file):
             return []
 
-        with open(case_file, 'r', encoding='utf-8') as f:
-            case_data = json.load(f)
+        # 尝试多种编码读取
+        case_data = None
+        for encoding in ['utf-8', 'utf-8-sig', 'gbk', 'gb2312']:
+            try:
+                with open(case_file, 'r', encoding=encoding) as f:
+                    case_data = json.load(f)
+                break
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                continue
+
+        if case_data is None:
+            return []
 
         return case_data.get('transcripts', [])
 
@@ -182,8 +192,18 @@ class TranscriptHandler(BaseHTTPRequestHandler):
         if not os.path.exists(case_file):
             raise FileNotFoundError(f"案例文件不存在: {case_file}")
 
-        with open(case_file, 'r', encoding='utf-8') as f:
-            case_data = json.load(f)
+        # 尝试多种编码读取
+        case_data = None
+        for encoding in ['utf-8', 'utf-8-sig', 'gbk', 'gb2312']:
+            try:
+                with open(case_file, 'r', encoding=encoding) as f:
+                    case_data = json.load(f)
+                break
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                continue
+
+        if case_data is None:
+            raise ValueError(f"无法读取案例文件，编码问题: {case_file}")
 
         # 确保有transcripts字段
         if 'transcripts' not in case_data:
@@ -218,8 +238,18 @@ class TranscriptHandler(BaseHTTPRequestHandler):
         if not os.path.exists(case_file):
             raise FileNotFoundError(f"案例文件不存在: {case_file}")
 
-        with open(case_file, 'r', encoding='utf-8') as f:
-            case_data = json.load(f)
+        # 尝试多种编码读取
+        case_data = None
+        for encoding in ['utf-8', 'utf-8-sig', 'gbk', 'gb2312']:
+            try:
+                with open(case_file, 'r', encoding=encoding) as f:
+                    case_data = json.load(f)
+                break
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                continue
+
+        if case_data is None:
+            raise ValueError(f"无法读取案例文件，编码问题: {case_file}")
 
         transcripts = case_data.get('transcripts', [])
         found = False
@@ -250,8 +280,18 @@ class TranscriptHandler(BaseHTTPRequestHandler):
         if not os.path.exists(case_file):
             raise FileNotFoundError(f"案例文件不存在: {case_file}")
 
-        with open(case_file, 'r', encoding='utf-8') as f:
-            case_data = json.load(f)
+        # 尝试多种编码读取
+        case_data = None
+        for encoding in ['utf-8', 'utf-8-sig', 'gbk', 'gb2312']:
+            try:
+                with open(case_file, 'r', encoding=encoding) as f:
+                    case_data = json.load(f)
+                break
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                continue
+
+        if case_data is None:
+            raise ValueError(f"无法读取案例文件，编码问题: {case_file}")
 
         transcripts = case_data.get('transcripts', [])
         case_data['transcripts'] = [t for t in transcripts if t['id'] != transcript_id]

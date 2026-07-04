@@ -40,164 +40,441 @@
         }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        .view-toggle-btn {
+            color: #6b7280;
+        }
+        .view-toggle-btn.active {
+            background-color: #6366f1;
+            color: white;
+        }
+        .view-toggle-btn:hover:not(.active) {
+            background-color: #f3f4f6;
+        }
+        .view-container.hidden {
+            display: none;
+        }
+        #listView table tbody tr:hover {
+            background-color: #f9fafb;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .status-high { background-color: #fee; color: #991b1b; }
+        .status-medium { background-color: #fef3c7; color: #92400e; }
+        .status-low { background-color: #d1fae5; color: #065f46; }
+        .status-none { background-color: #f3f4f6; color: #374151; }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
 
     <div class="container mx-auto px-4 py-8">
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">来访者库</h1>
-            <p class="text-gray-600">以来访者为中心的咨询案例管理系统</p>
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">来访者库</h1>
+                    <p class="text-gray-600">以来访者为中心的咨询案例管理系统</p>
+                </div>
+                <div class="flex gap-3">
+                    <!-- 视图切换按钮 -->
+                    <div class="bg-white rounded-lg shadow px-1 py-1 flex gap-1">
+                        <button id="cardViewBtn" onclick="switchView('card')"
+                                class="view-toggle-btn active px-4 py-2 rounded transition text-sm font-medium">
+                            <i class="fa fa-th"></i> 卡片视图
+                        </button>
+                        <button id="listViewBtn" onclick="switchView('list')"
+                                class="view-toggle-btn px-4 py-2 rounded transition text-sm font-medium">
+                            <i class="fa fa-list"></i> 列表视图
+                        </button>
+                    </div>
+                    <!-- 导出Excel按钮 -->
+                    <button onclick="exportExcel()"
+                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition shadow text-sm font-medium">
+                        <i class="fa fa-file-excel-o"></i> 导出Excel
+                    </button>
+                </div>
+            </div>
         </div>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-        <a href="V20260616001/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
-            <div class="flex justify-between items-start mb-4">
-                <h3 class="text-xl font-semibold text-gray-800">善良的小女孩</h3>
-                <span class="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
-                    中风险
-                </span>
-            </div>
-            <div class="space-y-2 text-sm text-gray-600">
-                <p><i class="fa fa-user"></i> 约14-16岁（青少年） · 女</p>
-                <p><i class="fa fa-briefcase"></i> 学生</p>
-                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
-                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-16</p>
-            </div>
-            <div class="mt-4 pt-4 border-t">
-                <p class="text-sm text-gray-500 line-clamp-2">14岁女孩的同伴来电求助：朋友确诊重度抑郁症，有多次自杀尝试史，当天写完遗书后失联半小时。来电者本人也有抑郁症史但已药物控制。咨询师在面对'第三方自杀危机'的复杂局面中，通过六变三托筛查（确认遗书未嘱...</p>
-            </div>
-        </a>
+        <!-- 卡片视图 -->
+        <div id="cardView" class="view-container">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-        <a href="V20260620001/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+        <div class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6 relative">
             <div class="flex justify-between items-start mb-4">
-                <h3 class="text-xl font-semibold text-gray-800">L001</h3>
-                <span class="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
-                    中风险
-                </span>
+                <a href="V20260616001/profile.html" class="flex-1">
+                    <h3 class="text-xl font-semibold text-gray-800">善良的小女孩</h3>
+                </a>
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">
+                        未评估
+                    </span>
+                    <button onclick="event.preventDefault(); deleteVisitor('V20260616001', '善良的小女孩')"
+                            class="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition"
+                            title="删除档案">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
             </div>
-            <div class="space-y-2 text-sm text-gray-600">
-                <p><i class="fa fa-user"></i> 16-17岁（高二） · 女</p>
-                <p><i class="fa fa-briefcase"></i> 学生</p>
-                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
-                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-20</p>
-            </div>
-            <div class="mt-4 pt-4 border-t">
-                <p class="text-sm text-gray-500 line-clamp-2">高二女生确诊重度抑郁症+焦虑症，伴有双相情感障碍发展倾向、幻听幻影、严重进食障碍（厌食+催吐）、频繁抑郁躯体化、自伤行为。咨询师使用了多种技术（情绪承接、赋能、隐喻、重新框架），其中'我是国王'隐喻对...</p>
-            </div>
-        </a>
+            <a href="V20260616001/profile.html" class="block">
+                <div class="space-y-2 text-sm text-gray-600">
+                    <p><i class="fa fa-user"></i> 约14-16岁（青少年） · 女</p>
+                    <p><i class="fa fa-briefcase"></i> 学生</p>
+                    <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
+                    <p><i class="fa fa-clock-o"></i> 最近: 2026-06-16</p>
+                </div>
+                <div class="mt-4 pt-4 border-t">
+                    <p class="text-sm text-gray-500 line-clamp-2">14岁女孩的同伴来电求助：朋友确诊重度抑郁症，有多次自杀尝试史，当天写完遗书后失联半小时。来电者本人也有抑郁症史但已药物控制。咨询师在面对'第三方自杀危机'的复杂局面中，通过六变三托筛查（确认遗书未嘱...</p>
+                </div>
+            </a>
+        </div>
 
-        <a href="V20260620002/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+        <div class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6 relative">
             <div class="flex justify-between items-start mb-4">
-                <h3 class="text-xl font-semibold text-gray-800">女老板</h3>
-                <span class="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
-                    中风险
-                </span>
+                <a href="V20260620001/profile.html" class="flex-1">
+                    <h3 class="text-xl font-semibold text-gray-800">L001</h3>
+                </a>
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">
+                        未评估
+                    </span>
+                    <button onclick="event.preventDefault(); deleteVisitor('V20260620001', 'L001')"
+                            class="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition"
+                            title="删除档案">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
             </div>
-            <div class="space-y-2 text-sm text-gray-600">
-                <p><i class="fa fa-user"></i> 40-50岁（更年期） · 女</p>
-                <p><i class="fa fa-briefcase"></i> 企业主（有厂子）</p>
-                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
-                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-20</p>
-            </div>
-            <div class="mt-4 pt-4 border-t">
-                <p class="text-sm text-gray-500 line-clamp-2">女企业主确诊抑郁症+焦虑症，更年期叠加，已休息两个月，有轻生想法但无明确计划。主要压力来自账目收不回、时代变化快、不想学习。咨询师使用了'内在小孩'理论进行重新框架，强调动力枯竭是新课题，建议让理性满...</p>
-            </div>
-        </a>
+            <a href="V20260620001/profile.html" class="block">
+                <div class="space-y-2 text-sm text-gray-600">
+                    <p><i class="fa fa-user"></i> 16-17岁（高二） · 女</p>
+                    <p><i class="fa fa-briefcase"></i> 学生</p>
+                    <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
+                    <p><i class="fa fa-clock-o"></i> 最近: 2026-06-20</p>
+                </div>
+                <div class="mt-4 pt-4 border-t">
+                    <p class="text-sm text-gray-500 line-clamp-2">高二女生确诊重度抑郁症+焦虑症，伴有双相情感障碍发展倾向、幻听幻影、严重进食障碍（厌食+催吐）、频繁抑郁躯体化、自伤行为。咨询师使用了多种技术（情绪承接、赋能、隐喻、重新框架），其中'我是国王'隐喻对...</p>
+                </div>
+            </a>
+        </div>
 
-        <a href="V20260629001/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+        <div class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6 relative">
             <div class="flex justify-between items-start mb-4">
-                <h3 class="text-xl font-semibold text-gray-800">帅哥</h3>
-                <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">
-                    未评估风险
-                </span>
+                <a href="V20260620002/profile.html" class="flex-1">
+                    <h3 class="text-xl font-semibold text-gray-800">女老板</h3>
+                </a>
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">
+                        未评估
+                    </span>
+                    <button onclick="event.preventDefault(); deleteVisitor('V20260620002', '女老板')"
+                            class="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition"
+                            title="删除档案">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
             </div>
-            <div class="space-y-2 text-sm text-gray-600">
-                <p><i class="fa fa-user"></i>  · </p>
-                <p><i class="fa fa-briefcase"></i> </p>
-                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
-                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-29</p>
-            </div>
-            <div class="mt-4 pt-4 border-t">
-                <p class="text-sm text-gray-500 line-clamp-2">...</p>
-            </div>
-        </a>
+            <a href="V20260620002/profile.html" class="block">
+                <div class="space-y-2 text-sm text-gray-600">
+                    <p><i class="fa fa-user"></i> 40-50岁（更年期） · 女</p>
+                    <p><i class="fa fa-briefcase"></i> 企业主（有厂子）</p>
+                    <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
+                    <p><i class="fa fa-clock-o"></i> 最近: 2026-06-20</p>
+                </div>
+                <div class="mt-4 pt-4 border-t">
+                    <p class="text-sm text-gray-500 line-clamp-2">女企业主确诊抑郁症+焦虑症，更年期叠加，已休息两个月，有轻生想法但无明确计划。主要压力来自账目收不回、时代变化快、不想学习。咨询师使用了'内在小孩'理论进行重新框架，强调动力枯竭是新课题，建议让理性满...</p>
+                </div>
+            </a>
+        </div>
 
-        <a href="V20260629007/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+        <div class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6 relative">
             <div class="flex justify-between items-start mb-4">
-                <h3 class="text-xl font-semibold text-gray-800">阿萨法阿萨德</h3>
-                <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">
-                    未评估风险
-                </span>
+                <a href="V20260630001/profile.html" class="flex-1">
+                    <h3 class="text-xl font-semibold text-gray-800">那个想弑母的青年</h3>
+                </a>
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
+                        中度危机 - L-对自己/他人/社会的敌意
+                    </span>
+                    <button onclick="event.preventDefault(); deleteVisitor('V20260630001', '那个想弑母的青年')"
+                            class="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition"
+                            title="删除档案">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
             </div>
-            <div class="space-y-2 text-sm text-gray-600">
-                <p><i class="fa fa-user"></i>  · </p>
-                <p><i class="fa fa-briefcase"></i> </p>
-                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
-                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-29</p>
+            <a href="V20260630001/profile.html" class="block">
+                <div class="space-y-2 text-sm text-gray-600">
+                    <p><i class="fa fa-user"></i> 28 · 男</p>
+                    <p><i class="fa fa-briefcase"></i> </p>
+                    <p><i class="fa fa-calendar"></i> 共 6 次来访</p>
+                    <p><i class="fa fa-clock-o"></i> 最近: 2026-06-30</p>
+                </div>
+                <div class="mt-4 pt-4 border-t">
+                    <p class="text-sm text-gray-500 line-clamp-2">...</p>
+                </div>
+            </a>
+        </div>
             </div>
-            <div class="mt-4 pt-4 border-t">
-                <p class="text-sm text-gray-500 line-clamp-2">...</p>
-            </div>
-        </a>
+        </div>
 
-        <a href="V20260629008/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
-            <div class="flex justify-between items-start mb-4">
-                <h3 class="text-xl font-semibold text-gray-800">阿萨法阿萨法</h3>
-                <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">
-                    未评估风险
-                </span>
+        <!-- 列表视图 -->
+        <div id="listView" class="view-container hidden">
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-indigo-600 text-white">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">案例编号</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">来访者</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">性别</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">年龄</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">职业</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">联系电话</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">咨询师</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">首访时间</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">最近来访</th>
+                                <th class="px-4 py-3 text-center text-sm font-semibold">累计来访</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">咨询状态</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">案例状态</th>
+                                <th class="px-4 py-3 text-center text-sm font-semibold">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listTableBody" class="divide-y divide-gray-200">
+                            <!-- 动态加载数据 -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="space-y-2 text-sm text-gray-600">
-                <p><i class="fa fa-user"></i>  · </p>
-                <p><i class="fa fa-briefcase"></i> </p>
-                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
-                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-29</p>
-            </div>
-            <div class="mt-4 pt-4 border-t">
-                <p class="text-sm text-gray-500 line-clamp-2">...</p>
-            </div>
-        </a>
-
-        <a href="V20260629009/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
-            <div class="flex justify-between items-start mb-4">
-                <h3 class="text-xl font-semibold text-gray-800">阿是萨阿德</h3>
-                <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">
-                    未评估风险
-                </span>
-            </div>
-            <div class="space-y-2 text-sm text-gray-600">
-                <p><i class="fa fa-user"></i>  · </p>
-                <p><i class="fa fa-briefcase"></i> </p>
-                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
-                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-29</p>
-            </div>
-            <div class="mt-4 pt-4 border-t">
-                <p class="text-sm text-gray-500 line-clamp-2">...</p>
-            </div>
-        </a>
-
-        <a href="V20260629010/profile.html" class="block bg-white rounded-lg shadow hover:shadow-lg transition p-6">
-            <div class="flex justify-between items-start mb-4">
-                <h3 class="text-xl font-semibold text-gray-800">111</h3>
-                <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">
-                    未评估风险
-                </span>
-            </div>
-            <div class="space-y-2 text-sm text-gray-600">
-                <p><i class="fa fa-user"></i>  · </p>
-                <p><i class="fa fa-briefcase"></i> </p>
-                <p><i class="fa fa-calendar"></i> 共 1 次来访</p>
-                <p><i class="fa fa-clock-o"></i> 最近: 2026-06-29</p>
-            </div>
-            <div class="mt-4 pt-4 border-t">
-                <p class="text-sm text-gray-500 line-clamp-2">...</p>
-            </div>
-        </a>
-</div>
-</div>
+        </div>
+    </div>
 
     <script>
+        // API地址
+        const VISITOR_API = 'http://localhost:8770';
+
+        // 当前视图模式
+        let currentView = 'card';
+
+        // 来访者数据
+        let visitorsData = [];
+
+        // 页面加载时获取数据
+        window.addEventListener('DOMContentLoaded', async function() {
+            await loadVisitorsData();
+        });
+
+        // 加载来访者数据
+        async function loadVisitorsData() {
+            try {
+                const response = await fetch(`${VISITOR_API}/api/visitors`);
+                const data = await response.json();
+
+                if (data.success) {
+                    visitorsData = data.visitors;
+                    renderListView();
+                } else {
+                    console.error('加载数据失败:', data.error);
+                }
+            } catch (error) {
+                console.error('加载数据失败:', error);
+            }
+        }
+
+        // 切换视图
+        function switchView(view) {
+            currentView = view;
+
+            // 更新按钮状态
+            document.getElementById('cardViewBtn').classList.toggle('active', view === 'card');
+            document.getElementById('listViewBtn').classList.toggle('active', view === 'list');
+
+            // 切换视图容器
+            document.getElementById('cardView').classList.toggle('hidden', view !== 'card');
+            document.getElementById('listView').classList.toggle('hidden', view !== 'list');
+        }
+
+        // 渲染列表视图
+        function renderListView() {
+            const tbody = document.getElementById('listTableBody');
+            tbody.innerHTML = '';
+
+            visitorsData.forEach(visitor => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition';
+
+                // 获取咨询状态样式
+                const crisisStatusClass = getCrisisStatusClass(visitor.crisis_status);
+                const crisisStatusBadge = `<span class="status-badge ${crisisStatusClass}">${visitor.crisis_status || '未评估'}</span>`;
+
+                // 获取案例状态样式
+                const caseStatusClass = getCaseStatusClass(visitor.case_status);
+                const caseStatusBadge = `<span class="status-badge ${caseStatusClass}">${visitor.case_status || '未知'}</span>`;
+
+                row.innerHTML = `
+                    <td class="px-4 py-3 text-sm">
+                        <a href="${visitor.visitor_id}/profile.html" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                            ${visitor.visitor_id}
+                        </a>
+                    </td>
+                    <td class="px-4 py-3 text-sm font-medium">
+                        <a href="${visitor.visitor_id}/profile.html" class="text-gray-900 hover:text-indigo-600">
+                            ${visitor.name}
+                        </a>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${visitor.gender || '-'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${visitor.age || '-'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${visitor.occupation || '-'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${visitor.phone || '-'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${visitor.counselor || '-'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${visitor.first_visit_date || '-'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${visitor.last_visit_date || '-'}</td>
+                    <td class="px-4 py-3 text-sm text-center font-semibold text-gray-900">${visitor.visit_count || 0}</td>
+                    <td class="px-4 py-3 text-sm">${crisisStatusBadge}</td>
+                    <td class="px-4 py-3 text-sm">${caseStatusBadge}</td>
+                    <td class="px-4 py-3 text-sm text-center">
+                        <button onclick="event.preventDefault(); deleteVisitor('${visitor.visitor_id}', '${visitor.name}')"
+                                class="text-red-600 hover:text-red-800 transition"
+                                title="删除档案">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        // 获取咨询状态样式类（大观评级）
+        function getCrisisStatusClass(status) {
+            if (!status) return 'status-none';
+
+            if (status.includes('高度危机') || status.includes('S级')) {
+                return 'status-high';
+            } else if (status.includes('中度危机') || status.includes('L级')) {
+                return 'status-medium';
+            } else if (status.includes('低度危机') || status.includes('M级')) {
+                return 'status-low';
+            } else {
+                return 'status-none';
+            }
+        }
+
+        // 获取案例状态样式类
+        function getCaseStatusClass(status) {
+            if (!status) return 'status-none';
+
+            if (status.includes('进行中') || status.includes('active')) {
+                return 'status-low';  // 绿色
+            } else if (status.includes('已结束') || status.includes('closed')) {
+                return 'status-none';  // 灰色
+            } else if (status.includes('暂停') || status.includes('paused')) {
+                return 'status-medium';  // 黄色
+            } else {
+                return 'status-none';
+            }
+        }
+
+        // 导出Excel
+        async function exportExcel() {
+            try {
+                const btn = event.target.closest('button');
+                const originalHTML = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 导出中...';
+
+                const response = await fetch(`${VISITOR_API}/api/export/excel`);
+
+                if (!response.ok) {
+                    throw new Error('导出失败');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `来访者列表_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+
+                // 显示成功提示
+                showNotification('Excel导出成功！', 'success');
+            } catch (error) {
+                console.error('导出失败:', error);
+                showNotification('导出失败，请确保数据服务器已启动（端口8770）', 'error');
+
+                const btn = event.target.closest('button');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-file-excel-o"></i> 导出Excel';
+            }
+        }
+
+        // 显示通知
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 16px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 9999;
+                font-size: 14px;
+                animation: slideIn 0.3s ease-out;
+            `;
+
+            if (type === 'success') {
+                notification.style.backgroundColor = '#10b981';
+                notification.style.color = 'white';
+            } else if (type === 'error') {
+                notification.style.backgroundColor = '#ef4444';
+                notification.style.color = 'white';
+            } else {
+                notification.style.backgroundColor = '#3b82f6';
+                notification.style.color = 'white';
+            }
+
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
         // 折叠功能
         document.querySelectorAll('.collapsible').forEach(item => {
             item.addEventListener('click', function() {
@@ -223,17 +500,41 @@
             event.target.classList.add('active');
         }
 
-        // 默认激活第一个标签
-        window.addEventListener('DOMContentLoaded', function() {
-            const firstTab = document.querySelector('.tab-button');
-            if (firstTab) {
-                firstTab.classList.add('active');
-                const firstContent = document.querySelector('.tab-content');
-                if (firstContent) {
-                    firstContent.classList.add('active');
-                }
+        // 删除来访者档案
+        function deleteVisitor(visitorId, visitorName) {
+            if (!confirm(`确定要删除来访者 "${visitorName}" (${visitorId}) 的所有档案吗？\n\n此操作将删除：\n- 所有来访记录\n- 所有分析内容\n- 所有生成的页面\n\n此操作不可恢复！`)) {
+                return;
             }
-        });
+
+            // 显示删除中提示
+            const loadingMsg = document.createElement('div');
+            loadingMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 9999; text-align: center;';
+            loadingMsg.innerHTML = '<div style="font-size: 18px; margin-bottom: 10px;">正在删除档案...</div><div style="color: #666;">请稍候</div>';
+            document.body.appendChild(loadingMsg);
+
+            // 调用删除API（使用8768端口，与接访记录服务器统一）
+            fetch('http://localhost:8768/api/delete_visitor', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ visitor_id: visitorId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.body.removeChild(loadingMsg);
+
+                if (data.success) {
+                    alert('删除成功！\n\n' + data.message);
+                    window.location.reload();
+                } else {
+                    alert('删除失败：' + (data.error || '未知错误'));
+                }
+            })
+            .catch(error => {
+                document.body.removeChild(loadingMsg);
+                console.error('删除失败:', error);
+                alert('删除失败，请确保接访记录服务器已启动（端口8768）\n\n错误信息：' + error.message);
+            });
+        }
     </script>
 </body>
 </html>

@@ -1,8 +1,8 @@
 {
   "id": "temp_1",
-  "name": "拉康",
+  "name": "拉康精分",
   "color": "#2563eb",
   "icon": "fa-circle",
   "enabled": true,
-  "sort_order": 6
+  "sort_order": 5
 }

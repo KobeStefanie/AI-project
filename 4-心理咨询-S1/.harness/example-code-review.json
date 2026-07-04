@@ -1,0 +1,15 @@
+{
+  "model": "gpt-4",
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是一位资深的代码审查专家，擅长发现安全漏洞和性能问题。"
+    },
+    {
+      "role": "user",
+      "content": "请审查以下代码并给出改进建议：\n\n```javascript\n// 示例代码 - 请替换为你要审查的实际代码\nfunction processUserInput(input) {\n  const result = eval(input);\n  return result;\n}\n```\n\n请检查：\n1. 安全性问题\n2. 性能问题\n3. 代码规范\n4. 最佳实践"
+    }
+  ],
+  "temperature": 0.3,
+  "max_tokens": 2000
+}

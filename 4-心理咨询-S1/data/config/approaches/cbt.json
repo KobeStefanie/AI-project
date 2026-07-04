@@ -1,32 +1,45 @@
 {
   "id": "cbt",
-  "name": "认知行为疗法",
-  "name_en": "Cognitive Behavioral Therapy",
-  "description": "认知行为疗法（CBT），关注思维、情绪和行为之间的关系，通过改变不合理认知来改善情绪和行为",
-  "color": "#059669",
-  "icon": "fa-brain",
-  "core_concepts": [
-    "自动化思维",
-    "核心信念",
+  "name": "认知行为疗法 (CBT)",
+  "name_short": "CBT",
+  "enabled": true,
+  "color": "#3b82f6",
+  "icon": "🧠",
+  "description": "认知行为疗法，关注思维、情绪和行为之间的关系",
+  "fields": {
+    "cognitive_analysis": {
+      "label": "认知分析",
+      "type": "text",
+      "required": true,
+      "description": "识别自动化思维、核心信念和认知扭曲"
+    },
+    "behavioral_analysis": {
+      "label": "行为分析",
+      "type": "text",
+      "required": true,
+      "description": "分析行为模式及其维持因素"
+    },
+    "intervention_plan": {
+      "label": "干预计划",
+      "type": "text",
+      "required": true,
+      "description": "认知重构和行为实验的具体方案"
+    }
+  },
+  "techniques": [
     "认知重构",
-    "行为激活",
-    "暴露疗法"
-  ],
-  "typical_techniques": [
-    "思维记录",
-    "认知重构",
+    "苏格拉底式提问",
     "行为实验",
-    "暴露与反应阻止",
+    "暴露疗法",
+    "活动安排",
     "放松训练",
     "问题解决训练"
   ],
-  "focus_areas": [
-    "认知模式识别",
-    "非理性信念挑战",
-    "行为改变",
-    "技能训练"
-  ],
-  "enabled": false,
-  "sort_order": 2,
-  "note": "待学习后启用"
+  "metadata": {
+    "created_at": "2026-06-28",
+    "version": "1.0",
+    "author": "系统生成",
+    "note": "可通过AI分析后上传内容启用"
+  },
+  "sort_order": 1
 }

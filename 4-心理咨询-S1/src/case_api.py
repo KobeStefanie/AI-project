@@ -170,7 +170,8 @@ def create_case():
                     }]
                 } if data['dynamic_info'].get('用药情况') else {'current': '', 'history': []},
                 '紧急联系人': data['dynamic_info'].get('紧急联系人', ''),
-                '紧急联系电话': data['dynamic_info'].get('紧急联系电话', ''),
+                '紧急联系人关系': data['dynamic_info'].get('紧急联系人关系', ''),
+                '紧急联系人电话': data['dynamic_info'].get('紧急联系人电话', ''),
                 '来访备注': data['dynamic_info'].get('来访备注', '')
             },
 
@@ -271,7 +272,7 @@ def add_session(case_id):
         if 'dynamic_updates' in session_data:
             updates = session_data.pop('dynamic_updates')
             for key, value in updates.items():
-                if key in ['紧急联系人', '紧急联系电话', '来访备注']:
+                if key in ['紧急联系人', '紧急联系人关系', '紧急联系人电话', '来访备注']:
                     case_data['dynamic_info'][key] = value
 
         # 设置会谈编号

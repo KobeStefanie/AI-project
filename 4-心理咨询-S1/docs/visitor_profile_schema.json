@@ -1,0 +1,178 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "来访者档案",
+  "description": "来访者的基本信息、整体评估和来访历史",
+  "type": "object",
+  "required": ["visitor_id", "basic_info", "visit_history"],
+  "properties": {
+    "visitor_id": {
+      "type": "string",
+      "description": "来访者唯一ID，格式：V + 日期 + 序号（如V20260616001）",
+      "pattern": "^V\\d{8}\\d{3}$"
+    },
+    "basic_info": {
+      "type": "object",
+      "description": "来访者基本信息",
+      "required": ["name", "age", "gender"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "来访者姓名（可使用化名）"
+        },
+        "age": {
+          "type": "integer",
+          "description": "年龄"
+        },
+        "gender": {
+          "type": "string",
+          "enum": ["男", "女", "其他"],
+          "description": "性别"
+        },
+        "occupation": {
+          "type": "string",
+          "description": "职业"
+        },
+        "background": {
+          "type": "string",
+          "description": "背景信息"
+        },
+        "initial_complaint": {
+          "type": "string",
+          "description": "初始主诉"
+        },
+        "initial_assessment": {
+          "type": "string",
+          "description": "初始评估"
+        }
+      }
+    },
+    "overall_progress": {
+      "type": "object",
+      "description": "整体进展评估",
+      "properties": {
+        "symptom_trend": {
+          "type": "array",
+          "description": "症状变化趋势",
+          "items": {
+            "type": "object",
+            "properties": {
+              "visit_number": {
+                "type": "integer",
+                "description": "第几次来访"
+              },
+              "date": {
+                "type": "string",
+                "format": "date",
+                "description": "来访日期"
+              },
+              "severity": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10,
+                "description": "症状严重程度（1-10）"
+              },
+              "description": {
+                "type": "string",
+                "description": "描述"
+              }
+            }
+          }
+        },
+        "risk_trend": {
+          "type": "array",
+          "description": "风险等级变化",
+          "items": {
+            "type": "object",
+            "properties": {
+              "visit_number": {
+                "type": "integer"
+              },
+              "date": {
+                "type": "string",
+                "format": "date"
+              },
+              "risk_level": {
+                "type": "string",
+                "enum": ["高", "中", "低", "无"],
+                "description": "风险等级"
+              },
+              "risk_type": {
+                "type": "string",
+                "description": "风险类型（如：自杀风险、自伤风险）"
+              }
+            }
+          }
+        },
+        "treatment_progress": {
+          "type": "string",
+          "description": "治疗进展总结"
+        },
+        "therapeutic_relationship": {
+          "type": "string",
+          "description": "咨访关系发展"
+        }
+      }
+    },
+    "visit_history": {
+      "type": "array",
+      "description": "来访历史列表",
+      "items": {
+        "type": "object",
+        "required": ["visit_number", "visit_id", "date"],
+        "properties": {
+          "visit_number": {
+            "type": "integer",
+            "description": "第几次来访"
+          },
+          "visit_id": {
+            "type": "string",
+            "description": "来访记录ID（对应visit_xxx.json文件名）",
+            "pattern": "^visit_\\d{3}$"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "来访日期"
+          },
+          "counselor": {
+            "type": "string",
+            "description": "咨询师"
+          },
+          "duration": {
+            "type": "integer",
+            "description": "咨询时长（分钟）"
+          },
+          "main_issue": {
+            "type": "string",
+            "description": "主要问题"
+          },
+          "risk_level": {
+            "type": "string",
+            "enum": ["高", "中", "低", "无"],
+            "description": "风险等级"
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "元数据",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "档案创建时间"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "最后更新时间"
+        },
+        "total_visits": {
+          "type": "integer",
+          "description": "总来访次数"
+        }
+      }
+    }
+  }
+}

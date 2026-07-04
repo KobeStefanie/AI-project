@@ -1,31 +1,72 @@
 {
   "id": "daguanpai",
-  "name": "大观学派",
-  "name_en": "Daguan School",
-  "description": "大观学派咨询方法论，注重情绪承接、赋能技术、隐喻技术和重新框架等核心技术",
-  "color": "#2563eb",
-  "icon": "fa-compass",
-  "core_concepts": [
-    "情绪承接",
-    "赋能技术",
-    "隐喻技术",
-    "重新框架",
-    "正常化技术"
-  ],
-  "typical_techniques": [
-    "情绪承接",
-    "赋能技术（如'勇士'隐喻）",
-    "隐喻技术（如'国王与臣民'）",
-    "重新框架（症状意义重构）",
-    "正常化技术（青春期情绪）",
-    "共情"
-  ],
-  "focus_areas": [
-    "情绪处理",
-    "自我效能感提升",
-    "症状意义重构",
-    "关系动力分析"
-  ],
+  "name": "大观学派（危机干预）",
+  "name_short": "大观",
   "enabled": true,
-  "sort_order": 1
+  "color": "#ef4444",
+  "icon": "🚨",
+  "description": "大观学派危机干预体系，专注于自杀风险评估与干预",
+  "fields": {
+    "conceptualization": {
+      "label": "案例概念化",
+      "type": "text",
+      "required": true,
+      "description": "从危机干预视角对案例进行概念化理解"
+    },
+    "intervention_suggestions": {
+      "label": "干预建议",
+      "type": "text",
+      "required": true,
+      "description": "基于危机干预技术的具体建议"
+    },
+    "key_points": {
+      "label": "关键要点",
+      "type": "array",
+      "required": true,
+      "description": "本案例的关键技术点、亮点与改进建议"
+    }
+  },
+  "crisis_levels": {
+    "S": {
+      "name": "自杀风险",
+      "color": "#dc2626",
+      "description": "有明确计划/手段/遗书/失联"
+    },
+    "L": {
+      "name": "生命危险",
+      "color": "#ea580c",
+      "description": "他杀风险/严重自伤/精神病性症状"
+    },
+    "M": {
+      "name": "中度危机",
+      "color": "#f59e0b",
+      "description": "抑郁/焦虑影响功能/创伤急性期"
+    },
+    "C": {
+      "name": "慢性困扰",
+      "color": "#84cc16",
+      "description": "长期关系问题/自我成长议题"
+    },
+    "Z": {
+      "name": "正常范围",
+      "color": "#22c55e",
+      "description": "偶发情绪波动/一般性困惑"
+    }
+  },
+  "techniques": [
+    "六变三托筛查",
+    "同步同理心",
+    "现实拉力",
+    "隧道隐喻",
+    "安全承诺",
+    "资源评估",
+    "危机降级",
+    "支持系统激活"
+  ],
+  "metadata": {
+    "created_at": "2026-06-28",
+    "version": "1.0",
+    "author": "系统生成"
+  },
+  "sort_order": 0
 }

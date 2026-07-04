@@ -59,12 +59,17 @@
                 <h1 class="text-3xl font-bold text-gray-800 mb-2">善良的小女孩</h1>
                 <p class="text-gray-600">来访者档案 · V20260616001</p>
             </div>
-            <a href="comparison.html" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
-                <i class="fa fa-bar-chart"></i> 对比视图
-            </a>
+            <div class="flex gap-2">
+                <a href="comparison.html" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                    <i class="fa fa-bar-chart"></i> 对比视图
+                </a>
+                <button onclick="deleteVisitor('V20260616001', '善良的小女孩')" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
+                    <i class="fa fa-trash"></i> 删除档案
+                </button>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div class="p-4 bg-gray-50 rounded">
                 <p class="text-sm text-gray-600 mb-1">年龄 / 性别</p>
                 <p class="text-lg font-semibold">约14-16岁（青少年） · 女</p>
@@ -77,15 +82,19 @@
                 <p class="text-sm text-gray-600 mb-1">婚姻状况</p>
                 <p class="text-lg font-semibold">未婚</p>
             </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="p-4 bg-gray-50 rounded">
                 <p class="text-sm text-gray-600 mb-1">性取向</p>
                 <p class="text-lg font-semibold">未填写</p>
             </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div class="p-4 bg-gray-50 rounded">
                 <p class="text-sm text-gray-600 mb-1">宗教信仰</p>
+                <p class="text-lg font-semibold">未填写</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-1">来访者联系电话</p>
                 <p class="text-lg font-semibold">未填写</p>
             </div>
             <div class="p-4 bg-gray-50 rounded">
@@ -93,12 +102,19 @@
                 <p class="text-lg font-semibold">未填写</p>
             </div>
             <div class="p-4 bg-gray-50 rounded">
-                <p class="text-sm text-gray-600 mb-1">联系电话</p>
+                <p class="text-sm text-gray-600 mb-1">紧急联系人电话</p>
                 <p class="text-lg font-semibold">未填写</p>
             </div>
-            <div class="p-4 bg-gray-50 rounded">
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="p-4 bg-indigo-50 rounded">
                 <p class="text-sm text-gray-600 mb-1">总来访次数</p>
-                <p class="text-lg font-semibold">1 次</p>
+                <p class="text-2xl font-bold text-indigo-600">1 次</p>
+            </div>
+            <div class="p-4 bg-indigo-50 rounded">
+                <p class="text-sm text-gray-600 mb-1">累计通话时长</p>
+                <p class="text-2xl font-bold text-indigo-600">50 分钟</p>
             </div>
         </div>
 
@@ -118,18 +134,75 @@
         </div>
 
         <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-3">背景信息</h3>
-            <p class="text-gray-700 leading-relaxed">14岁女孩的同伴来电求助：朋友确诊重度抑郁症，有多次自杀尝试史，当天写完遗书后失联半小时。来电者本人也有抑郁症史但已药物控制。咨询师在面对'第三方自杀危机'的复杂局面中，通过六变三托筛查（确认遗书未嘱托）、同步同理心陪伴、拒绝成为遗书执行者（制造现实拉力）、隧道隐喻（赋予希望），最终等到了朋友的安全回复。核心议题：青少年同伴支持系统中的自杀危机干预、双重抑郁症青少年的安全网建立。</p>
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-semibold text-gray-800">背景信息</h3>
+                <div class="flex gap-2">
+                    <button onclick="editProfileField('background', '背景信息')" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+                        <i class="fa fa-edit"></i> 编辑
+                    </button>
+                    <button onclick="uploadWordForProfileField('background', '背景信息')" class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700">
+                        <i class="fa fa-upload"></i> 上传Word
+                    </button>
+                    <button onclick="downloadProfileField('background', '背景信息')" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                        <i class="fa fa-download"></i> 下载
+                    </button>
+                </div>
+            </div>
+            <div id="background-content" class="text-gray-700 leading-relaxed whitespace-pre-wrap">14岁女孩的同伴来电求助：朋友确诊重度抑郁症，有多次自杀尝试史，当天写完遗书后失联半小时。来电者本人也有抑郁症史但已药物控制。咨询师在面对'第三方自杀危机'的复杂局面中，通过六变三托筛查（确认遗书未嘱托）、同步同理心陪伴、拒绝成为遗书执行者（制造现实拉力）、隧道隐喻（赋予希望），最终等到了朋友的安全回复。核心议题：青少年同伴支持系统中的自杀危机干预、双重抑郁症青少年的安全网建立。</div>
         </div>
 
         <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-3">来访主诉</h3>
-            <p class="text-gray-700 leading-relaxed">14岁女孩的同伴来电求助：朋友确诊重度抑郁症，有多次自杀尝试史，当天写完遗书后失联半小时。来电者本人也有抑郁症史但已药物控制。咨询师在面对'第三方自杀危机'的复杂局面中，通过六变三托筛查（确认遗书未嘱托）、同步同理心陪伴、拒绝成为遗书执行者（制造现实拉力）、隧道隐喻（赋予希望），最终等到了朋友的安全回复。核心议题：青少年同伴支持系统中的自杀危机干预、双重抑郁症青少年的安全网建立。</p>
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-semibold text-gray-800">来访主诉</h3>
+                <div class="flex gap-2">
+                    <button onclick="editProfileField('initial_complaint', '来访主诉')" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+                        <i class="fa fa-edit"></i> 编辑
+                    </button>
+                    <button onclick="uploadWordForProfileField('initial_complaint', '来访主诉')" class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700">
+                        <i class="fa fa-upload"></i> 上传Word
+                    </button>
+                    <button onclick="downloadProfileField('initial_complaint', '来访主诉')" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                        <i class="fa fa-download"></i> 下载
+                    </button>
+                </div>
+            </div>
+            <div id="initial_complaint-content" class="text-gray-700 leading-relaxed whitespace-pre-wrap">14岁女孩的同伴来电求助：朋友确诊重度抑郁症，有多次自杀尝试史，当天写完遗书后失联半小时。来电者本人也有抑郁症史但已药物控制。咨询师在面对'第三方自杀危机'的复杂局面中，通过六变三托筛查（确认遗书未嘱托）、同步同理心陪伴、拒绝成为遗书执行者（制造现实拉力）、隧道隐喻（赋予希望），最终等到了朋友的安全回复。核心议题：青少年同伴支持系统中的自杀危机干预、双重抑郁症青少年的安全网建立。</div>
         </div>
 
         <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-3">咨询目标</h3>
-            <p class="text-gray-700 leading-relaxed">待设定</p>
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-semibold text-gray-800">整体咨询目标</h3>
+                <div class="flex gap-2">
+                    <button onclick="editProfileField('counseling_goal', '整体咨询目标')" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+                        <i class="fa fa-edit"></i> 编辑
+                    </button>
+                    <button onclick="uploadWordForProfileField('counseling_goal', '整体咨询目标')" class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700">
+                        <i class="fa fa-upload"></i> 上传Word
+                    </button>
+                    <button onclick="downloadProfileField('counseling_goal', '整体咨询目标')" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                        <i class="fa fa-download"></i> 下载
+                    </button>
+                </div>
+            </div>
+            <div id="counseling_goal-content" class="text-gray-700 leading-relaxed whitespace-pre-wrap">待设定</div>
+        </div>
+
+        <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-semibold text-gray-800">咨询进度</h3>
+                <div class="flex gap-2">
+                    <button onclick="editProfileField('counseling_progress', '咨询进度')" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+                        <i class="fa fa-edit"></i> 编辑
+                    </button>
+                    <button onclick="uploadWordForProfileField('counseling_progress', '咨询进度')" class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700">
+                        <i class="fa fa-upload"></i> 上传Word
+                    </button>
+                    <button onclick="downloadProfileField('counseling_progress', '咨询进度')" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                        <i class="fa fa-download"></i> 下载
+                    </button>
+                </div>
+            </div>
+            <div id="counseling_progress-content" class="text-gray-700 leading-relaxed whitespace-pre-wrap">暂无</div>
         </div>
 
         <div class="mb-6">
@@ -187,8 +260,8 @@
                         <h3 class="text-lg font-semibold text-gray-800">第 1 次来访</h3>
                         <p class="text-sm text-gray-600">2026-06-16 · 咨询师A · 50分钟</p>
                     </div>
-                    <span class="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
-                        中风险
+                    <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800">
+                        未评估
                     </span>
                 </div>
                 <p class="text-gray-700 mb-4"><strong>主要问题：</strong>情绪困扰</p>
@@ -202,6 +275,141 @@
     </div>
 </div>
 
+    <script>
+        const VISITOR_ID = 'V20260616001';
+
+        // 编辑profile字段
+        function editProfileField(fieldName, fieldTitle) {
+            const contentDiv = document.getElementById(fieldName + '-content');
+            const currentContent = contentDiv.textContent;
+
+            const textarea = document.createElement('textarea');
+            textarea.className = 'w-full p-3 border rounded';
+            textarea.rows = 10;
+            textarea.value = currentContent;
+
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 mr-2';
+            saveBtn.innerHTML = '<i class="fa fa-save"></i> 保存';
+            saveBtn.onclick = () => saveProfileField(fieldName, fieldTitle, textarea.value, contentDiv);
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'mt-2 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700';
+            cancelBtn.innerHTML = '<i class="fa fa-times"></i> 取消';
+            cancelBtn.onclick = () => {
+                contentDiv.innerHTML = currentContent;
+            };
+
+            contentDiv.innerHTML = '';
+            contentDiv.appendChild(textarea);
+            contentDiv.appendChild(saveBtn);
+            contentDiv.appendChild(cancelBtn);
+        }
+
+        // 保存profile字段
+        function saveProfileField(fieldName, fieldTitle, content, contentDiv) {
+            fetch('http://localhost:8768/api/update_profile_field', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    visitor_id: VISITOR_ID,
+                    field_name: fieldName,
+                    content: content
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    contentDiv.textContent = content;
+                    alert('保存成功！');
+                } else {
+                    alert('保存失败：' + (data.error || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('保存失败:', error);
+                alert('保存失败，请确保接访记录服务器已启动（端口8768）');
+            });
+        }
+
+        // 上传Word文档到profile字段
+        function uploadWordForProfileField(fieldName, fieldTitle) {
+            const contentDiv = document.getElementById(fieldName + '-content');
+            const hasExistingContent = contentDiv && contentDiv.textContent.trim() && contentDiv.textContent !== '暂无' && contentDiv.textContent !== '待设定';
+
+            // 如果有现有内容，显示确认对话框
+            if (hasExistingContent) {
+                if (!confirm('当前' + fieldTitle + '已有内容，上传新Word文档将完全覆盖现有内容。\n\n是否继续？')) {
+                    return;
+                }
+            }
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.docx';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // 显示上传提示
+                const uploadMsg = document.createElement('div');
+                uploadMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 9999; text-align: center;';
+                uploadMsg.innerHTML = '<div style="font-size: 18px; margin-bottom: 10px;">正在处理Word文档...</div><div style="color: #666;">解析格式中，请稍候</div>';
+                document.body.appendChild(uploadMsg);
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('http://localhost:8765/', {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'cors'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.body.removeChild(uploadMsg);
+                    if (data.success && data.html) {
+                        // 从HTML中提取纯文本
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = data.html;
+                        const textContent = tempDiv.textContent || tempDiv.innerText || '';
+
+                        // 保存到服务器
+                        saveProfileField(fieldName, fieldTitle, textContent, contentDiv);
+                    } else {
+                        alert('Word解析失败：' + (data.error || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    document.body.removeChild(uploadMsg);
+                    console.error('上传失败:', error);
+                    alert('上传失败，请确保Word上传服务器已启动（端口8765）\n\n错误信息：' + error.message);
+                });
+            };
+            input.click();
+        }
+
+        // 下载profile字段为Word
+        function downloadProfileField(fieldName, fieldTitle) {
+            const contentDiv = document.getElementById(fieldName + '-content');
+            const content = contentDiv.textContent;
+
+            if (!content || content === '暂无' || content === '待设定') {
+                alert('没有内容可以下载');
+                return;
+            }
+
+            const html = `<html><head><meta charset="utf-8"><title>${fieldTitle}</title></head><body><h1>${fieldTitle}</h1><p>${content.replace(/\n/g, '<br>')}</p></body></html>`;
+            const blob = new Blob([html], {type: 'application/msword'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${VISITOR_ID}_${fieldTitle}.doc`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+    
     <script>
         // 折叠功能
         document.querySelectorAll('.collapsible').forEach(item => {
@@ -226,6 +434,42 @@
             document.getElementById(tabName).classList.add('active');
             // 激活选中的按钮
             event.target.classList.add('active');
+        }
+
+        // 删除来访者档案
+        function deleteVisitor(visitorId, visitorName) {
+            if (!confirm(`确定要删除来访者 "${visitorName}" (${visitorId}) 的所有档案吗？\n\n此操作将删除：\n- 所有来访记录\n- 所有分析内容\n- 所有生成的页面\n\n此操作不可恢复！`)) {
+                return;
+            }
+
+            // 显示删除中提示
+            const loadingMsg = document.createElement('div');
+            loadingMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 9999; text-align: center;';
+            loadingMsg.innerHTML = '<div style="font-size: 18px; margin-bottom: 10px;">正在删除档案...</div><div style="color: #666;">请稍候</div>';
+            document.body.appendChild(loadingMsg);
+
+            // 调用删除API（使用8768端口，与接访记录服务器统一）
+            fetch('http://localhost:8768/api/delete_visitor', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ visitor_id: visitorId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.body.removeChild(loadingMsg);
+
+                if (data.success) {
+                    alert('删除成功！\n\n' + data.message);
+                    window.location.reload();
+                } else {
+                    alert('删除失败：' + (data.error || '未知错误'));
+                }
+            })
+            .catch(error => {
+                document.body.removeChild(loadingMsg);
+                console.error('删除失败:', error);
+                alert('删除失败，请确保接访记录服务器已启动（端口8768）\n\n错误信息：' + error.message);
+            });
         }
 
         // 默认激活第一个标签

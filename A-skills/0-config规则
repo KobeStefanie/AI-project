@@ -32,7 +32,7 @@ D:\AI-项目\A-skills\
 | 临时文件 | 一次性使用的临时数据 | `3-{技能名}临时文件` |
 | 日志文件 | 运行日志记录 | `4-{技能名}运行日志` |
 
-## 已安装技能清单（共 33 个）
+## 已安装技能清单（共 69 个）
 
 ### 前端框架
 | 序号 | 技能名 | 存储路径 |
@@ -107,6 +107,53 @@ D:\AI-项目\A-skills\
 | 序号 | 技能名 | 存储路径 |
 |------|--------|----------|
 | 34 | md2pdf | `A-skills\md2pdf\` |
+| 35 | export-conversation | `A-skills\export-conversation\` |
+
+### 心理咨询（2026-07-03 新增）
+| 序号 | 技能名 | 存储路径 |
+|------|--------|----------|
+| 45 | lacan | `A-skills\lacan\` |
+| 46 | mental-health-psychoeducation | `A-skills\mental-health-psychoeducation\` |
+| 47 | crisis-response-protocol | `A-skills\crisis-response-protocol\` |
+| 48 | crisis-detection-intervention-ai | `A-skills\crisis-detection-intervention-ai\` |
+| 49 | wisdom-accountability-coach | `A-skills\wisdom-accountability-coach\` |
+| 50 | grief-companion | `A-skills\grief-companion\` |
+| 51 | mental-health-analyzer | `A-skills\mental-health-analyzer\` |
+| 52 | trauma-informed-practice-designer | `A-skills\trauma-informed-practice-designer\` |
+| 53 | health-wellness | `A-skills\health-wellness\` |
+| 54 | sober-addict-protector | `A-skills\sober-addict-protector\` |
+| 55 | modern-drug-rehab-computer | `A-skills\modern-drug-rehab-computer\` |
+| 56 | cognitive-fallacies-guard | `A-skills\cognitive-fallacies-guard\` |
+| 57 | self-reflection | `A-skills\self-reflection\` |
+| 58 | therapy-mode | `A-skills\therapy-mode\` |
+| 59 | therapeutic-ifs | `A-skills\therapeutic-ifs\` |
+| 60 | see-pattern | `A-skills\see-pattern\` |
+| 61 | cognitive-toolkit | `A-skills\cognitive-toolkit\` |
+
+### 职业规划（2026-07-03 新增）
+| 序号 | 技能名 | 存储路径 |
+|------|--------|----------|
+| 36 | career-path-planner | `A-skills\career-path-planner\` |
+| 37 | resume-builder | `A-skills\resume-builder\` |
+| 38 | cover-letter | `A-skills\cover-letter\` |
+| 39 | async-interview | `A-skills\async-interview\` |
+| 40 | linkedin | `A-skills\linkedin\` |
+| 41 | negotiating-offers | `A-skills\negotiating-offers\` |
+| 42 | finding-mentors-sponsors | `A-skills\finding-mentors-sponsors\` |
+| 43 | claude-jobs | `A-skills\claude-jobs\` |
+| 44 | setup | `A-skills\setup\` |
+
+### 职业突破与教练（2026-07-04 新增）
+| 序号 | 技能名 | 存储路径 |
+|------|--------|----------|
+| 62 | leadership | `A-skills\leadership\` |
+| 63 | sales-psychology | `A-skills\sales-psychology\` |
+| 64 | negotiation | `A-skills\negotiation\` |
+| 65 | sales-presentations | `A-skills\sales-presentations\` |
+| 66 | influence | `A-skills\influence\` |
+| 67 | brand-storytelling | `A-skills\brand-storytelling\` |
+| 68 | difficult-workplace-conversations | `A-skills\difficult-workplace-conversations\` |
+| 69 | founder-coach | `A-skills\founder-coach\` |
 
 ## 新增技能规则
 
@@ -123,3 +170,12 @@ D:\AI-项目\A-skills\
 | 2026-06-04 | 新增 | 安装 voice-input、text-cleanup 2 个手动创建技能 |
 | 2026-06-04 | 新增 | 安装 faster-whisper、openai-whisper-api、elevenlabs-stt、transcription-automation、openless-voice-input、process-meeting-transcript、text-optimizer、de-slop 8 个 GitHub 技能 |
 | 2026-06-05 | 新增 | 手动创建 md2pdf 技能——Markdown 转 PDF，基于 Node.js + Chrome 无头渲染 |
+| 2026-07-02 | 新增 | 手动创建 export-conversation 技能——导出对话历史为 Markdown 或 Word 文档，支持自动检测当前会话 |
+| 2026-07-03 | 新增 | 安装 9 个职业规划相关技能：career-path-planner、resume-builder、cover-letter、async-interview、linkedin、negotiating-offers、finding-mentors-sponsors、claude-jobs、setup |
+| 2026-07-03 | 新增 | 安装 3 个心理咨询相关技能：lacan（拉康派）、mental-health-psychoeducation（心理教育）、crisis-response-protocol（危机干预） |
+| 2026-07-04 | 新增 | 安装 6 个心理咨询相关技能：crisis-detection-intervention-ai、wisdom-accountability-coach、grief-companion、mental-health-analyzer、trauma-informed-practice-designer、health-wellness |
+| 2026-07-04 | 新增 | 安装 2 个成瘾/康复相关技能：sober-addict-protector（清醒成瘾保护）、modern-drug-rehab-computer（药物康复） |
+| 2026-07-04 | 新增 | 安装 cognitive-fallacies-guard（认知偏差检测）、self-reflection（自我反思），总计 57 个技能 |
+| 2026-07-04 | 新增 | 安装 therapy-mode（6大治疗取向整合）、therapeutic-ifs（IFS+图式疗法）、see-pattern（跨关系模式觉察），总计 60 个技能 |
+| 2026-07-04 | 新增 | 安装 cognitive-toolkit（CBT + DBT 循证干预，含思维记录/反向行为/DEAR MAN），总计 61 个技能 |
+| 2026-07-04 | 新增 | 安装 8 个职业突破技能：leadership（领导力）、sales-psychology（销售心理）、negotiation（谈判）、sales-presentations（演讲演示）、influence（影响力）、brand-storytelling（品牌叙事）、difficult-workplace-conversations（高难度对话）、founder-coach（创始人教练），总计 69 个技能 |

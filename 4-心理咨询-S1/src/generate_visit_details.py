@@ -24,6 +24,123 @@ OUTPUT_DIR = project_root / 'output' / '来访者库'
 DOWNLOADS_DIR = OUTPUT_DIR / 'downloads'
 
 
+def extract_crisis_level_display(crisis_assessment):
+    """从危机评估数据中提取显示用的危机等级描述"""
+    if not crisis_assessment:
+        return "未评估", "bg-gray-100 text-gray-800"
+
+    # 等级代码到描述的映射
+    level_descriptions = {
+        'A': '事理不平',
+        'B': '人际困扰',
+        'C': '无解决方案',
+        'D': '忧思苦恼',
+        'E': '痛苦绝望',
+        'F': '冷漠',
+        'G': '精神困扰',
+        'H': '对环境负向观',
+        'I': '对他人负向观',
+        'J': '对自己负向观',
+        'K': '深度焦虑、恐慌、畏惧、强迫',
+        'L': '对自己/他人/社会的敌意',
+        'M': '对生命的敌意',
+        'N': '家庭责任瓦解',
+        'O': '生存信念瓦解',
+        'P': '重郁、大哭或狂躁',
+        'Q1': '不快乐',
+        'Q2': '活不下去',
+        'R1': '太痛苦了',
+        'R2': '死了算了',
+        'S1': '自杀动机-过去',
+        'S2': '自杀动机-现在',
+        'S3': '自杀动机-未来',
+        'T': '自杀意念',
+        'U': '目的性自杀',
+        'V1': '自伤经验',
+        'V2': '无法制止自杀的处境',
+        'W1': '自杀安排',
+        'W2': '临终安排',
+        'X': '立刻去死',
+        'Y': '病发失控',
+        'Z': '自杀行为'
+    }
+
+    # 等级代码到危机类别和颜色的映射
+    def get_level_info(code):
+        if code in ['A', 'B', 'C', 'D', 'E', 'F', 'G']:
+            return '轻度危机', 'bg-green-100 text-green-800'
+        elif code in ['H', 'I', 'J']:
+            return '轻度危机', 'bg-green-100 text-green-800'
+        elif code in ['K', 'L', 'M', 'N', 'O']:
+            return '中度危机', 'bg-yellow-100 text-yellow-800'
+        elif code in ['P', 'Q1', 'Q2', 'R1', 'R2']:
+            return '中度危机', 'bg-yellow-100 text-yellow-800'
+        elif code in ['S1', 'S2', 'S3', 'T', 'U']:
+            return '重度危机', 'bg-red-100 text-red-800'
+        elif code in ['V1', 'V2', 'W1', 'W2']:
+            return '重度危机', 'bg-red-100 text-red-800'
+        elif code in ['X', 'Y', 'Z']:
+            return '急迫危机', 'bg-red-200 text-red-900'
+        return None, 'bg-gray-100 text-gray-800'
+
+    # 检查是否为AI自动生成的评级（检查备注中是否包含"大观学派连续评估"）
+    remark = crisis_assessment.get('危机评估备注', '')
+    is_ai_generated = '大观学派连续评估' in remark or '最终落脚点：' in remark
+
+    # 如果是AI生成的评级，优先使用用户手动勾选的等级
+    if is_ai_generated:
+        selected_levels = crisis_assessment.get('选中等级', [])
+        if selected_levels and len(selected_levels) > 0:
+            # 按严重程度排序，找到最严重的等级
+            level_order = ['Z', 'Y', 'X', 'W2', 'W1', 'V2', 'V1', 'U', 'T', 'S3', 'S2', 'S1',
+                          'R2', 'R1', 'Q2', 'Q1', 'P', 'O', 'N', 'M', 'L', 'K',
+                          'J', 'I', 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A']
+
+            # 找到选中等级中最严重的
+            most_severe = None
+            for code in level_order:
+                if code in selected_levels:
+                    most_severe = code
+                    break
+
+            if most_severe and most_severe in level_descriptions:
+                description = level_descriptions[most_severe]
+                level_category, color = get_level_info(most_severe)
+                if level_category:
+                    return f"{level_category} - {most_severe}-{description}", color
+
+    # 使用用户手动选择的最终评级（如果存在且非空）
+    final_grade = crisis_assessment.get('最终评级', '').strip()
+    if final_grade and final_grade in level_descriptions:
+        description = level_descriptions[final_grade]
+        level_category, color = get_level_info(final_grade)
+        if level_category:
+            return f"{level_category} - {final_grade}-{description}", color
+
+    # 如果没有最终评级，使用选中等级列表的最严重等级
+    selected_levels = crisis_assessment.get('选中等级', [])
+    if selected_levels and len(selected_levels) > 0:
+        # 按严重程度排序，找到最严重的等级
+        level_order = ['Z', 'Y', 'X', 'W2', 'W1', 'V2', 'V1', 'U', 'T', 'S3', 'S2', 'S1',
+                      'R2', 'R1', 'Q2', 'Q1', 'P', 'O', 'N', 'M', 'L', 'K',
+                      'J', 'I', 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A']
+
+        # 找到选中等级中最严重的
+        most_severe = None
+        for code in level_order:
+            if code in selected_levels:
+                most_severe = code
+                break
+
+        if most_severe and most_severe in level_descriptions:
+            description = level_descriptions[most_severe]
+            level_category, color = get_level_info(most_severe)
+            if level_category:
+                return f"{level_category} - {most_severe}-{description}", color
+
+    return "未评估", "bg-gray-100 text-gray-800"
+
+
 def get_html_template():
     """获取HTML模板头部"""
     return """<!DOCTYPE html>
@@ -235,6 +352,83 @@ def get_html_template():
             alert('下载功能请查看页面源码');
         }}
 
+        function uploadReviewWord(visitorId, visitId) {{
+            const contentDiv = document.getElementById('counselor-review-content');
+            const hasExistingContent = contentDiv && contentDiv.textContent.trim() && contentDiv.textContent !== '暂无复盘内容';
+
+            if (hasExistingContent) {{
+                if (!confirm('当前咨询师复盘已有内容，上传新Word文档将完全覆盖现有内容。\\n\\n是否继续？')) {{
+                    return;
+                }}
+            }}
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.docx';
+            input.onchange = function(e) {{
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // 显示上传提示
+                const uploadMsg = document.createElement('div');
+                uploadMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 9999; text-align: center;';
+                uploadMsg.innerHTML = '<div style="font-size: 18px; margin-bottom: 10px;">正在处理Word文档...</div><div style="color: #666;">解析格式中，请稍候</div>';
+                document.body.appendChild(uploadMsg);
+
+                // 上传到Word解析服务器
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('http://localhost:8765/', {{
+                    method: 'POST',
+                    body: formData,
+                    mode: 'cors'
+                }})
+                .then(response => response.json())
+                .then(data => {{
+                    document.body.removeChild(uploadMsg);
+
+                    if (data.success) {{
+                        // 更新页面内容
+                        const contentDiv = document.getElementById('counselor-review-content');
+                        if (contentDiv) {{
+                            contentDiv.innerHTML = data.html;
+
+                            // 自动保存到服务器
+                            const saveData = {{
+                                visitor_id: visitorId,
+                                visit_id: visitId,
+                                content: data.html
+                            }};
+
+                            fetch('http://localhost:8766/save_review', {{
+                                method: 'POST',
+                                headers: {{'Content-Type': 'application/json'}},
+                                body: JSON.stringify(saveData)
+                            }})
+                            .then(response => response.json())
+                            .then(saveResult => {{
+                                console.log('自动保存结果:', saveResult);
+                                alert('导入成功！咨询师复盘内容已自动保存到服务器。');
+                            }})
+                            .catch(error => {{
+                                console.error('自动保存失败:', error);
+                                alert('导入成功，但自动保存失败。请手动点击"保存"按钮。');
+                            }});
+                        }}
+                    }} else {{
+                        alert('导入失败: ' + (data.error || '未知错误'));
+                    }}
+                }})
+                .catch(error => {{
+                    document.body.removeChild(uploadMsg);
+                    console.error('上传失败:', error);
+                    alert('上传失败，请确保Word上传服务器已启动（端口8765）');
+                }});
+            }};
+            input.click();
+        }}
+
         function uploadApproachWord(approachName, visitorId, visitId) {{
             const contentDiv = document.getElementById('analysis-content-' + approachName);
             const hasExistingContent = contentDiv && contentDiv.textContent.trim();
@@ -420,19 +614,13 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
             </div>
 """
 
-    # 风险评估徽章
-    risk_level = visit_summary.get('risk_assessment', {}).get('risk_level', '未评估')
-    risk_colors = {
-        '高': 'bg-red-100 text-red-800',
-        '中': 'bg-yellow-100 text-yellow-800',
-        '低': 'bg-green-100 text-green-800',
-        '无': 'bg-gray-100 text-gray-800'
-    }
-    risk_color = risk_colors.get(risk_level, 'bg-gray-100 text-gray-800')
+    # 危机评估徽章 - 使用大观学派的危机评估
+    crisis_assessment = case_data.get('crisis_assessment', {})
+    crisis_display, crisis_color = extract_crisis_level_display(crisis_assessment)
 
     html += f"""
-            <span class="px-4 py-2 text-sm rounded-full {risk_color}">
-                {risk_level}风险
+            <span class="px-4 py-2 text-sm rounded-full {crisis_color}">
+                {crisis_display}
             </span>
         </div>
 
@@ -442,22 +630,26 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
                 <p class="text-gray-800">{visit_summary.get('complaint', '暂无')}</p>
             </div>
             <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-2">本次目标</p>
+                <p class="text-gray-800">{visit_summary.get('session_goal', '暂无')}</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded">
                 <p class="text-sm text-gray-600 mb-2">咨询结果</p>
-                <p class="text-gray-800">{visit_summary.get('outcome', '暂无')}</p>
+                <p class="text-gray-800">{visit_summary.get('consultation_result', '暂无')}</p>
             </div>
             <div class="p-4 bg-gray-50 rounded">
                 <p class="text-sm text-gray-600 mb-2">布置任务</p>
-                <p class="text-gray-800">{visit_summary.get('homework', '暂无')}</p>
+                <p class="text-gray-800">{visit_summary.get('assigned_tasks', '暂无')}</p>
             </div>
             <div class="p-4 bg-gray-50 rounded">
                 <p class="text-sm text-gray-600 mb-2">下一步计划</p>
-                <p class="text-gray-800">{visit_summary.get('next_step', '暂无')}</p>
+                <p class="text-gray-800">{visit_summary.get('next_step_plan', '暂无')}</p>
             </div>
         </div>
 
         <div class="p-4 bg-blue-50 rounded">
             <p class="text-sm text-gray-600 mb-2">症状变化</p>
-            <p class="text-lg font-semibold text-blue-800">{visit_summary.get('symptom_change', '持平')}</p>
+            <p class="text-lg font-semibold text-blue-800">{visit_summary.get('symptom_changes', '持平')}</p>
         </div>
     </div>
 """
@@ -482,6 +674,9 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
                 </button>
                 <button onclick="saveReviewEdit('{visitor_id}', '{visit_id}')" class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition" style="display:none;" id="save-btn-review">
                     <i class="fa fa-save"></i> 保存
+                </button>
+                <button onclick="uploadReviewWord('{visitor_id}', '{visit_id}')" class="px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition" title="上传Word文档">
+                    <i class="fa fa-upload"></i> 上传Word
                 </button>
                 <a href="../downloads/{case_id}/{case_id}_复盘.docx" download
                    class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition"
@@ -558,32 +753,34 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
             else:
                 uploaded_at_str = '未知时间'
 
+            description_html = f'<p class="text-sm text-gray-700 mt-2">📝 {description}</p>' if description else ''
+
             html += f"""
             <div class="p-4 bg-gray-50 rounded mb-4 border border-gray-200">
                 <div class="flex items-start justify-between mb-3">
                     <div class="flex-1">
                         <p class="font-semibold text-gray-800 mb-1">
-                            <i class="fa fa-file-audio-o text-purple-600"></i> {{filename}}
+                            <i class="fa fa-file-audio-o text-purple-600"></i> {filename}
                         </p>
                         <p class="text-sm text-gray-600">
-                            大小: {{file_size_mb:.2f}} MB | 上传时间: {{uploaded_at_str}}
+                            大小: {file_size_mb:.2f} MB | 上传时间: {uploaded_at_str}
                         </p>
-                        {{f'<p class="text-sm text-gray-700 mt-2">📝 {{description}}</p>' if description else ''}}
+                        {description_html}
                     </div>
                 </div>
 
                 <!-- 音频播放器 -->
-                <audio controls class="w-full mb-3" id="audio-{{recording_id}}">
-                    <source src="http://localhost:8767/download/{{visitor_id}}/{{visit_id}}/{{recording_id}}" type="audio/mpeg">
+                <audio controls class="w-full mb-3" id="audio-{recording_id}">
+                    <source src="http://localhost:8767/download/{visitor_id}/{visit_id}/{recording_id}" type="audio/mpeg">
                     您的浏览器不支持音频播放
                 </audio>
 
                 <div class="flex gap-2">
-                    <a href="http://localhost:8767/download/{{visitor_id}}/{{visit_id}}/{{recording_id}}" download="{{filename}}"
+                    <a href="http://localhost:8767/download/{visitor_id}/{visit_id}/{recording_id}" download="{filename}"
                        class="px-3 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition">
                         <i class="fa fa-download"></i> 下载
                     </a>
-                    <button onclick="deleteRecording('{{recording_id}}', '{{visitor_id}}', '{{visit_id}}')"
+                    <button onclick="deleteRecording('{recording_id}', '{visitor_id}', '{visit_id}')"
                             class="px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition">
                         <i class="fa fa-trash"></i> 删除
                     </button>
@@ -599,7 +796,7 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
 """
 
     # 逐字稿（折叠）
-    transcript = case_data.get('transcript', [])
+    transcript_files = case_data.get('transcript_files', [])
     html += f"""
     <div class="bg-white rounded-lg shadow-lg mb-6">
         <div class="collapsible p-6 flex justify-between items-center border-b">
@@ -608,36 +805,87 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
                     <i class="fa fa-file-text-o"></i> 逐字稿
                 </h2>
                 <div class="flex items-center gap-4">
-                    <a href="../downloads/{case_id}/{case_id}_逐字稿.xlsx" download
-                       class="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition">
-                        <i class="fa fa-download"></i> 下载Excel
-                    </a>
+                    <button onclick="showUploadTranscriptDialog()" class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition">
+                        <i class="fa fa-upload"></i> 上传逐字稿
+                    </button>
                     <i class="fa fa-chevron-down text-gray-400"></i>
                 </div>
             </div>
         </div>
         <div class="content p-6">
 """
-    if transcript:
-        html += '<div class="space-y-3">'
-        for entry in transcript:
-            speaker = entry.get('speaker', '未知')
-            content = entry.get('content', '')
-            timestamp = entry.get('timestamp', '')
-            speaker_class = 'bg-blue-50 border-blue-200' if '咨询师' in speaker else 'bg-gray-50 border-gray-200'
+    if transcript_files:
+        for tf in transcript_files:
+            transcript_id = tf.get('transcript_id', '')
+            filename = tf.get('filename', '未知文件')
+            file_format = tf.get('file_format', 'TXT')
+            file_size_str = tf.get('file_size_str', '0 KB')
+            upload_time = tf.get('upload_time', '')
+            description = tf.get('description', '')
+            content = tf.get('content', [])
+
+            # 格式化上传时间
+            if upload_time:
+                try:
+                    from datetime import datetime
+                    dt = datetime.fromisoformat(upload_time)
+                    upload_time_str = dt.strftime('%Y-%m-%d %H:%M')
+                except:
+                    upload_time_str = upload_time
+            else:
+                upload_time_str = '未知'
 
             html += f"""
-            <div class="p-4 rounded border {speaker_class}">
-                <div class="flex justify-between mb-2">
-                    <span class="font-semibold text-gray-800">{speaker}</span>
-                    <span class="text-sm text-gray-500">{timestamp}</span>
+            <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                            <i class="fa fa-file-text text-blue-500"></i> {filename}
+                        </h3>
+                        <p class="text-sm text-gray-600">
+                            格式: {file_format} | 大小: {file_size_str} | 上传时间: {upload_time_str}
+                        </p>
+                        {f'<p class="text-sm text-gray-500 mt-1"><i class="fa fa-tag"></i> {description}</p>' if description and description != filename else ''}
+                    </div>
                 </div>
-                <p class="text-gray-700">{content}</p>
+"""
+
+            # 显示逐字稿内容
+            if content:
+                html += '<div class="mt-3 space-y-2 max-h-96 overflow-y-auto">'
+                for entry in content:
+                    speaker = entry.get('speaker', '未知')
+                    text = entry.get('content', '')
+                    timestamp = entry.get('timestamp', '')
+                    speaker_class = 'bg-blue-50 border-blue-200' if '咨询师' in speaker else 'bg-white border-gray-200'
+
+                    html += f"""
+                    <div class="p-3 rounded border {speaker_class}">
+                        <div class="flex justify-between mb-1">
+                            <span class="font-semibold text-sm text-gray-700">{speaker}</span>
+                            {f'<span class="text-xs text-gray-500">{timestamp}</span>' if timestamp else ''}
+                        </div>
+                        <p class="text-sm text-gray-700">{text}</p>
+                    </div>
+"""
+                html += '</div>'
+
+            # 下载和删除按钮
+            html += f"""
+                <div class="flex gap-2 mt-3">
+                    <a href="http://localhost:8769/download/{visitor_id}/{visit_id}/{transcript_id}"
+                       class="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition">
+                        <i class="fa fa-download"></i> 下载
+                    </a>
+                    <button onclick="deleteTranscript('{transcript_id}', '{visitor_id}', '{visit_id}')"
+                            class="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition">
+                        <i class="fa fa-trash"></i> 删除
+                    </button>
+                </div>
             </div>
 """
-        html += '</div>'
     else:
-        html += '<p class="text-gray-500">暂无逐字稿</p>'
+        html += '<p class="text-gray-500">暂无逐字稿，点击右上角"上传逐字稿"按钮添加</p>'
 
     html += """
         </div>
@@ -1620,6 +1868,125 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
             .catch(error => {{
                 console.error('删除失败:', error);
                 alert('删除失败，请确保录音服务器已启动（端口8767）');
+            }});
+        }}
+
+        // ========== 逐字稿管理功能 ==========
+
+        // 显示上传逐字稿对话框
+        function showUploadTranscriptDialog() {{
+            const dialog = document.createElement('div');
+            dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+            dialog.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); max-width: 500px; width: 90%;">
+                    <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #374151;">
+                        <i class="fa fa-upload"></i> 上传逐字稿文件
+                    </h3>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #374151;">选择文件：</label>
+                        <input type="file" id="transcript-file-input" accept=".txt,.docx,.xlsx,.csv"
+                               style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">
+                            支持格式：TXT, DOCX, XLSX, CSV
+                        </p>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button onclick="this.closest('div').parentElement.parentElement.remove()"
+                                style="padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            取消
+                        </button>
+                        <button onclick="uploadTranscript()"
+                                style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            <i class="fa fa-upload"></i> 开始上传
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(dialog);
+        }}
+
+        // 上传逐字稿
+        function uploadTranscript() {{
+            const fileInput = document.getElementById('transcript-file-input');
+            const file = fileInput.files[0];
+
+            if (!file) {{
+                alert('请选择要上传的逐字稿文件');
+                return;
+            }}
+
+            // 关闭对话框
+            fileInput.closest('div').parentElement.parentElement.remove();
+
+            // 显示上传进度
+            const progressDiv = document.createElement('div');
+            progressDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000;';
+            progressDiv.innerHTML = '<div style="display: flex; align-items: center; gap: 10px;"><i class="fa fa-spinner fa-spin" style="color: #2563eb;"></i><span>正在上传逐字稿...</span></div>';
+            document.body.appendChild(progressDiv);
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('visitor_id', '{visitor_id}');
+            formData.append('visit_id', '{visit_id}');
+
+            fetch('http://localhost:8769/upload', {{
+                method: 'POST',
+                body: formData
+            }})
+            .then(response => response.json())
+            .then(result => {{
+                progressDiv.remove();
+                if (result.success) {{
+                    alert('✅ 逐字稿上传成功！\\n\\n页面即将刷新显示新内容...');
+                    setTimeout(() => {{
+                        location.reload();
+                    }}, 1000);
+                }} else {{
+                    alert('❌ 上传失败：' + result.error);
+                }}
+            }})
+            .catch(error => {{
+                progressDiv.remove();
+                console.error('上传失败:', error);
+                alert('上传失败，请确保逐字稿服务器已启动（端口8769）\\n\\n错误信息：' + error.message);
+            }});
+        }}
+
+        // 删除逐字稿
+        function deleteTranscript(transcriptId, visitorId, visitId) {{
+            if (!confirm('确定要删除这个逐字稿文件吗？\\n\\n删除后无法恢复！')) {{
+                return;
+            }}
+
+            const data = {{
+                visitor_id: visitorId,
+                visit_id: visitId,
+                transcript_id: transcriptId
+            }};
+
+            fetch('http://localhost:8769/delete', {{
+                method: 'POST',
+                headers: {{
+                    'Content-Type': 'application/json',
+                }},
+                body: JSON.stringify(data)
+            }})
+            .then(response => response.json())
+            .then(result => {{
+                if (result.success) {{
+                    alert('逐字稿删除成功！页面即将刷新...');
+                    setTimeout(() => {{
+                        location.reload();
+                    }}, 500);
+                }} else {{
+                    alert('删除失败：' + result.error);
+                }}
+            }})
+            .catch(error => {{
+                console.error('删除失败:', error);
+                alert('删除失败，请确保逐字稿服务器已启动（端口8769）');
             }});
         }}
     </script>

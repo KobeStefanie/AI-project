@@ -505,12 +505,116 @@ def generate_case_detail_html(case_data: Dict, approaches: List[Dict]) -> str:
 
 """
 
-    # 添加完整对话记录到案例总览Tab
-    html += f"""            <!-- 完整对话记录 -->
+    # 获取中性数据
+    case_summary = case_data.get('case_summary', '暂无概要')
+    case_tags = case_data.get('case_tags', {})
+    relation_tags = case_tags.get('relation', [])
+    symptom_tags = case_tags.get('symptom', [])
+
+    # 添加咨询师复盘（原"完整对话记录"）
+    html += f"""            <!-- 咨询师复盘 -->
             <div class="mb-6">
-                <h2 class="text-xl font-bold text-gray-900 mb-3"><i class="fa fa-comments"></i> 完整对话记录</h2>
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-xl font-bold text-gray-900"><i class="fa fa-comments"></i> 咨询师复盘</h2>
+                    <a href="../downloads/{case_id}/{case_id}_复盘.docx"
+                       download
+                       class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition">
+                        <i class="fa fa-download"></i> 下载Word
+                    </a>
+                </div>
                 <div class="bg-gray-50 rounded-lg p-4">
                     <pre class="whitespace-pre-wrap text-sm text-gray-800 font-mono">{dialogue}</pre>
+                </div>
+            </div>
+
+            <!-- 录音资料（可折叠，空也显示） -->
+            <div class="collapsible-section collapsed mb-4">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <div class="flex items-center justify-between flex-1">
+                        <h2 class="text-xl font-bold text-orange-900">
+                            <i class="fa fa-microphone"></i> 🎙️ 录音资料
+                        </h2>
+                        <div class="flex items-center gap-2">
+                            <a href="../downloads/{case_id}/{case_id}_录音.mp3"
+                               download
+                               onclick="event.stopPropagation()"
+                               class="px-3 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700 transition">
+                                <i class="fa fa-download"></i> 下载MP3
+                            </a>
+                            <i class="fa fa-chevron-down collapsible-arrow text-gray-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                    <p class="text-sm text-gray-500 text-center py-4">暂无录音资料</p>
+                </div>
+            </div>
+
+            <!-- 逐字稿（可折叠，空也显示） -->
+            <div class="collapsible-section collapsed mb-4">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <div class="flex items-center justify-between flex-1">
+                        <h2 class="text-xl font-bold text-green-900">
+                            <i class="fa fa-file-text"></i> 📝 逐字稿
+                        </h2>
+                        <div class="flex items-center gap-2">
+                            <a href="../downloads/{case_id}/{case_id}_逐字稿.xlsx"
+                               download
+                               onclick="event.stopPropagation()"
+                               class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition">
+                                <i class="fa fa-download"></i> 下载Excel
+                            </a>
+                            <i class="fa fa-chevron-down collapsible-arrow text-gray-600"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="collapsible-content">
+                    <p class="text-sm text-gray-500 text-center py-4">暂无逐字稿</p>
+                </div>
+            </div>
+
+            <!-- 案例概要（中性） -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-indigo-900 mb-3"><i class="fa fa-file-text-o"></i> 案例概要</h2>
+                <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                    <p class="text-sm text-gray-800 leading-relaxed">{case_summary}</p>
+                </div>
+            </div>
+
+            <!-- 标签（中性） -->
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-purple-900 mb-3"><i class="fa fa-tags"></i> 标签</h2>
+                <div class="space-y-3">
+                    <!-- 关系标签 -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700 mb-2">关系标签：</h3>
+                        <div class="flex flex-wrap gap-2">
+"""
+
+    # 添加关系标签
+    if relation_tags:
+        for relation_tag in relation_tags:
+            html += f'                            <span class="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full">{{relation_tag}}</span>\n'.replace('{relation_tag}', relation_tag)
+    else:
+        html += '                            <span class="text-sm text-gray-400">暂无关系标签</span>\n'
+
+    html += """                        </div>
+                    </div>
+                    <!-- 症状标签 -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700 mb-2">症状标签：</h3>
+                        <div class="flex flex-wrap gap-2">
+"""
+
+    # 添加症状标签
+    if symptom_tags:
+        for symptom_tag in symptom_tags:
+            html += f'                            <span class="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-full">{{symptom_tag}}</span>\n'.replace('{symptom_tag}', symptom_tag)
+    else:
+        html += '                            <span class="text-sm text-gray-400">暂无症状标签</span>\n'
+
+    html += """                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -542,6 +646,15 @@ def generate_case_detail_html(case_data: Dict, approaches: List[Dict]) -> str:
 
             html += f"""        <!-- {approach_name}Tab内容 -->
         <div class="tab-content" id="tab-{approach_id}">
+            <!-- 下载该流派分析 -->
+            <div class="mb-4 flex justify-end">
+                <a href="../downloads/{case_id}/{case_id}_{approach_name}.md"
+                   download
+                   class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition">
+                    <i class="fa fa-download"></i> 下载{approach_name}分析
+                </a>
+            </div>
+
             <!-- 危机评估 -->
             <div class="mb-6">
                 <h2 class="text-xl font-bold text-red-900 mb-3">⚠️ 危机评估</h2>

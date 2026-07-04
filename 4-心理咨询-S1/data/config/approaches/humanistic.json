@@ -1,31 +1,44 @@
 {
   "id": "humanistic",
   "name": "人本主义",
-  "name_en": "Humanistic Therapy",
-  "description": "人本主义取向，强调个人成长潜能、自我实现和此时此地的体验，以来访者为中心",
-  "color": "#dc2626",
-  "icon": "fa-heart",
-  "core_concepts": [
+  "name_short": "人本",
+  "enabled": true,
+  "color": "#ec4899",
+  "icon": "💖",
+  "description": "人本主义取向，关注自我实现和成长潜能",
+  "fields": {
+    "empathic_understanding": {
+      "label": "共情理解",
+      "type": "text",
+      "required": true,
+      "description": "来访者的主观体验和现象场"
+    },
+    "self_concept": {
+      "label": "自我概念分析",
+      "type": "text",
+      "required": true,
+      "description": "真实自我与理想自我的差异"
+    },
+    "growth_facilitation": {
+      "label": "成长促进",
+      "type": "text",
+      "required": true,
+      "description": "如何创造促进成长的条件"
+    }
+  },
+  "techniques": [
     "无条件积极关注",
-    "共情理解",
+    "共情反应",
     "真诚一致",
-    "自我实现倾向",
-    "此时此地"
+    "此时此刻",
+    "体验聚焦",
+    "倾听内在智慧"
   ],
-  "typical_techniques": [
-    "积极倾听",
-    "反映情感",
-    "澄清",
-    "具体化",
-    "当下觉察"
-  ],
-  "focus_areas": [
-    "情感体验",
-    "自我探索",
-    "个人成长",
-    "关系质量"
-  ],
-  "enabled": false,
-  "sort_order": 4,
-  "note": "待学习后启用"
+  "metadata": {
+    "created_at": "2026-06-28",
+    "version": "1.0",
+    "author": "系统生成",
+    "note": "可通过AI分析后上传内容启用"
+  },
+  "sort_order": 4
 }

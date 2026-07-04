@@ -1,0 +1,90 @@
+{
+  "visit_id": "visit_005",
+  "visitor_id": "V20260630001",
+  "visit_number": 5,
+  "date": "2026-06-30",
+  "visit_summary": {
+    "complaint": "55",
+    "session_goal": "55",
+    "consultation_result": "55",
+    "assigned_tasks": "55",
+    "next_step_plan": "55",
+    "symptom_changes": "55",
+    "counselor": "阿是",
+    "duration": 0
+  },
+  "case_data": {
+    "case_id": "V20260630001",
+    "case_summary": "55",
+    "counselor_review": "我心里有一个小孩\n\n每当她觉得与世界格格不入\n\n她就躲进角落\n\n角落里有歌等着她唱\n\n有谜等着她解\n\n有回忆等着她凝视\n\n有梦想如落叶一般\n\n等着她收拢\n\n拾起\n\n在这里\n\n她轻轻呼吸\n\n慢慢走路\n\n音符与音符之间的空白\n\n形成了音乐\n\n在静默之中\n\n在留白之处\n\n有一片美丽的新天地\n\n我心里有一个小孩\n\n她每次躲进角落\n\n都是暂时的缺席\n\n因为\n\n她需要一点时间\n\n重新找到她在世界的位置\n\n小孩\n\n我也没有说过我讨厌你们呀！\n\n我又没说我不爱这个家\n\n好啦 好啦\n\n只有我不好可以了吧！\n\n这里全都很好啦！\n\n只是有时候\n\n我也想要一个人静一静嘛\n\n又不是只有你们有烦恼\n\n其实我也有很多烦恼\n\n对啦\n\n反正大人永远都不会错\n\n永远都不会错\n\n全都是我们小孩不乖啦\n\n对啦\n\n全都是我自己的问题\n\n我已经长大了\n\n会自己照顾自己的\n\n拜托喔\n\n你们不要那么爱担心好不好\n\n我只是没有告诉你们而已\n\n我也不是真的要离开你们\n\n可是我也有我要做的事情啦\n\n我真的不是怪咖\n\n很多人都是这样子的啦\n\n对\n\n我们都喜欢躲进世界的角落里\n\n反正我说什么你们都不会相信的",
+    "counselor_review_html": "<p>我心里有一个小孩<br><br>每当她觉得与世界格格不入<br><br>她就躲进角落<br><br>角落里有歌等着她唱<br><br>有谜等着她解<br><br>有回忆等着她凝视<br><br>有梦想如落叶一般<br><br>等着她收拢<br><br>拾起<br><br>在这里<br><br>她轻轻呼吸<br><br>慢慢走路<br><br>音符与音符之间的空白<br><br>形成了音乐<br><br>在静默之中<br><br>在留白之处<br><br>有一片美丽的新天地<br><br>我心里有一个小孩<br><br>她每次躲进角落<br><br>都是暂时的缺席<br><br>因为<br><br>她需要一点时间<br><br>重新找到她在世界的位置<br><br>小孩<br><br>我也没有说过我讨厌你们呀！<br><br>我又没说我不爱这个家<br><br>好啦 好啦<br><br>只有我不好可以了吧！<br><br>这里全都很好啦！<br><br>只是有时候<br><br>我也想要一个人静一静嘛<br><br>又不是只有你们有烦恼<br><br>其实我也有很多烦恼<br><br>对啦<br><br>反正大人永远都不会错<br><br>永远都不会错<br><br>全都是我们小孩不乖啦<br><br>对啦<br><br>全都是我自己的问题<br><br>我已经长大了<br><br>会自己照顾自己的<br><br>拜托喔<br><br>你们不要那么爱担心好不好<br><br>我只是没有告诉你们而已<br><br>我也不是真的要离开你们<br><br>可是我也有我要做的事情啦<br><br>我真的不是怪咖<br><br>很多人都是这样子的啦<br><br>对<br><br>我们都喜欢躲进世界的角落里<br><br>反正我说什么你们都不会相信的</p>",
+    "recordings": [
+      {
+        "id": "rec_001",
+        "filename": "Ace of Base - Angle Eyes.mp3",
+        "file_path": "rec_001.mp3",
+        "file_size": 7821902,
+        "description": "第5次接访 - Ace of Base - Angle Eyes.mp3",
+        "uploaded_at": "2026-07-01T01:41:12.106765"
+      },
+      {
+        "id": "rec_002",
+        "filename": "贵州石榴花开民族团结实践基地.m4a",
+        "file_path": "rec_002.m4a",
+        "file_size": 977399,
+        "description": "第5次接访 - 贵州石榴花开民族团结实践基地.m4a",
+        "uploaded_at": "2026-07-01T01:41:12.249213"
+      }
+    ],
+    "transcript": [],
+    "dialogue": "我心里有一个小孩\n\n每当她觉得与世界格格不入\n\n她就躲进角落\n\n角落里有歌等着她唱\n\n有谜等着她解\n\n有回忆等着她凝视\n\n有梦想如落叶一般\n\n等着她收拢\n\n拾起\n\n在这里\n\n她轻轻呼吸\n\n慢慢走路\n\n音符与音符之间的空白\n\n形成了音乐\n\n在静默之中\n\n在留白之处\n\n有一片美丽的新天地\n\n我心里有一个小孩\n\n她每次躲进角落\n\n都是暂时的缺席\n\n因为\n\n她需要一点时间\n\n重新找到她在世界的位置\n\n小孩\n\n我也没有说过我讨厌你们呀！\n\n我又没说我不爱这个家\n\n好啦 好啦\n\n只有我不好可以了吧！\n\n这里全都很好啦！\n\n只是有时候\n\n我也想要一个人静一静嘛\n\n又不是只有你们有烦恼\n\n其实我也有很多烦恼\n\n对啦\n\n反正大人永远都不会错\n\n永远都不会错\n\n全都是我们小孩不乖啦\n\n对啦\n\n全都是我自己的问题\n\n我已经长大了\n\n会自己照顾自己的\n\n拜托喔\n\n你们不要那么爱担心好不好\n\n我只是没有告诉你们而已\n\n我也不是真的要离开你们\n\n可是我也有我要做的事情啦\n\n我真的不是怪咖\n\n很多人都是这样子的啦\n\n对\n\n我们都喜欢躲进世界的角落里\n\n反正我说什么你们都不会相信的",
+    "consultation_result": "55",
+    "assigned_tasks": "55",
+    "next_step_plan": "55",
+    "symptom_changes": "55",
+    "counselor_reflection": "55",
+    "tags": {
+      "relation": [
+        "社交关系-友谊-友谊破裂"
+      ],
+      "symptom": []
+    },
+    "techniques_used": [],
+    "keywords": [
+      "照顾"
+    ],
+    "crisis_assessment": {
+      "选中等级": [
+        "D"
+      ],
+      "最终评级": "",
+      "危机评估备注": "【大观学派连续评估】\n\n最终落脚点：D - D-忧思苦恼 (轻度危机)\n\n连续评估过程（所有触及等级）：\n  · D-D-忧思苦恼\n\n证据关键词：烦恼",
+      "六变三托": {
+        "性情大变": false,
+        "行为大变": false,
+        "财务大变": false,
+        "语言大变": false,
+        "身体大变": false,
+        "环境大变": false,
+        "托人": false,
+        "托事": false,
+        "托物": false
+      }
+    },
+    "next_session_plan": "55",
+    "supervision": {
+      "督导状态": "未督导",
+      "督导师姓名": "",
+      "督导日期": "",
+      "督导要点": "",
+      "督导建议": ""
+    },
+    "approach_analyses": {},
+    "approach_analyses_html": {},
+    "supervision_records": []
+  },
+  "metadata": {
+    "created_at": "2026-07-01T01:41:11.566631",
+    "updated_at": "2026-07-01T01:41:12.249213"
+  }
+}

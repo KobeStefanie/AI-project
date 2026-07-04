@@ -1,0 +1,10 @@
+[
+  {
+    "id": "daguanpai",
+    "name": "大观学派（危机干预）",
+    "color": "#ef4444",
+    "icon": "compass",
+    "enabled": true,
+    "sort_order": 0
+  }
+]

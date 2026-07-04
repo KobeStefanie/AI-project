@@ -207,6 +207,83 @@
             alert('下载功能请查看页面源码');
         }
 
+        function uploadReviewWord(visitorId, visitId) {
+            const contentDiv = document.getElementById('counselor-review-content');
+            const hasExistingContent = contentDiv && contentDiv.textContent.trim() && contentDiv.textContent !== '暂无复盘内容';
+
+            if (hasExistingContent) {
+                if (!confirm('当前咨询师复盘已有内容，上传新Word文档将完全覆盖现有内容。\n\n是否继续？')) {
+                    return;
+                }
+            }
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.docx';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // 显示上传提示
+                const uploadMsg = document.createElement('div');
+                uploadMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 9999; text-align: center;';
+                uploadMsg.innerHTML = '<div style="font-size: 18px; margin-bottom: 10px;">正在处理Word文档...</div><div style="color: #666;">解析格式中，请稍候</div>';
+                document.body.appendChild(uploadMsg);
+
+                // 上传到Word解析服务器
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('http://localhost:8765/', {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'cors'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.body.removeChild(uploadMsg);
+
+                    if (data.success) {
+                        // 更新页面内容
+                        const contentDiv = document.getElementById('counselor-review-content');
+                        if (contentDiv) {
+                            contentDiv.innerHTML = data.html;
+
+                            // 自动保存到服务器
+                            const saveData = {
+                                visitor_id: visitorId,
+                                visit_id: visitId,
+                                content: data.html
+                            };
+
+                            fetch('http://localhost:8766/save_review', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify(saveData)
+                            })
+                            .then(response => response.json())
+                            .then(saveResult => {
+                                console.log('自动保存结果:', saveResult);
+                                alert('导入成功！咨询师复盘内容已自动保存到服务器。');
+                            })
+                            .catch(error => {
+                                console.error('自动保存失败:', error);
+                                alert('导入成功，但自动保存失败。请手动点击"保存"按钮。');
+                            });
+                        }
+                    } else {
+                        alert('导入失败: ' + (data.error || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    document.body.removeChild(uploadMsg);
+                    console.error('上传失败:', error);
+                    alert('上传失败，请确保Word上传服务器已启动（端口8765）');
+                });
+            };
+            input.click();
+        }
+
         function uploadApproachWord(approachName, visitorId, visitId) {
             const contentDiv = document.getElementById('analysis-content-' + approachName);
             const hasExistingContent = contentDiv && contentDiv.textContent.trim();
@@ -329,8 +406,8 @@
                 <p class="text-gray-600">2026-06-20 · 咨询师A · 50分钟</p>
             </div>
 
-            <span class="px-4 py-2 text-sm rounded-full bg-yellow-100 text-yellow-800">
-                中风险
+            <span class="px-4 py-2 text-sm rounded-full bg-gray-100 text-gray-800">
+                未评估
             </span>
         </div>
 
@@ -340,16 +417,20 @@
                 <p class="text-gray-800">详见案例概要和咨询师复盘</p>
             </div>
             <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-2">本次目标</p>
+                <p class="text-gray-800">暂无</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded">
                 <p class="text-sm text-gray-600 mb-2">咨询结果</p>
-                <p class="text-gray-800">建立咨访关系，完成初步评估</p>
+                <p class="text-gray-800">暂无</p>
             </div>
             <div class="p-4 bg-gray-50 rounded">
                 <p class="text-sm text-gray-600 mb-2">布置任务</p>
-                <p class="text-gray-800">记录情绪日记</p>
+                <p class="text-gray-800">暂无</p>
             </div>
             <div class="p-4 bg-gray-50 rounded">
                 <p class="text-sm text-gray-600 mb-2">下一步计划</p>
-                <p class="text-gray-800">下次继续深入探讨</p>
+                <p class="text-gray-800">暂无</p>
             </div>
         </div>
 
@@ -368,6 +449,9 @@
                 </button>
                 <button onclick="saveReviewEdit('V20260620002', 'visit_001')" class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition" style="display:none;" id="save-btn-review">
                     <i class="fa fa-save"></i> 保存
+                </button>
+                <button onclick="uploadReviewWord('V20260620002', 'visit_001')" class="px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition" title="上传Word文档">
+                    <i class="fa fa-upload"></i> 上传Word
                 </button>
                 <a href="../downloads/C20260620002/C20260620002_复盘.docx" download
                    class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition"
@@ -430,16 +514,15 @@
                     <i class="fa fa-file-text-o"></i> 逐字稿
                 </h2>
                 <div class="flex items-center gap-4">
-                    <a href="../downloads/C20260620002/C20260620002_逐字稿.xlsx" download
-                       class="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition">
-                        <i class="fa fa-download"></i> 下载Excel
-                    </a>
+                    <button onclick="showUploadTranscriptDialog()" class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition">
+                        <i class="fa fa-upload"></i> 上传逐字稿
+                    </button>
                     <i class="fa fa-chevron-down text-gray-400"></i>
                 </div>
             </div>
         </div>
         <div class="content p-6">
-<p class="text-gray-500">暂无逐字稿</p>
+<p class="text-gray-500">暂无逐字稿，点击右上角"上传逐字稿"按钮添加</p>
         </div>
     </div>
 
@@ -1512,6 +1595,125 @@
             .catch(error => {
                 console.error('删除失败:', error);
                 alert('删除失败，请确保录音服务器已启动（端口8767）');
+            });
+        }
+
+        // ========== 逐字稿管理功能 ==========
+
+        // 显示上传逐字稿对话框
+        function showUploadTranscriptDialog() {
+            const dialog = document.createElement('div');
+            dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+            dialog.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); max-width: 500px; width: 90%;">
+                    <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #374151;">
+                        <i class="fa fa-upload"></i> 上传逐字稿文件
+                    </h3>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #374151;">选择文件：</label>
+                        <input type="file" id="transcript-file-input" accept=".txt,.docx,.xlsx,.csv"
+                               style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">
+                            支持格式：TXT, DOCX, XLSX, CSV
+                        </p>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button onclick="this.closest('div').parentElement.parentElement.remove()"
+                                style="padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            取消
+                        </button>
+                        <button onclick="uploadTranscript()"
+                                style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            <i class="fa fa-upload"></i> 开始上传
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(dialog);
+        }
+
+        // 上传逐字稿
+        function uploadTranscript() {
+            const fileInput = document.getElementById('transcript-file-input');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('请选择要上传的逐字稿文件');
+                return;
+            }
+
+            // 关闭对话框
+            fileInput.closest('div').parentElement.parentElement.remove();
+
+            // 显示上传进度
+            const progressDiv = document.createElement('div');
+            progressDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000;';
+            progressDiv.innerHTML = '<div style="display: flex; align-items: center; gap: 10px;"><i class="fa fa-spinner fa-spin" style="color: #2563eb;"></i><span>正在上传逐字稿...</span></div>';
+            document.body.appendChild(progressDiv);
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('visitor_id', 'V20260620002');
+            formData.append('visit_id', 'visit_001');
+
+            fetch('http://localhost:8769/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                progressDiv.remove();
+                if (result.success) {
+                    alert('✅ 逐字稿上传成功！\n\n页面即将刷新显示新内容...');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    alert('❌ 上传失败：' + result.error);
+                }
+            })
+            .catch(error => {
+                progressDiv.remove();
+                console.error('上传失败:', error);
+                alert('上传失败，请确保逐字稿服务器已启动（端口8769）\n\n错误信息：' + error.message);
+            });
+        }
+
+        // 删除逐字稿
+        function deleteTranscript(transcriptId, visitorId, visitId) {
+            if (!confirm('确定要删除这个逐字稿文件吗？\n\n删除后无法恢复！')) {
+                return;
+            }
+
+            const data = {
+                visitor_id: visitorId,
+                visit_id: visitId,
+                transcript_id: transcriptId
+            };
+
+            fetch('http://localhost:8769/delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('逐字稿删除成功！页面即将刷新...');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                } else {
+                    alert('删除失败：' + result.error);
+                }
+            })
+            .catch(error => {
+                console.error('删除失败:', error);
+                alert('删除失败，请确保逐字稿服务器已启动（端口8769）');
             });
         }
     </script>

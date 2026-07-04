@@ -1,0 +1,196 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "来访记录",
+  "description": "单次来访的完整记录",
+  "type": "object",
+  "required": ["visit_id", "visitor_id", "visit_number", "date", "visit_summary"],
+  "properties": {
+    "visit_id": {
+      "type": "string",
+      "description": "来访记录ID，格式：visit_001, visit_002, ...",
+      "pattern": "^visit_\\d{3}$"
+    },
+    "visitor_id": {
+      "type": "string",
+      "description": "所属来访者ID",
+      "pattern": "^V\\d{8}\\d{3}$"
+    },
+    "visit_number": {
+      "type": "integer",
+      "description": "第几次来访",
+      "minimum": 1
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "来访日期"
+    },
+    "visit_summary": {
+      "type": "object",
+      "description": "来访概况（快速了解本次来访）",
+      "required": ["complaint", "outcome"],
+      "properties": {
+        "complaint": {
+          "type": "string",
+          "description": "本次来访诉求"
+        },
+        "outcome": {
+          "type": "string",
+          "description": "咨询结果"
+        },
+        "homework": {
+          "type": "string",
+          "description": "布置的任务/作业"
+        },
+        "next_step": {
+          "type": "string",
+          "description": "下一步计划"
+        },
+        "counselor": {
+          "type": "string",
+          "description": "咨询师"
+        },
+        "duration": {
+          "type": "integer",
+          "description": "咨询时长（分钟）"
+        },
+        "risk_assessment": {
+          "type": "object",
+          "description": "风险评估",
+          "properties": {
+            "risk_level": {
+              "type": "string",
+              "enum": ["高", "中", "低", "无"],
+              "description": "风险等级"
+            },
+            "risk_type": {
+              "type": "string",
+              "description": "风险类型（如：自杀风险）"
+            },
+            "risk_factors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "风险因素"
+            }
+          }
+        },
+        "symptom_change": {
+          "type": "string",
+          "enum": ["明显好转", "好转", "持平", "恶化", "明显恶化"],
+          "description": "相比上次，症状变化"
+        }
+      }
+    },
+    "case_data": {
+      "type": "object",
+      "description": "案例详细数据（保留原有结构）",
+      "properties": {
+        "case_id": {
+          "type": "string",
+          "description": "原案例ID（用于向后兼容）"
+        },
+        "case_summary": {
+          "type": "string",
+          "description": "案例概要"
+        },
+        "case_tags": {
+          "type": "object",
+          "description": "案例标签",
+          "properties": {
+            "relation": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "symptom": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "counselor_review": {
+          "type": "string",
+          "description": "咨询师复盘"
+        },
+        "recordings": {
+          "type": "array",
+          "description": "录音资料",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "file": {
+                "type": "string"
+              },
+              "duration": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "transcript": {
+          "type": "array",
+          "description": "逐字稿",
+          "items": {
+            "type": "object",
+            "properties": {
+              "speaker": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "approach_analyses": {
+          "type": "object",
+          "description": "各流派分析",
+          "patternProperties": {
+            ".*": {
+              "type": "object",
+              "properties": {
+                "conceptualization": {
+                  "type": "string"
+                },
+                "intervention_suggestions": {
+                  "type": "string"
+                },
+                "key_points": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "元数据",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

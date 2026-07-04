@@ -1,0 +1,15 @@
+=== w22 (cells: 256) ===
+  Review keyword: AI学习
+  Self score: 5
+  Top5 work: ['学习AI', '完成第一个AI项目-时间管理助手', '', '', '']
+  Key items: 2026-05-27|第一件事:继续时间管理助手 | 2026-05-27|第二件事:维特根斯坦 | 2026-05-27|小确幸:助手雏形 | 2026-05-27|第三件事:维特根斯坦 | 2026-05-27|关键词:时间管理助手 | 2026-05-25|第一件事:使用windsurf
+  Time dist:
+    code0: 105slots=52h [吃午饭 / 出门 / 散步 / 干饭 / 洗澡]
+    code1.1: 65slots=32h [CC版本认证 / 时间管理助手 / 使用windsurf / 学习cc / 灵感收集器]
+    code1.3: 1slots=0h [维特根斯坦]
+    code1.5: 4slots=2h [拉肚子]
+    code1.6: 7slots=4h [时间管理 / 财务管理]
+    code2.3: 4slots=2h [如果]
+    code2.5: 6slots=3h [马刺 / 原神 / 耍手机]
+    code3.2: 62slots=31h [刷手机]
+    code3.3: 2slots=1h [拖延]
