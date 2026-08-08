@@ -665,7 +665,33 @@ class ConfigHandler(BaseHTTPRequestHandler):
                     for line in result.stdout.strip().split('\n'):
                         print(f"       {line}")
 
-            # 2. 重新生成来访者库首页
+            # 2. 重新生成对比视图
+            print("[AUTO] 正在重新生成对比视图...")
+            comparison_script = os.path.join(PROJECT_ROOT, 'src', 'generate_comparison_views.py')
+
+            if os.path.exists(comparison_script):
+                result = subprocess.run(
+                    [sys.executable, comparison_script],
+                    cwd=PROJECT_ROOT,
+                    capture_output=True,
+                    text=True,
+                    encoding='utf-8',
+                    errors='replace',
+                    timeout=60,
+                    creationflags=creation_flags
+                )
+
+                if result.returncode == 0:
+                    print("[AUTO] ✓ 对比视图重新生成成功")
+                else:
+                    print(f"[AUTO] ✗ 对比视图生成失败 (返回码: {result.returncode})")
+                    if result.stderr:
+                        for line in result.stderr.strip().split('\n')[-5:]:
+                            print(f"       {line}")
+            else:
+                print("[AUTO] ✗ 对比视图脚本不存在，跳过")
+
+            # 3. 重新生成来访者库首页
             print("[AUTO] 正在重新生成来访者库首页...")
             visitor_script = os.path.join(PROJECT_ROOT, 'src', 'generate_visitor_library.py')
 

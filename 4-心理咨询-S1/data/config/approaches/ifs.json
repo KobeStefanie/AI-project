@@ -1,0 +1,52 @@
+{
+  "id": "ifs",
+  "name": "内在家庭系统疗法 (IFS)",
+  "name_short": "IFS",
+  "enabled": true,
+  "color": "#10b981",
+  "icon": "🧩",
+  "description": "内在家庭系统疗法，探索内在的不同部分及其关系",
+  "fields": {
+    "parts_identification": {
+      "label": "部分识别",
+      "type": "text",
+      "required": true,
+      "description": "识别来访者内在的不同部分（管理者、消防员、流亡者）"
+    },
+    "self_energy_assessment": {
+      "label": "真我能量评估",
+      "type": "text",
+      "required": true,
+      "description": "评估来访者真我（Self）的能量状态：好奇、冷静、清晰、同情、连接、勇气、创造力、信心"
+    },
+    "parts_relationship": {
+      "label": "部分关系动力",
+      "type": "text",
+      "required": true,
+      "description": "分析不同部分之间的互动关系和保护模式"
+    },
+    "unburdening_plan": {
+      "label": "卸负担计划",
+      "type": "text",
+      "required": true,
+      "description": "帮助流亡者部分释放负担的具体方案"
+    }
+  },
+  "techniques": [
+    "部分识别",
+    "真我引导",
+    "内在对话",
+    "卸负担工作",
+    "直接接触",
+    "U型转弯",
+    "解除融合",
+    "见证流亡者"
+  ],
+  "metadata": {
+    "created_at": "2026-07-15",
+    "version": "1.0",
+    "author": "系统生成",
+    "note": "Richard Schwartz 内在家庭系统疗法"
+  },
+  "sort_order": 6
+}

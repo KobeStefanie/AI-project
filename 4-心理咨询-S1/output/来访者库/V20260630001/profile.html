@@ -40,6 +40,33 @@
         }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        .view-toggle-btn {
+            color: #6b7280;
+        }
+        .view-toggle-btn.active {
+            background-color: #6366f1;
+            color: white;
+        }
+        .view-toggle-btn:hover:not(.active) {
+            background-color: #f3f4f6;
+        }
+        .view-container.hidden {
+            display: none;
+        }
+        #listView table tbody tr:hover {
+            background-color: #f9fafb;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .status-high { background-color: #fee; color: #991b1b; }
+        .status-medium { background-color: #fef3c7; color: #92400e; }
+        .status-low { background-color: #d1fae5; color: #065f46; }
+        .status-none { background-color: #f3f4f6; color: #374151; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -510,6 +537,14 @@
     </script>
     
     <script>
+        // 视图切换
+        function switchView(view) {
+            document.getElementById('cardView').classList.toggle('hidden', view !== 'card');
+            document.getElementById('listView').classList.toggle('hidden', view !== 'list');
+            document.getElementById('btnCardView').classList.toggle('active', view === 'card');
+            document.getElementById('btnListView').classList.toggle('active', view === 'list');
+        }
+
         // 折叠功能
         document.querySelectorAll('.collapsible').forEach(item => {
             item.addEventListener('click', function() {

@@ -1,0 +1,1334 @@
+{
+  "year": 2026,
+  "week": 32,
+  "config": {
+    "qwNames": [
+      "AI",
+      "心理咨询",
+      "读书",
+      "注会变现",
+      "投资",
+      "自我管理",
+      "其他"
+    ],
+    "gfpNames": [
+      "演出",
+      "运动",
+      "社交",
+      "旅行",
+      "游戏",
+      "小资",
+      "其他"
+    ],
+    "procNames": [
+      "睡懒觉",
+      "刷手机",
+      "拖延",
+      "无效/低效社交",
+      "其他"
+    ],
+    "standard": 12,
+    "startTime": "9:00",
+    "updatedAt": 1786077061623,
+    "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+  },
+  "cells": {
+    "2026-08-03|7:00-7:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951772946,
+      "updatedBy": "83489e31-2f8d-411c-8d6d-78eeb75f973a"
+    },
+    "2026-08-03|7:30-8:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "83489e31-2f8d-411c-8d6d-78eeb75f973a"
+    },
+    "2026-08-03|8:00-8:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "83489e31-2f8d-411c-8d6d-78eeb75f973a"
+    },
+    "2026-08-03|8:30-9:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "83489e31-2f8d-411c-8d6d-78eeb75f973a"
+    },
+    "2026-08-03|9:00-9:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|9:30-10:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|10:00-10:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|10:30-11:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|11:00-11:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|11:30-12:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|12:00-12:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|12:30-13:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|13:00-13:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|13:30-14:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|14:00-14:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|14:30-15:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|15:00-15:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|15:30-16:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|16:00-16:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|16:30-17:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|17:00-17:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|17:30-18:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|18:00-18:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|18:30-19:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|19:00-19:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|19:30-20:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|20:00-20:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951805886,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|20:30-21:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951809073,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|21:00-21:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951809073,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|21:30-22:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951809073,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|22:00-22:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951810048,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|22:30-23:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951810683,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|23:00-23:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951811327,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|23:30-0:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785951812008,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|7:00-7:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951832411,
+      "updatedBy": "83489e31-2f8d-411c-8d6d-78eeb75f973a"
+    },
+    "2026-08-04|7:30-8:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951837627,
+      "updatedBy": "83489e31-2f8d-411c-8d6d-78eeb75f973a"
+    },
+    "2026-08-04|8:00-8:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951837627,
+      "updatedBy": "83489e31-2f8d-411c-8d6d-78eeb75f973a"
+    },
+    "2026-08-04|8:30-9:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951837627,
+      "updatedBy": "83489e31-2f8d-411c-8d6d-78eeb75f973a"
+    },
+    "2026-08-04|9:00-9:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951837627,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|9:30-10:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951837627,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|10:00-10:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951837627,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|10:30-11:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951837627,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|11:00-11:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951837627,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|11:30-12:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951840925,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|12:00-12:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951841647,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|13:00-13:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951842228,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|12:30-13:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951843153,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|13:30-14:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951844179,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|14:30-15:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951845083,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|14:00-14:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951845740,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|15:00-15:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951846446,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|15:30-16:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951847829,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|16:00-16:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951848445,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|16:30-17:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951849029,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|17:00-17:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951849650,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|17:30-18:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951850326,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|18:00-18:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951854637,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|18:30-19:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951855470,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|19:00-19:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951856434,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|19:30-20:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951857127,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|20:00-20:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951857808,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|20:30-21:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951859218,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|21:00-21:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951859892,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|21:30-22:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951860548,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|22:00-22:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951862210,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|22:30-23:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951862871,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|23:00-23:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951863665,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|23:30-0:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951864295,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|7:00-7:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951874896,
+      "updatedBy": "83489e31-2f8d-411c-8d6d-78eeb75f973a"
+    },
+    "2026-08-05|7:30-8:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951877033,
+      "updatedBy": "83489e31-2f8d-411c-8d6d-78eeb75f973a"
+    },
+    "2026-08-05|8:00-8:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951877033,
+      "updatedBy": "83489e31-2f8d-411c-8d6d-78eeb75f973a"
+    },
+    "2026-08-05|8:30-9:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951877033,
+      "updatedBy": "83489e31-2f8d-411c-8d6d-78eeb75f973a"
+    },
+    "2026-08-05|9:00-9:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951877033,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|9:30-10:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951877033,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|10:00-10:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951877033,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|10:30-11:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951877033,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|11:00-11:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951877033,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|11:30-12:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951877033,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|12:00-12:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785951877033,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|12:30-13:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785952126946,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|13:00-13:30": {
+      "title": "与阿凯吃饭",
+      "code": 2.7,
+      "updatedAt": 1785952120006,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|13:30-14:00": {
+      "title": "与阿凯吃饭",
+      "code": 2.7,
+      "updatedAt": 1785952120596,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|14:00-14:30": {
+      "title": "与阿凯吃饭",
+      "code": 2.7,
+      "updatedAt": 1785952121154,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|14:30-15:00": {
+      "title": "与阿凯吃饭",
+      "code": 2.7,
+      "updatedAt": 1785952123107,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|15:00-15:30": {
+      "title": "交流AI",
+      "code": 1.1,
+      "updatedAt": 1785952132459,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|15:30-16:00": {
+      "title": "交流AI",
+      "code": 1.1,
+      "updatedAt": 1785952133205,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|16:00-16:30": {
+      "title": "交流AI",
+      "code": 1.1,
+      "updatedAt": 1785952133813,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|16:30-17:00": {
+      "title": "交流AI",
+      "code": 1.1,
+      "updatedAt": 1785952134419,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|17:00-17:30": {
+      "title": "去昆明站",
+      "code": 0,
+      "updatedAt": 1785952137359,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|17:30-18:00": {
+      "title": "去昆明站",
+      "code": 0,
+      "updatedAt": 1785952138074,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|18:00-18:30": {
+      "title": "回贵阳",
+      "code": 0,
+      "updatedAt": 1785952143251,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|18:30-19:00": {
+      "title": "回贵阳",
+      "code": 0,
+      "updatedAt": 1785952143887,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|19:00-19:30": {
+      "title": "回贵阳",
+      "code": 0,
+      "updatedAt": 1785952144739,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|19:30-20:00": {
+      "title": "回贵阳",
+      "code": 0,
+      "updatedAt": 1785952145389,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|20:00-20:30": {
+      "title": "回贵阳",
+      "code": 0,
+      "updatedAt": 1785951995219,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|20:30-21:00": {
+      "title": "回贵阳",
+      "code": 0,
+      "updatedAt": 1785951995752,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|21:00-21:30": {
+      "title": "回贵阳",
+      "code": 0,
+      "updatedAt": 1785952063813,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|21:30-22:00": {
+      "title": "回家",
+      "code": 0,
+      "updatedAt": 1785952160351,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|0:00-0:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785952063813,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|0:30-1:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785952063813,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|1:00-1:30": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785952063813,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|1:30-2:00": {
+      "title": "回昆明",
+      "code": 0,
+      "updatedAt": 1785952063813,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|0:00-0:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785952063813,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|0:30-1:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785952063813,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|1:00-1:30": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785952063813,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|1:30-2:00": {
+      "title": "在昆明",
+      "code": 0,
+      "updatedAt": 1785952063813,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|22:00-22:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1785952189513,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|22:30-23:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1785952192031,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|23:00-23:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1785952192647,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|23:30-0:00": {
+      "title": "吃烧烤",
+      "code": 0,
+      "updatedAt": 1785952203607,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|0:00-0:30": {
+      "title": "吃烧烤",
+      "code": 0,
+      "updatedAt": 1785952205272,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|0:30-1:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1785952219587,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|1:00-1:30": {
+      "title": "洗澡",
+      "code": 0,
+      "updatedAt": 1785952216419,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|1:30-2:00": {
+      "title": "整理",
+      "code": 1.6,
+      "updatedAt": 1785952232639,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|9:00-9:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786021062442,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|9:30-10:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786021066724,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|10:00-10:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786021069307,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|10:30-11:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786021071650,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|11:00-11:30": {
+      "title": "Ai视频",
+      "code": 1.1,
+      "updatedAt": 1786021093932,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|11:30-12:00": {
+      "title": "Ai视频",
+      "code": 1.1,
+      "updatedAt": 1786021098663,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|12:00-12:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786021104564,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|12:30-13:00": {
+      "title": "吃饭",
+      "code": 0,
+      "updatedAt": 1786021135863,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|13:00-13:30": {
+      "title": "休息",
+      "code": 0,
+      "updatedAt": 1786021146873,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|13:30-14:00": {
+      "title": "接线",
+      "code": 1.2,
+      "updatedAt": 1786021157374,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|14:00-14:30": {
+      "title": "接线",
+      "code": 1.2,
+      "updatedAt": 1786021164480,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|14:30-15:00": {
+      "title": "接线",
+      "code": 1.2,
+      "updatedAt": 1786021168409,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|15:00-15:30": {
+      "title": "接线",
+      "code": 1.2,
+      "updatedAt": 1786021170663,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|15:30-16:00": {
+      "title": "接线",
+      "code": 1.2,
+      "updatedAt": 1786021172972,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|16:00-16:30": {
+      "title": "接线",
+      "code": 1.2,
+      "updatedAt": 1786021175459,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|16:30-17:00": {
+      "title": "接线",
+      "code": 1.2,
+      "updatedAt": 1786021177376,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|17:00-17:30": {
+      "title": "等车",
+      "code": 0,
+      "updatedAt": 1786021186034,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|17:30-18:00": {
+      "title": "出发",
+      "code": 0,
+      "updatedAt": 1786021193814,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|18:00-18:30": {
+      "title": "吃饭",
+      "code": 0,
+      "updatedAt": 1786021201803,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|18:30-19:00": {
+      "title": "练琴",
+      "code": 2.6,
+      "updatedAt": 1786021221366,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|19:00-19:30": {
+      "title": "练琴",
+      "code": 2.6,
+      "updatedAt": 1786021226421,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|19:30-20:00": {
+      "title": "练琴",
+      "code": 2.6,
+      "updatedAt": 1786021228608,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|20:00-20:30": {
+      "title": "练琴",
+      "code": 2.6,
+      "updatedAt": 1786021230629,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|20:30-21:00": {
+      "title": "练琴",
+      "code": 2.6,
+      "updatedAt": 1786021233950,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|21:00-21:30": {
+      "title": "回家",
+      "code": 0,
+      "updatedAt": 1786041314153,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|21:30-22:00": {
+      "title": "回家",
+      "code": 0,
+      "updatedAt": 1786041320506,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|22:00-22:30": {
+      "title": "回家",
+      "code": 0,
+      "updatedAt": 1786041322171,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|22:30-23:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786041335549,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|23:00-23:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786041339565,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|23:30-0:00": {
+      "title": "运动",
+      "code": 2.2,
+      "updatedAt": 1786041356392,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|0:00-0:30": {
+      "title": "洗澡",
+      "code": 0,
+      "updatedAt": 1786041373267,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|0:30-1:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786041378883,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|1:00-1:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786041381448,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|1:30-2:00": {
+      "title": "开始复盘",
+      "code": 1.2,
+      "updatedAt": 1786041390040,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|9:00-9:30": {
+      "title": "睡觉",
+      "code": 3.1,
+      "updatedAt": 1786076716738,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|9:30-10:00": {
+      "title": "睡觉",
+      "code": 3.1,
+      "updatedAt": 1786076720765,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|10:00-10:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786076734565,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|10:30-11:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786076737625,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|11:00-11:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786076739205,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|11:30-12:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786076746786,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|12:00-12:30": {
+      "title": "打扫卫生",
+      "code": 0,
+      "updatedAt": 1786076798694,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|12:30-13:00": {
+      "title": "吃饭",
+      "code": 0,
+      "updatedAt": 1786123057902,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|13:00-13:30": {
+      "title": "复盘",
+      "code": 1.2,
+      "updatedAt": 1786123081358,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|13:30-14:00": {
+      "title": "复盘",
+      "code": 1.2,
+      "updatedAt": 1786123084560,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|14:00-14:30": {
+      "title": "复盘",
+      "code": 1.2,
+      "updatedAt": 1786123087097,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|14:30-15:00": {
+      "title": "复盘",
+      "code": 1.2,
+      "updatedAt": 1786123089823,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|15:00-15:30": {
+      "title": "等车",
+      "code": 0,
+      "updatedAt": 1786123094507,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|15:30-16:00": {
+      "title": "出发",
+      "code": 0,
+      "updatedAt": 1786123099597,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|16:00-16:30": {
+      "title": "学钢琴",
+      "code": 2.6,
+      "updatedAt": 1786123118144,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|16:30-17:00": {
+      "title": "学钢琴",
+      "code": 2.6,
+      "updatedAt": 1786123121580,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|17:00-17:30": {
+      "title": "学钢琴",
+      "code": 2.6,
+      "updatedAt": 1786123123317,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|17:30-18:00": {
+      "title": "学钢琴",
+      "code": 2.6,
+      "updatedAt": 1786123125596,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|18:00-18:30": {
+      "title": "吃饭",
+      "code": 0,
+      "updatedAt": 1786123134200,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|18:30-19:00": {
+      "title": "学钢琴",
+      "code": 2.6,
+      "updatedAt": 1786123137739,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|19:00-19:30": {
+      "title": "学钢琴",
+      "code": 2.6,
+      "updatedAt": 1786123139222,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|19:30-20:00": {
+      "title": "学钢琴",
+      "code": 2.6,
+      "updatedAt": 1786123141114,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|20:00-20:30": {
+      "title": "学钢琴",
+      "code": 2.6,
+      "updatedAt": 1786123142497,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|20:30-21:00": {
+      "title": "学钢琴",
+      "code": 2.6,
+      "updatedAt": 1786123144272,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|21:00-21:30": {
+      "title": "回家",
+      "code": 0,
+      "updatedAt": 1786123156422,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|21:30-22:00": {
+      "title": "回家",
+      "code": 0,
+      "updatedAt": 1786123159895,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|22:00-22:30": {
+      "title": "回家",
+      "code": 0,
+      "updatedAt": 1786123161476,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|22:30-23:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786123169702,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|23:00-23:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786123173175,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|23:30-0:00": {
+      "title": "运动",
+      "code": 2.2,
+      "updatedAt": 1786123192716,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|0:00-0:30": {
+      "title": "洗澡",
+      "code": 0,
+      "updatedAt": 1786123200342,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|0:30-1:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786123208532,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|1:00-1:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786123210096,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|1:30-2:00": {
+      "title": "复盘",
+      "code": 1.2,
+      "updatedAt": 1786123220251,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-08|9:00-9:30": {
+      "title": "睡懒觉",
+      "code": 3.1,
+      "updatedAt": 1786173114794,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-08|9:30-10:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786173129127,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-08|10:00-10:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786173133392,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-08|10:30-11:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786173135855,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-08|11:00-11:30": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786173137676,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-08|11:30-12:00": {
+      "title": "探索",
+      "code": 1.2,
+      "updatedAt": 1786173152132,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-08|12:00-12:30": {
+      "title": "探索",
+      "code": 1.2,
+      "updatedAt": 1786173160517,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-08|12:30-13:00": {
+      "title": "探索",
+      "code": 1.2,
+      "updatedAt": 1786173161932,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-08|13:00-13:30": {
+      "title": "探索",
+      "code": 1.2,
+      "updatedAt": 1786173163336,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-08|13:30-14:00": {
+      "title": "探索",
+      "code": 1.2,
+      "updatedAt": 1786173164786,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-08|14:00-14:30": {
+      "title": "吃饭",
+      "code": 0,
+      "updatedAt": 1786173171564,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-08|14:30-15:00": {
+      "title": "刷手机",
+      "code": 3.2,
+      "updatedAt": 1786173179604,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    }
+  },
+  "keyitems": {
+    "2026-08-05|第一件事": {
+      "value": "与阿凯交流AI",
+      "updatedAt": 1785952248337,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|第二件事": {
+      "value": "回贵阳",
+      "updatedAt": 1785952253871,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|第三件事": {
+      "value": "决定去哪",
+      "updatedAt": 1785952262249,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|第一件事": {
+      "value": "回昆明",
+      "updatedAt": 1785952272772,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|第一件事": {
+      "value": "游玩",
+      "updatedAt": 1785952280467,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|第一件事": {
+      "value": "接线",
+      "updatedAt": 1785952311823,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|第二件事": {
+      "value": "心理学复盘",
+      "updatedAt": 1785952318117,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|第三件事": {
+      "value": "练琴",
+      "updatedAt": 1785952325497,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|第一件事": {
+      "value": "复盘",
+      "updatedAt": 1786041404128,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|第二件事": {
+      "value": "钢琴课",
+      "updatedAt": 1786076704704,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|第三件事": {
+      "value": "债务咨询",
+      "updatedAt": 1786041424833,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|关键词": {
+      "value": "比预想的好",
+      "updatedAt": 1786041443563,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-08|第一件事": {
+      "value": "复盘",
+      "updatedAt": 1786173094969,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-08|第二件事": {
+      "value": "洗内裤",
+      "updatedAt": 1786173102494,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    }
+  },
+  "keyitemStatus": {
+    "2026-08-05|第三件事": {
+      "value": "done",
+      "updatedAt": 1785952263412,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|第二件事": {
+      "value": "done",
+      "updatedAt": 1785952264538,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-05|第一件事": {
+      "value": "done",
+      "updatedAt": 1785952265225,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-03|第一件事": {
+      "value": "done",
+      "updatedAt": 1785952274354,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-04|第一件事": {
+      "value": "done",
+      "updatedAt": 1785952281816,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|第一件事": {
+      "value": "done",
+      "updatedAt": 1786041427217,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|第二件事": {
+      "value": "ongoing",
+      "updatedAt": 1786041429106,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-06|第三件事": {
+      "value": "done",
+      "updatedAt": 1786041430285,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|第二件事": {
+      "value": "done",
+      "updatedAt": 1786125060007,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|第三件事": {
+      "value": "todo",
+      "updatedAt": 1786125063756,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    },
+    "2026-08-07|第一件事": {
+      "value": "done",
+      "updatedAt": 1786125065013,
+      "updatedBy": "22affe82-cb67-48ca-b2a0-feef3e268ddf"
+    }
+  },
+  "review": null,
+  "archived": false,
+  "archivedAt": null,
+  "weekUpdatedAt": 1786173181473
+}

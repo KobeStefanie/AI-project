@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-录音上传服务器
+来访者录音管理服务器
 端口: 8767
-功能: 上传、下载、删除录音文件
+功能: 上传、下载、删除来访者录音文件
 """
 
 from flask import Flask, request, jsonify, send_file

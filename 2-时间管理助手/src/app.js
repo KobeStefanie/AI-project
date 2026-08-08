@@ -140,6 +140,23 @@ function init() {
   $('inp-import-file').onchange = handleImportFileChosen;
   $('btn-save-all').onclick = handleSaveAll;
   $('btn-save-config').onclick = handleSaveConfig;
+
+  // 余额输入框：从 localStorage 读取并监听变化
+  (function() {
+    var inp = $('inp-balance');
+    if (!inp) return;
+    var saved = localStorage.getItem('tm_balance');
+    if (saved !== null) inp.value = saved;
+    inp.addEventListener('input', function() {
+      localStorage.setItem('tm_balance', inp.value);
+    });
+    // 失焦时格式化：去掉非数字/小数点，保留两位小数
+    inp.addEventListener('blur', function() {
+      var v = parseFloat(inp.value.replace(/[^\d.-]/g, ''));
+      if (!isNaN(v)) inp.value = v.toFixed(2);
+      localStorage.setItem('tm_balance', inp.value);
+    });
+  })();
   $('btn-save-cell').onclick = function() { saveCellAndAdvance(0); };
   $('btn-clear-cell').onclick = clearCell;
   $('btn-cancel-cell').onclick = function() { closeModal('cell-modal'); };
@@ -300,6 +317,9 @@ function setupViewModeUI() {
     btnMonth.title = '切换为月历视图';
     btnMonth.onclick = function() { desktopView = 'month'; renderAll(); };
     toolbarLeft.appendChild(btnMonth);
+    // 余额框挪到月历按钮后面
+    var balDiv = document.getElementById('toolbar-balance-widget');
+    if (balDiv) toolbarLeft.appendChild(balDiv);
   }
   // 手机版切换按钮
   var toolbarRight = document.querySelector('#page-main .toolbar-right');

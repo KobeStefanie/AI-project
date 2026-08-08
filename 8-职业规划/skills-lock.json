@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "job-application-optimizer": {
+      "source": "onewave-ai/claude-skills",
+      "sourceType": "github",
+      "skillPath": "job-application-optimizer/SKILL.md",
+      "computedHash": "1ff2968eae8e58c89e29ce77e3f8157926a6e1e0ef2e2e29d70cfa2b25cb669d"
+    }
+  }
+}

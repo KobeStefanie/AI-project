@@ -304,6 +304,50 @@ def get_html_template():
             }});
         }}
 
+        // AI分析生成功能
+        function generateAIAnalysis(approachId, approachName, visitorId, visitId) {{
+            const btn = document.getElementById('ai-btn-' + approachName);
+            const contentDiv = document.getElementById('analysis-content-' + approachName);
+
+            if (!confirm(`确认生成 ${{approachName}} 流派的AI分析？\\n\\n这将调用AI进行专业分析，可能需要30-60秒。`)) {{
+                return;
+            }}
+
+            // 禁用按钮，显示加载状态
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> AI分析中...';
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // 调用AI分析API
+            fetch('http://localhost:8771/api/analyze', {{
+                method: 'POST',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{
+                    visitor_id: visitorId,
+                    visit_id: visitId,
+                    approach_id: approachId
+                }})
+            }})
+            .then(response => response.json())
+            .then(result => {{
+                if (result.success) {{
+                    alert(`✅ AI分析完成！\n\n流派：${{approachName}}\n\n页面将自动刷新以显示分析结果。`);
+                    setTimeout(() => location.reload(), 2000);
+                }} else {{
+                    alert('❌ AI分析失败：' + result.error);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa fa-magic"></i> 🤖 生成AI分析';
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }}
+            }})
+            .catch(error => {{
+                alert('❌ AI分析失败：' + error + '\\n\\n请确保AI分析API服务器已启动（端口8771）');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-magic"></i> 🤖 生成AI分析';
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }});
+        }}
+
         function saveReviewEdit(visitorId, visitId) {{
             const reviewDiv = document.getElementById('counselor-review-content');
             const data = {{
@@ -795,8 +839,8 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
     </div>
 """
 
-    # 逐字稿（折叠）
-    transcript_files = case_data.get('transcript_files', [])
+    # 逐字稿（兼容 transcript_files 和 transcript 两种字段名）
+    transcript_files = case_data.get('transcript_files') or case_data.get('transcript', [])
     html += f"""
     <div class="bg-white rounded-lg shadow-lg mb-6">
         <div class="collapsible p-6 flex justify-between items-center border-b">
@@ -901,8 +945,8 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
     </div>
 """
 
-    # 标签（中性数据）
-    case_tags = case_data.get('case_tags', {})
+    # 标签（兼容 tags 和 case_tags 两种字段名）
+    case_tags = case_data.get('tags', case_data.get('case_tags', {}))
     relation_tags = case_tags.get('relation', [])
     symptom_tags = case_tags.get('symptom', [])
 
@@ -995,7 +1039,10 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
         analysis_content = ''
 
         # 1. 尝试从visit_data获取已编辑/上传的HTML内容
-        saved_html = visit_data.get('case_data', {}).get('approach_analyses_html', {}).get(approach_name, '')
+        # 同时兼容两种key：approach_id（如 psychodynamic）和 approach_name（如 精神动力学）
+        _approach_id_key = approach_name_to_id.get(approach_name, approach_name.lower())
+        _analyses_dict = visit_data.get('case_data', {}).get('approach_analyses_html', {})
+        saved_html = _analyses_dict.get(_approach_id_key, '') or _analyses_dict.get(approach_name, '')
 
         if saved_html:
             # 如果有保存的HTML，直接使用
@@ -1122,10 +1169,23 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
         # 获取文件名（用于下载链接）
         file_name = approach_file_names.get(approach_name, approach_name)
 
+        # 检查该流派是否有AI分析内容
+        has_ai_analysis = bool(saved_html and len(saved_html) > 100)  # 简单判断是否有实质内容
+
+        # 获取流派ID（用于API调用）
+        approach_id = approach_name_to_id.get(approach_name, approach_name.lower())
+
+        # AI分析按钮（单独构造，确保变量被正确替换）
+        if has_ai_analysis:
+            ai_btn_html = '<span class="px-3 py-2 bg-green-100 text-green-700 text-sm rounded border border-green-300"><i class="fa fa-check-circle"></i> 已有AI分析</span>'
+        else:
+            ai_btn_html = f'<button onclick="generateAIAnalysis(\'{approach_id}\', \'{approach_name}\', \'{visitor_id}\', \'{visit_id}\')" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm rounded hover:from-purple-700 hover:to-indigo-700 transition shadow-md" id="ai-btn-{approach_name}" title="使用AI生成该流派的专业分析"><i class="fa fa-magic"></i> 🤖 生成AI分析</button>'
+
         html += f"""
         <div id="{approach_name}" class="tab-content">
-            <div class="mb-4 flex justify-between items-center">
-                <div class="flex gap-2">
+            <div class="mb-4 flex justify-between items-center flex-wrap gap-2">
+                <div class="flex gap-2 flex-wrap">
+                    {ai_btn_html}
                     <button onclick="toggleEdit('{approach_name}')" class="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition" id="edit-btn-{approach_name}">
                         <i class="fa fa-edit"></i> 编辑
                     </button>

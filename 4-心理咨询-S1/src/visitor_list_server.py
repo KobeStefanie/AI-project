@@ -293,4 +293,4 @@ if __name__ == '__main__':
     print(f"输出目录: {OUTPUT_DIR}")
     print(f"数据目录: {DATA_DIR}")
     print("=" * 60)
-    app.run(host='0.0.0.0', port=8770, debug=True)
+    app.run(host='0.0.0.0', port=8770, debug=False)

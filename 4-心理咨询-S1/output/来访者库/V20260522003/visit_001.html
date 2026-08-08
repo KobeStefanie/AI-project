@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第1次来访 - 妻子患癌+自身确诊癌症</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .collapsible { cursor: pointer; }
+        .collapsible:hover { background-color: #f3f4f6; }
+        .content { display: none; overflow: hidden; }
+        .content.show { display: block; }
+        .tab-button { cursor: pointer; transition: all 0.2s; }
+        .tab-button.active {
+            background-color: #6366f1;
+            color: white;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+    <script>
+        // 在head中定义所有函数，确保按钮可以调用
+        document.addEventListener('DOMContentLoaded', function() {
+            // 折叠功能
+            document.querySelectorAll('.collapsible').forEach(item => {
+                item.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    const content = this.nextElementSibling;
+                    content.classList.toggle('show');
+                });
+            });
+
+            // 默认激活第一个标签，或从URL hash恢复
+            let targetTab = null;
+            let targetButton = null;
+
+            // 尝试从URL hash恢复tab
+            if (window.location.hash) {
+                const hash = decodeURIComponent(window.location.hash.substring(1));
+                targetTab = document.getElementById(hash);
+                if (targetTab) {
+                    document.querySelectorAll('.tab-button').forEach(button => {
+                        const onclick = button.getAttribute('onclick');
+                        if (onclick && onclick.includes(hash)) {
+                            targetButton = button;
+                        }
+                    });
+                }
+            }
+
+            // 如果没有找到hash对应的tab，使用第一个
+            if (!targetTab) {
+                targetButton = document.querySelector('.tab-button');
+                targetTab = document.querySelector('.tab-content');
+            }
+
+            // 激活目标tab
+            if (targetButton && targetTab) {
+                targetButton.classList.add('active');
+                targetTab.classList.add('active');
+            }
+        });
+
+        // 标签页切换
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            window.location.hash = tabName;
+        }
+
+        let currentEditingApproach = null;
+
+        function toggleEdit(approachName) {
+            const contentDiv = document.getElementById('analysis-content-' + approachName);
+            const toolbar = document.getElementById('toolbar-' + approachName);
+            const saveBtn = document.getElementById('save-btn-' + approachName);
+            const isEditing = contentDiv.getAttribute('contenteditable') === 'true';
+            if (isEditing) {
+                contentDiv.setAttribute('contenteditable', 'false');
+                toolbar.style.display = 'none';
+                saveBtn.style.display = 'none';
+                contentDiv.style.border = '1px solid #d1d5db';
+                currentEditingApproach = null;
+            } else {
+                contentDiv.setAttribute('contenteditable', 'true');
+                toolbar.style.display = 'block';
+                saveBtn.style.display = 'inline-block';
+                contentDiv.style.border = '2px solid #6366f1';
+                currentEditingApproach = approachName;
+            }
+        }
+
+        function toggleReviewEdit() {
+            const reviewDiv = document.getElementById('counselor-review-content');
+            const toolbar = document.getElementById('toolbar-review');
+            const saveBtn = document.getElementById('save-btn-review');
+            const isEditing = reviewDiv.getAttribute('contenteditable') === 'true';
+            if (isEditing) {
+                reviewDiv.setAttribute('contenteditable', 'false');
+                toolbar.style.display = 'none';
+                saveBtn.style.display = 'none';
+                reviewDiv.style.border = 'none';
+            } else {
+                reviewDiv.setAttribute('contenteditable', 'true');
+                toolbar.style.display = 'block';
+                saveBtn.style.display = 'inline-block';
+                reviewDiv.style.border = '2px solid #6366f1';
+                reviewDiv.style.padding = '1rem';
+                reviewDiv.style.borderRadius = '0.375rem';
+            }
+        }
+
+        function formatText(command) {
+            document.execCommand(command, false, null);
+        }
+
+        function formatColor(color) {
+            document.execCommand('foreColor', false, color);
+        }
+
+        function saveEdit(approachName, visitorId, visitId) {
+            const contentDiv = document.getElementById('analysis-content-' + approachName);
+            const data = {
+                approach: approachName,
+                visitor_id: visitorId,
+                visit_id: visitId,
+                content: contentDiv.innerHTML
+            };
+            fetch('http://localhost:8766/save_approach', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('保存成功！内容已保存到服务器。');
+                    toggleEdit(approachName);
+                } else {
+                    alert('保存失败：' + result.error);
+                }
+            })
+            .catch(error => {
+                console.error('保存失败:', error);
+                alert('保存失败，请确保保存服务器已启动（端口8766）');
+            });
+        }
+
+        // AI分析生成功能
+        function generateAIAnalysis(approachId, approachName, visitorId, visitId) {
+            const btn = document.getElementById('ai-btn-' + approachName);
+            const contentDiv = document.getElementById('analysis-content-' + approachName);
+
+            if (!confirm(`确认生成 ${approachName} 流派的AI分析？\n\n这将调用AI进行专业分析，可能需要30-60秒。`)) {
+                return;
+            }
+
+            // 禁用按钮，显示加载状态
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> AI分析中...';
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // 调用AI分析API
+            fetch('http://localhost:8771/api/analyze', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    visitor_id: visitorId,
+                    visit_id: visitId,
+                    approach_id: approachId
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert(`✅ AI分析完成！
+
+流派：${approachName}
+
+页面将自动刷新以显示分析结果。`);
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    alert('❌ AI分析失败：' + result.error);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa fa-magic"></i> 🤖 生成AI分析';
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            })
+            .catch(error => {
+                alert('❌ AI分析失败：' + error + '\n\n请确保AI分析API服务器已启动（端口8771）');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-magic"></i> 🤖 生成AI分析';
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            });
+        }
+
+        function saveReviewEdit(visitorId, visitId) {
+            const reviewDiv = document.getElementById('counselor-review-content');
+            const data = {
+                visitor_id: visitorId,
+                visit_id: visitId,
+                content: reviewDiv.innerHTML
+            };
+            fetch('http://localhost:8766/save_review', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('保存成功！咨询师复盘已保存到服务器。');
+                    toggleReviewEdit();
+                } else {
+                    alert('保存失败：' + result.error);
+                }
+            })
+            .catch(error => {
+                console.error('保存失败:', error);
+                alert('保存失败，请确保保存服务器已启动（端口8766）');
+            });
+        }
+
+        function downloadApproachWord(approachName, caseId, fileName) {
+            const contentDiv = document.getElementById('analysis-content-' + approachName);
+            let htmlContent = `
+                <!DOCTYPE html>
+                <html><head><meta charset="UTF-8">
+                <style>body { font-family: "Microsoft YaHei", "SimSun", sans-serif; } h1 { text-align: center; color: #333; } p { line-height: 1.8; }</style>
+                </head><body>
+                <h1>${approachName}流派分析</h1>
+                <p><strong>案例编号：</strong>${caseId}</p>
+                <div>${contentDiv.innerHTML}</div>
+                </body></html>
+            `;
+            const converted = htmlDocx.asBlob(htmlContent);
+            saveAs(converted, `${caseId}_${fileName}.docx`);
+        }
+
+        function downloadReviewWord(caseId) {
+            // 此函数较长，保持原有实现
+            alert('下载功能请查看页面源码');
+        }
+
+        function uploadReviewWord(visitorId, visitId) {
+            const contentDiv = document.getElementById('counselor-review-content');
+            const hasExistingContent = contentDiv && contentDiv.textContent.trim() && contentDiv.textContent !== '暂无复盘内容';
+
+            if (hasExistingContent) {
+                if (!confirm('当前咨询师复盘已有内容，上传新Word文档将完全覆盖现有内容。\n\n是否继续？')) {
+                    return;
+                }
+            }
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.docx';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // 显示上传提示
+                const uploadMsg = document.createElement('div');
+                uploadMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 9999; text-align: center;';
+                uploadMsg.innerHTML = '<div style="font-size: 18px; margin-bottom: 10px;">正在处理Word文档...</div><div style="color: #666;">解析格式中，请稍候</div>';
+                document.body.appendChild(uploadMsg);
+
+                // 上传到Word解析服务器
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('http://localhost:8765/', {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'cors'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.body.removeChild(uploadMsg);
+
+                    if (data.success) {
+                        // 更新页面内容
+                        const contentDiv = document.getElementById('counselor-review-content');
+                        if (contentDiv) {
+                            contentDiv.innerHTML = data.html;
+
+                            // 自动保存到服务器
+                            const saveData = {
+                                visitor_id: visitorId,
+                                visit_id: visitId,
+                                content: data.html
+                            };
+
+                            fetch('http://localhost:8766/save_review', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify(saveData)
+                            })
+                            .then(response => response.json())
+                            .then(saveResult => {
+                                console.log('自动保存结果:', saveResult);
+                                alert('导入成功！咨询师复盘内容已自动保存到服务器。');
+                            })
+                            .catch(error => {
+                                console.error('自动保存失败:', error);
+                                alert('导入成功，但自动保存失败。请手动点击"保存"按钮。');
+                            });
+                        }
+                    } else {
+                        alert('导入失败: ' + (data.error || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    document.body.removeChild(uploadMsg);
+                    console.error('上传失败:', error);
+                    alert('上传失败，请确保Word上传服务器已启动（端口8765）');
+                });
+            };
+            input.click();
+        }
+
+        function uploadApproachWord(approachName, visitorId, visitId) {
+            const contentDiv = document.getElementById('analysis-content-' + approachName);
+            const hasExistingContent = contentDiv && contentDiv.textContent.trim();
+            if (hasExistingContent) {
+                if (!confirm('当前流派分析已有内容，上传新Word文档将完全覆盖现有内容。\n\n是否继续？')) {
+                    return;
+                }
+            }
+            proceedWithUpload(approachName, visitorId, visitId);
+        }
+
+        function proceedWithUpload(approachName, visitorId, visitId) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.docx';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const uploadMsg = document.createElement('div');
+                uploadMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 9999; text-align: center;';
+                uploadMsg.innerHTML = '<div style="font-size: 18px; margin-bottom: 10px;">正在处理Word文档...</div><div style="color: #666;">解析格式中，请稍候</div>';
+                document.body.appendChild(uploadMsg);
+                const formData = new FormData();
+                formData.append('file', file);
+                fetch('http://localhost:8765/', {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'cors'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.body.removeChild(uploadMsg);
+                    if (data.success) {
+                        const contentDiv = document.getElementById('analysis-content-' + approachName);
+                        if (contentDiv) {
+                            contentDiv.innerHTML = data.html;
+                            const saveData = {
+                                approach: approachName,
+                                visitor_id: visitorId,
+                                visit_id: visitId,
+                                content: data.html
+                            };
+                            fetch('http://localhost:8766/save_approach', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify(saveData)
+                            })
+                            .then(response => response.json())
+                            .then(saveResult => console.log('自动保存结果:', saveResult))
+                            .catch(error => console.error('自动保存失败:', error));
+                            alert('导入成功！内容已自动保存');
+                        }
+                    } else {
+                        alert('Word文档解析失败: ' + (data.error || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    document.body.removeChild(uploadMsg);
+                    console.error('上传失败:', error);
+                    alert('上传失败，请确保Word上传服务器已启动（端口8765）');
+                });
+            };
+            input.click();
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+
+    <script>
+        // 来访者基本信息（用于Word导出）
+        window.visitorBasicInfo = {
+            name: '妻子患癌+自身确诊癌症',
+            age: '45',
+            gender: '男',
+            occupation: '公务员',
+            marital_status: '丧偶',
+            sexual_orientation: '异性恋',
+            religion: '无',
+            emergency_contact: '无',
+            emergency_contact_relation: '无',
+            emergency_contact_phone: '无'
+        };
+
+        window.visitorFamily = {
+            father_age: '',
+            father_occupation: '',
+            father_health: '已离世',
+            mother_age: '',
+            mother_occupation: '',
+            mother_health: '已离世',
+            parents_relationship: '',
+            siblings: '姐',
+            spouse_gender: '女',
+            spouse_age: '40',
+            spouse_occupation: '',
+            spouse_health: '已离世',
+            children: [{'id': 1786177698096, 'gender': '', 'age': '24', 'health': '健康', 'education': '大学毕业', 'occupation': '异地上班'}],
+            family_notes: ''
+        };
+
+        window.visitorPsychTests = [];
+    </script>
+    
+    <div class="bg-white shadow-sm mb-6">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="profile.html" class="text-indigo-600 hover:text-indigo-800">
+                <i class="fa fa-arrow-left"></i> 返回来访者档案
+            </a>
+            <a href="../index.html" class="text-gray-600 hover:text-gray-800">
+                <i class="fa fa-home"></i> 来访者库
+            </a>
+        </div>
+    </div>
+<div class="container mx-auto px-4 py-8">
+
+    <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">第 1 次来访</h1>
+                <p class="text-gray-600">2026-05-22 · 吴老师 · 30分钟</p>
+            </div>
+
+            <span class="px-4 py-2 text-sm rounded-full bg-yellow-100 text-yellow-800">
+                中度危机 - Q2-活不下去
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-2">本次诉求</p>
+                <p class="text-gray-800">妻子患癌经过一年治疗后离世，自己上个月又确诊为癌症，孩子大学刚毕业异地工作，不知道如何活下去</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-2">本次目标</p>
+                <p class="text-gray-800">首次面对存在主义课题</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-2">咨询结果</p>
+                <p class="text-gray-800">找当地心理科或者精神科的去挂号，去开点药之类的</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-2">布置任务</p>
+                <p class="text-gray-800"></p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded">
+                <p class="text-sm text-gray-600 mb-2">下一步计划</p>
+                <p class="text-gray-800">学习存在主义治疗</p>
+            </div>
+        </div>
+
+        <div class="p-4 bg-blue-50 rounded">
+            <p class="text-sm text-gray-600 mb-2">症状变化</p>
+            <p class="text-lg font-semibold text-blue-800"></p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-gray-800">咨询师复盘</h2>
+            <div class="flex gap-2">
+                <button onclick="toggleReviewEdit()" class="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition" id="edit-btn-review">
+                    <i class="fa fa-edit"></i> 编辑
+                </button>
+                <button onclick="saveReviewEdit('V20260522003', 'visit_001')" class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition" style="display:none;" id="save-btn-review">
+                    <i class="fa fa-save"></i> 保存
+                </button>
+                <button onclick="uploadReviewWord('V20260522003', 'visit_001')" class="px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition" title="上传Word文档">
+                    <i class="fa fa-upload"></i> 上传Word
+                </button>
+                <a href="../downloads/V20260522003/V20260522003_复盘.docx" download
+                   class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition"
+                   onclick="event.preventDefault(); downloadReviewWord('V20260522003');">
+                    <i class="fa fa-download"></i> 下载Word
+                </a>
+            </div>
+        </div>
+
+        <!-- 编辑工具栏 -->
+        <div class="edit-toolbar mb-4" id="toolbar-review" style="display:none;">
+            <div class="flex gap-2 p-3 bg-gray-100 rounded flex-wrap">
+                <button onclick="formatText('bold')" class="px-3 py-1 bg-white border rounded hover:bg-gray-50" title="加粗">
+                    <i class="fa fa-bold"></i> 加粗
+                </button>
+                <button onclick="formatText('underline')" class="px-3 py-1 bg-white border rounded hover:bg-gray-50" title="下划线">
+                    <i class="fa fa-underline"></i> 下划线
+                </button>
+                <div class="flex items-center gap-1">
+                    <span class="text-sm text-gray-600 mr-1">标记颜色:</span>
+                    <button onclick="formatColor('#ef4444')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #ef4444;" title="红色"></button>
+                    <button onclick="formatColor('#f59e0b')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #f59e0b;" title="橙色"></button>
+                    <button onclick="formatColor('#ffff00')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #ffff00;" title="黄色高亮"></button>
+                    <button onclick="formatColor('#00a000')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #00a000;" title="绿色标记"></button>
+                    <button onclick="formatColor('#3b82f6')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #3b82f6;" title="蓝色"></button>
+                    <button onclick="formatColor('#a855f7')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #a855f7;" title="紫色"></button>
+                    <button onclick="formatColor('#000000')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #000000;" title="黑色"></button>
+                </div>
+            </div>
+        </div>
+
+        <div id="counselor-review-content" class="prose max-w-none text-gray-700" contenteditable="false">
+            <p>来访是名约五十岁的男性，他整个气息都是上气不接下气的那种抑郁与低沉，透漏着低沉与无力，他说三个月前她老婆得癌症去世了，他老婆去年检查出来癌症晚期，她全程陪同治疗了一年，亲眼目睹了她经历的痛苦的，可是还是没留住，去世了。已经足够悲伤了。上个月他又检查出来了癌症。<br><br>我问什么已经到了什么阶段了，他不想回答，他只说他不想治了，我问，为何。因为他亲眼目睹了妻子的治疗之痛苦，到最后没留住。他的诉求是他现在已经几天没吃饭，觉得生活没有意义，活不下去了，真的活不下去了。为何这种事情偏偏落在他的头上，前脚妻子刚因癌症离开后脚自己也得了癌症。我问他亲人呢，他说儿子去年刚毕业，在异地工作，也照料不了自己。他还有个姐，上个月来看过他，可人家也有家庭，呆了一两天就走了。一种渗入骨髓的悲伤。他又说，他还没达到退休年纪，跟单位请了假，以前他挺胖的，现在他很瘦。他又在问为什么这种事会落在他身上，全程气若游丝，感觉已经抑郁出现躯干化了，他又问我怎么办。<br>我很无力，我不知道该怎么回，我只能说，你找当地心理科或者精神科的去挂号，去开点药之类的。后面他又说，他也想活呀，可是不知道怎么活呀，诶，孩子刚毕业还异地，也不能给孩子添麻烦，诶……<br>最后结束了访谈。好无力，我不知道该怎么去赋能和激发他</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg mb-6">
+        <div class="collapsible p-6 flex justify-between items-center border-b">
+            <div class="flex items-center justify-between w-full">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fa fa-microphone"></i> 录音资料
+                </h2>
+                <div class="flex items-center gap-4">
+                    <button onclick="showUploadRecordingDialog()" class="px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition">
+                        <i class="fa fa-upload"></i> 上传录音
+                    </button>
+                    <i class="fa fa-chevron-down text-gray-400"></i>
+                </div>
+            </div>
+        </div>
+        <div class="content p-6">
+
+            <div class="p-4 bg-gray-50 rounded mb-4 border border-gray-200">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                        <p class="font-semibold text-gray-800 mb-1">
+                            <i class="fa fa-file-audio-o text-purple-600"></i> Ace of Base - Angle Eyes.mp3
+                        </p>
+                        <p class="text-sm text-gray-600">
+                            大小: 7.46 MB | 上传时间: 2026-08-08 16:41
+                        </p>
+                        <p class="text-sm text-gray-700 mt-2">📝 接访记录上传 - Ace of Base - Angle Eyes.mp3</p>
+                    </div>
+                </div>
+
+                <!-- 音频播放器 -->
+                <audio controls class="w-full mb-3" id="audio-rec_001">
+                    <source src="http://localhost:8767/download/V20260522003/visit_001/rec_001" type="audio/mpeg">
+                    您的浏览器不支持音频播放
+                </audio>
+
+                <div class="flex gap-2">
+                    <a href="http://localhost:8767/download/V20260522003/visit_001/rec_001" download="Ace of Base - Angle Eyes.mp3"
+                       class="px-3 py-1.5 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition">
+                        <i class="fa fa-download"></i> 下载
+                    </a>
+                    <button onclick="deleteRecording('rec_001', 'V20260522003', 'visit_001')"
+                            class="px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition">
+                        <i class="fa fa-trash"></i> 删除
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg mb-6">
+        <div class="collapsible p-6 flex justify-between items-center border-b">
+            <div class="flex items-center justify-between w-full">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fa fa-file-text-o"></i> 逐字稿
+                </h2>
+                <div class="flex items-center gap-4">
+                    <button onclick="showUploadTranscriptDialog()" class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition">
+                        <i class="fa fa-upload"></i> 上传逐字稿
+                    </button>
+                    <i class="fa fa-chevron-down text-gray-400"></i>
+                </div>
+            </div>
+        </div>
+        <div class="content p-6">
+<p class="text-gray-500">暂无逐字稿，点击右上角"上传逐字稿"按钮添加</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">案例概要</h2>
+        <p class="text-gray-700 leading-relaxed">妻子患癌经过一年治疗后离世，自己上个月又确诊为癌症，孩子大学刚毕业异地工作，不知道如何活下去</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">标签</h2>
+<div class="mb-4"><h3 class="text-lg font-semibold text-gray-700 mb-2">关系标签</h3><div class="flex flex-wrap gap-2"><span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">丧失与哀伤-亲人离世-配偶去世</span><span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">丧失与哀伤-疾病相关-本人确诊绝症</span><span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">丧失与哀伤-疾病相关-目睹亲人痛苦离世</span><span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">丧失与哀伤-哀伤反应-复杂性哀伤</span><span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">丧失与哀伤-哀伤反应-无法接受现实</span><span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">丧失与哀伤-生死议题-面对自身死亡</span><span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">丧失与哀伤-生死议题-存在性绝望</span><span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">丧失与哀伤-生死议题-死亡恐惧</span></div></div><div><h3 class="text-lg font-semibold text-gray-700 mb-2">症状标签</h3><div class="flex flex-wrap gap-2"><span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">情绪障碍-抑郁症-重度</span><span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">躯体症状-抑郁躯体化</span></div></div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">流派分析</h2>
+
+        <!-- 标签按钮 -->
+        <div class="flex flex-wrap gap-2 mb-6 border-b pb-4">
+            <button class="tab-button px-6 py-2 rounded-t font-semibold" style="" onclick="switchTab('大观学派（危机干预）')" title="">大观学派（危机干预）</button>
+            <button class="tab-button px-6 py-2 rounded-t font-semibold" style="" onclick="switchTab('认知行为疗法 (CBT)')" title="">认知行为疗法 (CBT)</button>
+            <button class="tab-button px-6 py-2 rounded-t font-semibold" style="" onclick="switchTab('精神动力学')" title="">精神动力学</button>
+            <button class="tab-button px-6 py-2 rounded-t font-semibold" style="" onclick="switchTab('存在主义')" title="">存在主义</button>
+            <button class="tab-button px-6 py-2 rounded-t font-semibold" style="" onclick="switchTab('人本主义')" title="">人本主义</button>
+            <button class="tab-button px-6 py-2 rounded-t font-semibold" style="" onclick="switchTab('内在家庭系统疗法 (IFS)')" title="">内在家庭系统疗法 (IFS)</button>
+
+        </div>
+
+        <!-- 标签内容 -->
+
+        <div id="大观学派（危机干预）" class="tab-content">
+            <div class="mb-4 flex justify-between items-center flex-wrap gap-2">
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="generateAIAnalysis('daguanpai', '大观学派（危机干预）', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm rounded hover:from-purple-700 hover:to-indigo-700 transition shadow-md" id="ai-btn-大观学派（危机干预）" title="使用AI生成该流派的专业分析"><i class="fa fa-magic"></i> 🤖 生成AI分析</button>
+                    <button onclick="toggleEdit('大观学派（危机干预）')" class="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition" id="edit-btn-大观学派（危机干预）">
+                        <i class="fa fa-edit"></i> 编辑
+                    </button>
+                    <button onclick="saveEdit('大观学派（危机干预）', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition" style="display:none;" id="save-btn-大观学派（危机干预）">
+                        <i class="fa fa-save"></i> 保存
+                    </button>
+                    <button onclick="uploadApproachWord('大观学派（危机干预）', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition" title="上传Word文档">
+                        <i class="fa fa-upload"></i> 上传Word
+                    </button>
+                </div>
+                <a href="../downloads//_大观.docx" download
+                   class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition"
+                   onclick="event.preventDefault(); downloadApproachWord('大观学派（危机干预）', '', '大观');">
+                    <i class="fa fa-download"></i> 下载大观学派（危机干预）分析
+                </a>
+            </div>
+
+            <!-- 编辑工具栏 -->
+            <div class="edit-toolbar mb-4" id="toolbar-大观学派（危机干预）" style="display:none;">
+                <div class="flex gap-2 p-3 bg-gray-100 rounded flex-wrap">
+                    <button onclick="formatText('bold')" class="px-3 py-1 bg-white border rounded hover:bg-gray-50" title="加粗">
+                        <i class="fa fa-bold"></i> 加粗
+                    </button>
+                    <button onclick="formatText('underline')" class="px-3 py-1 bg-white border rounded hover:bg-gray-50" title="下划线">
+                        <i class="fa fa-underline"></i> 下划线
+                    </button>
+                    <div class="flex items-center gap-1">
+                        <span class="text-sm text-gray-600 mr-1">标记颜色:</span>
+                        <button onclick="formatColor('#ef4444')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #ef4444;" title="红色"></button>
+                        <button onclick="formatColor('#f59e0b')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #f59e0b;" title="橙色"></button>
+                        <button onclick="formatColor('#eab308')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #eab308;" title="黄色"></button>
+                        <button onclick="formatColor('#22c55e')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #22c55e;" title="绿色"></button>
+                        <button onclick="formatColor('#3b82f6')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #3b82f6;" title="蓝色"></button>
+                        <button onclick="formatColor('#a855f7')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #a855f7;" title="紫色"></button>
+                        <button onclick="formatColor('#000000')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #000000;" title="黑色"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div id="analysis-content-大观学派（危机干预）" class="text-gray-700 leading-relaxed p-4 border rounded min-h-[400px]" contenteditable="false">
+                    <span class="text-gray-500">暂无内容，点击编辑按钮开始编写...</span>
+                </div>
+            </div>
+
+            <!-- 历次感悟区域 -->
+            <div class="mt-8 pt-6 border-t-2 border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-indigo-900">🧠 历次感悟（大观学派（危机干预）视角）</h3>
+                    <button onclick="showAddInsightModal('大观学派（危机干预）')" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition">
+                        <i class="fa fa-plus"></i> 添加感悟
+                    </button>
+                </div>
+
+                <div id="insights-大观学派（危机干预）" class="space-y-4">
+
+                    <p class="text-gray-500 text-center py-8">
+                        暂无感悟记录，点击右上角"添加感悟"按钮添加第一条感悟
+                    </p>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="认知行为疗法 (CBT)" class="tab-content">
+            <div class="mb-4 flex justify-between items-center flex-wrap gap-2">
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="generateAIAnalysis('cbt', '认知行为疗法 (CBT)', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm rounded hover:from-purple-700 hover:to-indigo-700 transition shadow-md" id="ai-btn-认知行为疗法 (CBT)" title="使用AI生成该流派的专业分析"><i class="fa fa-magic"></i> 🤖 生成AI分析</button>
+                    <button onclick="toggleEdit('认知行为疗法 (CBT)')" class="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition" id="edit-btn-认知行为疗法 (CBT)">
+                        <i class="fa fa-edit"></i> 编辑
+                    </button>
+                    <button onclick="saveEdit('认知行为疗法 (CBT)', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition" style="display:none;" id="save-btn-认知行为疗法 (CBT)">
+                        <i class="fa fa-save"></i> 保存
+                    </button>
+                    <button onclick="uploadApproachWord('认知行为疗法 (CBT)', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition" title="上传Word文档">
+                        <i class="fa fa-upload"></i> 上传Word
+                    </button>
+                </div>
+                <a href="../downloads//_CBT.docx" download
+                   class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition"
+                   onclick="event.preventDefault(); downloadApproachWord('认知行为疗法 (CBT)', '', 'CBT');">
+                    <i class="fa fa-download"></i> 下载认知行为疗法 (CBT)分析
+                </a>
+            </div>
+
+            <!-- 编辑工具栏 -->
+            <div class="edit-toolbar mb-4" id="toolbar-认知行为疗法 (CBT)" style="display:none;">
+                <div class="flex gap-2 p-3 bg-gray-100 rounded flex-wrap">
+                    <button onclick="formatText('bold')" class="px-3 py-1 bg-white border rounded hover:bg-gray-50" title="加粗">
+                        <i class="fa fa-bold"></i> 加粗
+                    </button>
+                    <button onclick="formatText('underline')" class="px-3 py-1 bg-white border rounded hover:bg-gray-50" title="下划线">
+                        <i class="fa fa-underline"></i> 下划线
+                    </button>
+                    <div class="flex items-center gap-1">
+                        <span class="text-sm text-gray-600 mr-1">标记颜色:</span>
+                        <button onclick="formatColor('#ef4444')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #ef4444;" title="红色"></button>
+                        <button onclick="formatColor('#f59e0b')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #f59e0b;" title="橙色"></button>
+                        <button onclick="formatColor('#eab308')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #eab308;" title="黄色"></button>
+                        <button onclick="formatColor('#22c55e')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #22c55e;" title="绿色"></button>
+                        <button onclick="formatColor('#3b82f6')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #3b82f6;" title="蓝色"></button>
+                        <button onclick="formatColor('#a855f7')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #a855f7;" title="紫色"></button>
+                        <button onclick="formatColor('#000000')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #000000;" title="黑色"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div id="analysis-content-认知行为疗法 (CBT)" class="text-gray-700 leading-relaxed p-4 border rounded min-h-[400px]" contenteditable="false">
+                    <span class="text-gray-500">暂无内容，点击编辑按钮开始编写...</span>
+                </div>
+            </div>
+
+            <!-- 历次感悟区域 -->
+            <div class="mt-8 pt-6 border-t-2 border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-indigo-900">🧠 历次感悟（认知行为疗法 (CBT)视角）</h3>
+                    <button onclick="showAddInsightModal('认知行为疗法 (CBT)')" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition">
+                        <i class="fa fa-plus"></i> 添加感悟
+                    </button>
+                </div>
+
+                <div id="insights-认知行为疗法 (CBT)" class="space-y-4">
+
+                    <p class="text-gray-500 text-center py-8">
+                        暂无感悟记录，点击右上角"添加感悟"按钮添加第一条感悟
+                    </p>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="精神动力学" class="tab-content">
+            <div class="mb-4 flex justify-between items-center flex-wrap gap-2">
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="generateAIAnalysis('psychodynamic', '精神动力学', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm rounded hover:from-purple-700 hover:to-indigo-700 transition shadow-md" id="ai-btn-精神动力学" title="使用AI生成该流派的专业分析"><i class="fa fa-magic"></i> 🤖 生成AI分析</button>
+                    <button onclick="toggleEdit('精神动力学')" class="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition" id="edit-btn-精神动力学">
+                        <i class="fa fa-edit"></i> 编辑
+                    </button>
+                    <button onclick="saveEdit('精神动力学', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition" style="display:none;" id="save-btn-精神动力学">
+                        <i class="fa fa-save"></i> 保存
+                    </button>
+                    <button onclick="uploadApproachWord('精神动力学', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition" title="上传Word文档">
+                        <i class="fa fa-upload"></i> 上传Word
+                    </button>
+                </div>
+                <a href="../downloads//_精分.docx" download
+                   class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition"
+                   onclick="event.preventDefault(); downloadApproachWord('精神动力学', '', '精分');">
+                    <i class="fa fa-download"></i> 下载精神动力学分析
+                </a>
+            </div>
+
+            <!-- 编辑工具栏 -->
+            <div class="edit-toolbar mb-4" id="toolbar-精神动力学" style="display:none;">
+                <div class="flex gap-2 p-3 bg-gray-100 rounded flex-wrap">
+                    <button onclick="formatText('bold')" class="px-3 py-1 bg-white border rounded hover:bg-gray-50" title="加粗">
+                        <i class="fa fa-bold"></i> 加粗
+                    </button>
+                    <button onclick="formatText('underline')" class="px-3 py-1 bg-white border rounded hover:bg-gray-50" title="下划线">
+                        <i class="fa fa-underline"></i> 下划线
+                    </button>
+                    <div class="flex items-center gap-1">
+                        <span class="text-sm text-gray-600 mr-1">标记颜色:</span>
+                        <button onclick="formatColor('#ef4444')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #ef4444;" title="红色"></button>
+                        <button onclick="formatColor('#f59e0b')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #f59e0b;" title="橙色"></button>
+                        <button onclick="formatColor('#eab308')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #eab308;" title="黄色"></button>
+                        <button onclick="formatColor('#22c55e')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #22c55e;" title="绿色"></button>
+                        <button onclick="formatColor('#3b82f6')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #3b82f6;" title="蓝色"></button>
+                        <button onclick="formatColor('#a855f7')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #a855f7;" title="紫色"></button>
+                        <button onclick="formatColor('#000000')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #000000;" title="黑色"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div id="analysis-content-精神动力学" class="text-gray-700 leading-relaxed p-4 border rounded min-h-[400px]" contenteditable="false">
+                    <span class="text-gray-500">暂无内容，点击编辑按钮开始编写...</span>
+                </div>
+            </div>
+
+            <!-- 历次感悟区域 -->
+            <div class="mt-8 pt-6 border-t-2 border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-indigo-900">🧠 历次感悟（精神动力学视角）</h3>
+                    <button onclick="showAddInsightModal('精神动力学')" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition">
+                        <i class="fa fa-plus"></i> 添加感悟
+                    </button>
+                </div>
+
+                <div id="insights-精神动力学" class="space-y-4">
+
+                    <p class="text-gray-500 text-center py-8">
+                        暂无感悟记录，点击右上角"添加感悟"按钮添加第一条感悟
+                    </p>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="存在主义" class="tab-content">
+            <div class="mb-4 flex justify-between items-center flex-wrap gap-2">
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="generateAIAnalysis('existential', '存在主义', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm rounded hover:from-purple-700 hover:to-indigo-700 transition shadow-md" id="ai-btn-存在主义" title="使用AI生成该流派的专业分析"><i class="fa fa-magic"></i> 🤖 生成AI分析</button>
+                    <button onclick="toggleEdit('存在主义')" class="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition" id="edit-btn-存在主义">
+                        <i class="fa fa-edit"></i> 编辑
+                    </button>
+                    <button onclick="saveEdit('存在主义', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition" style="display:none;" id="save-btn-存在主义">
+                        <i class="fa fa-save"></i> 保存
+                    </button>
+                    <button onclick="uploadApproachWord('存在主义', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition" title="上传Word文档">
+                        <i class="fa fa-upload"></i> 上传Word
+                    </button>
+                </div>
+                <a href="../downloads//_存在.docx" download
+                   class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition"
+                   onclick="event.preventDefault(); downloadApproachWord('存在主义', '', '存在');">
+                    <i class="fa fa-download"></i> 下载存在主义分析
+                </a>
+            </div>
+
+            <!-- 编辑工具栏 -->
+            <div class="edit-toolbar mb-4" id="toolbar-存在主义" style="display:none;">
+                <div class="flex gap-2 p-3 bg-gray-100 rounded flex-wrap">
+                    <button onclick="formatText('bold')" class="px-3 py-1 bg-white border rounded hover:bg-gray-50" title="加粗">
+                        <i class="fa fa-bold"></i> 加粗
+                    </button>
+                    <button onclick="formatText('underline')" class="px-3 py-1 bg-white border rounded hover:bg-gray-50" title="下划线">
+                        <i class="fa fa-underline"></i> 下划线
+                    </button>
+                    <div class="flex items-center gap-1">
+                        <span class="text-sm text-gray-600 mr-1">标记颜色:</span>
+                        <button onclick="formatColor('#ef4444')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #ef4444;" title="红色"></button>
+                        <button onclick="formatColor('#f59e0b')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #f59e0b;" title="橙色"></button>
+                        <button onclick="formatColor('#eab308')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #eab308;" title="黄色"></button>
+                        <button onclick="formatColor('#22c55e')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #22c55e;" title="绿色"></button>
+                        <button onclick="formatColor('#3b82f6')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #3b82f6;" title="蓝色"></button>
+                        <button onclick="formatColor('#a855f7')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #a855f7;" title="紫色"></button>
+                        <button onclick="formatColor('#000000')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #000000;" title="黑色"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div id="analysis-content-存在主义" class="text-gray-700 leading-relaxed p-4 border rounded min-h-[400px]" contenteditable="false">
+                    <span class="text-gray-500">暂无内容，点击编辑按钮开始编写...</span>
+                </div>
+            </div>
+
+            <!-- 历次感悟区域 -->
+            <div class="mt-8 pt-6 border-t-2 border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-indigo-900">🧠 历次感悟（存在主义视角）</h3>
+                    <button onclick="showAddInsightModal('存在主义')" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition">
+                        <i class="fa fa-plus"></i> 添加感悟
+                    </button>
+                </div>
+
+                <div id="insights-存在主义" class="space-y-4">
+
+                    <p class="text-gray-500 text-center py-8">
+                        暂无感悟记录，点击右上角"添加感悟"按钮添加第一条感悟
+                    </p>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="人本主义" class="tab-content">
+            <div class="mb-4 flex justify-between items-center flex-wrap gap-2">
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="generateAIAnalysis('humanistic', '人本主义', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm rounded hover:from-purple-700 hover:to-indigo-700 transition shadow-md" id="ai-btn-人本主义" title="使用AI生成该流派的专业分析"><i class="fa fa-magic"></i> 🤖 生成AI分析</button>
+                    <button onclick="toggleEdit('人本主义')" class="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition" id="edit-btn-人本主义">
+                        <i class="fa fa-edit"></i> 编辑
+                    </button>
+                    <button onclick="saveEdit('人本主义', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition" style="display:none;" id="save-btn-人本主义">
+                        <i class="fa fa-save"></i> 保存
+                    </button>
+                    <button onclick="uploadApproachWord('人本主义', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition" title="上传Word文档">
+                        <i class="fa fa-upload"></i> 上传Word
+                    </button>
+                </div>
+                <a href="../downloads//_人本.docx" download
+                   class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition"
+                   onclick="event.preventDefault(); downloadApproachWord('人本主义', '', '人本');">
+                    <i class="fa fa-download"></i> 下载人本主义分析
+                </a>
+            </div>
+
+            <!-- 编辑工具栏 -->
+            <div class="edit-toolbar mb-4" id="toolbar-人本主义" style="display:none;">
+                <div class="flex gap-2 p-3 bg-gray-100 rounded flex-wrap">
+                    <button onclick="formatText('bold')" class="px-3 py-1 bg-white border rounded hover:bg-gray-50" title="加粗">
+                        <i class="fa fa-bold"></i> 加粗
+                    </button>
+                    <button onclick="formatText('underline')" class="px-3 py-1 bg-white border rounded hover:bg-gray-50" title="下划线">
+                        <i class="fa fa-underline"></i> 下划线
+                    </button>
+                    <div class="flex items-center gap-1">
+                        <span class="text-sm text-gray-600 mr-1">标记颜色:</span>
+                        <button onclick="formatColor('#ef4444')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #ef4444;" title="红色"></button>
+                        <button onclick="formatColor('#f59e0b')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #f59e0b;" title="橙色"></button>
+                        <button onclick="formatColor('#eab308')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #eab308;" title="黄色"></button>
+                        <button onclick="formatColor('#22c55e')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #22c55e;" title="绿色"></button>
+                        <button onclick="formatColor('#3b82f6')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #3b82f6;" title="蓝色"></button>
+                        <button onclick="formatColor('#a855f7')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #a855f7;" title="紫色"></button>
+                        <button onclick="formatColor('#000000')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #000000;" title="黑色"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div id="analysis-content-人本主义" class="text-gray-700 leading-relaxed p-4 border rounded min-h-[400px]" contenteditable="false">
+                    <span class="text-gray-500">暂无内容，点击编辑按钮开始编写...</span>
+                </div>
+            </div>
+
+            <!-- 历次感悟区域 -->
+            <div class="mt-8 pt-6 border-t-2 border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-indigo-900">🧠 历次感悟（人本主义视角）</h3>
+                    <button onclick="showAddInsightModal('人本主义')" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition">
+                        <i class="fa fa-plus"></i> 添加感悟
+                    </button>
+                </div>
+
+                <div id="insights-人本主义" class="space-y-4">
+
+                    <p class="text-gray-500 text-center py-8">
+                        暂无感悟记录，点击右上角"添加感悟"按钮添加第一条感悟
+                    </p>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="内在家庭系统疗法 (IFS)" class="tab-content">
+            <div class="mb-4 flex justify-between items-center flex-wrap gap-2">
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="generateAIAnalysis('ifs', '内在家庭系统疗法 (IFS)', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm rounded hover:from-purple-700 hover:to-indigo-700 transition shadow-md" id="ai-btn-内在家庭系统疗法 (IFS)" title="使用AI生成该流派的专业分析"><i class="fa fa-magic"></i> 🤖 生成AI分析</button>
+                    <button onclick="toggleEdit('内在家庭系统疗法 (IFS)')" class="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition" id="edit-btn-内在家庭系统疗法 (IFS)">
+                        <i class="fa fa-edit"></i> 编辑
+                    </button>
+                    <button onclick="saveEdit('内在家庭系统疗法 (IFS)', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition" style="display:none;" id="save-btn-内在家庭系统疗法 (IFS)">
+                        <i class="fa fa-save"></i> 保存
+                    </button>
+                    <button onclick="uploadApproachWord('内在家庭系统疗法 (IFS)', 'V20260522003', 'visit_001')" class="px-4 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition" title="上传Word文档">
+                        <i class="fa fa-upload"></i> 上传Word
+                    </button>
+                </div>
+                <a href="../downloads//_IFS.docx" download
+                   class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition"
+                   onclick="event.preventDefault(); downloadApproachWord('内在家庭系统疗法 (IFS)', '', 'IFS');">
+                    <i class="fa fa-download"></i> 下载内在家庭系统疗法 (IFS)分析
+                </a>
+            </div>
+
+            <!-- 编辑工具栏 -->
+            <div class="edit-toolbar mb-4" id="toolbar-内在家庭系统疗法 (IFS)" style="display:none;">
+                <div class="flex gap-2 p-3 bg-gray-100 rounded flex-wrap">
+                    <button onclick="formatText('bold')" class="px-3 py-1 bg-white border rounded hover:bg-gray-50" title="加粗">
+                        <i class="fa fa-bold"></i> 加粗
+                    </button>
+                    <button onclick="formatText('underline')" class="px-3 py-1 bg-white border rounded hover:bg-gray-50" title="下划线">
+                        <i class="fa fa-underline"></i> 下划线
+                    </button>
+                    <div class="flex items-center gap-1">
+                        <span class="text-sm text-gray-600 mr-1">标记颜色:</span>
+                        <button onclick="formatColor('#ef4444')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #ef4444;" title="红色"></button>
+                        <button onclick="formatColor('#f59e0b')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #f59e0b;" title="橙色"></button>
+                        <button onclick="formatColor('#eab308')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #eab308;" title="黄色"></button>
+                        <button onclick="formatColor('#22c55e')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #22c55e;" title="绿色"></button>
+                        <button onclick="formatColor('#3b82f6')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #3b82f6;" title="蓝色"></button>
+                        <button onclick="formatColor('#a855f7')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #a855f7;" title="紫色"></button>
+                        <button onclick="formatColor('#000000')" class="w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-500" style="background-color: #000000;" title="黑色"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div id="analysis-content-内在家庭系统疗法 (IFS)" class="text-gray-700 leading-relaxed p-4 border rounded min-h-[400px]" contenteditable="false">
+                    <span class="text-gray-500">暂无内容，点击编辑按钮开始编写...</span>
+                </div>
+            </div>
+
+            <!-- 历次感悟区域 -->
+            <div class="mt-8 pt-6 border-t-2 border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-indigo-900">🧠 历次感悟（内在家庭系统疗法 (IFS)视角）</h3>
+                    <button onclick="showAddInsightModal('内在家庭系统疗法 (IFS)')" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition">
+                        <i class="fa fa-plus"></i> 添加感悟
+                    </button>
+                </div>
+
+                <div id="insights-内在家庭系统疗法 (IFS)" class="space-y-4">
+
+                    <p class="text-gray-500 text-center py-8">
+                        暂无感悟记录，点击右上角"添加感悟"按钮添加第一条感悟
+                    </p>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+    <script>
+        // ========== 感悟管理功能 ==========
+        const VISITOR_ID = 'V20260522003';
+        const VISIT_ID = 'visit_001';
+
+        let currentInsightModal = null;
+
+        // 显示添加感悟对话框
+        function showAddInsightModal(approachName) {
+            const modal = createInsightModal(approachName, null, '');
+            document.body.appendChild(modal);
+            currentInsightModal = modal;
+        }
+
+        // 编辑感悟
+        function editInsight(recordId, approachName, content) {
+            // 反转义内容
+            const unescapedContent = content.replace(/<br>/g, '\\n').replace(/&quot;/g, '"').replace(/\\\\\\\\/g, '\\\\');
+            const modal = createInsightModal(approachName, recordId, unescapedContent);
+            document.body.appendChild(modal);
+            currentInsightModal = modal;
+        }
+
+        // 创建感悟模态框
+        function createInsightModal(approachName, recordId, content) {
+            const isEdit = recordId !== null;
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 12px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #4f46e5;">
+                        ${isEdit ? '编辑感悟' : '添加感悟'}
+                    </h3>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151;">流派视角</label>
+                        <input type="text" id="insight-approach" value="${approachName}" readonly
+                               style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; background: #f3f4f6; color: #6b7280;">
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151;">感悟内容 <span style="color: red;">*</span></label>
+                        <textarea id="insight-content" rows="10" placeholder="请输入您的感悟..."
+                                  style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; resize: vertical; font-family: inherit;">${content}</textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button onclick="closeInsightModal()"
+                                style="padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            取消
+                        </button>
+                        <button onclick="saveInsight('${approachName}', '${recordId || ''}')"
+                                style="padding: 10px 20px; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            ${isEdit ? '保存修改' : '添加'}
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            return modal;
+        }
+
+        // 关闭模态框
+        function closeInsightModal() {
+            if (currentInsightModal) {
+                document.body.removeChild(currentInsightModal);
+                currentInsightModal = null;
+            }
+        }
+
+        // 保存感悟
+        function saveInsight(approachName, recordId) {
+            const content = document.getElementById('insight-content').value.trim();
+
+            if (!content) {
+                alert('请输入感悟内容');
+                return;
+            }
+
+            const isEdit = recordId !== '';
+            const url = isEdit
+                ? 'http://localhost:8766/supervision_record/edit'
+                : 'http://localhost:8766/supervision_record/add';
+
+            const data = {
+                visitor_id: VISITOR_ID,
+                visit_id: VISIT_ID,
+                approach: approachName,
+                content: content
+            };
+
+            if (isEdit) {
+                data.record_id = recordId;
+            }
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert(isEdit ? '感悟修改成功！' : '感悟添加成功！');
+                    closeInsightModal();
+                    // 保存当前激活的tab到URL hash，确保刷新后停留在当前流派
+                    const activeTab = document.querySelector('.tab-content.active');
+                    if (activeTab) {
+                        window.location.hash = activeTab.id;
+                    }
+                    // 延迟刷新页面，让用户看到成功提示
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                } else {
+                    alert('保存失败：' + result.error);
+                }
+            })
+            .catch(error => {
+                console.error('保存失败:', error);
+                alert('保存失败，请确保服务器已启动（端口8766）');
+            });
+        }
+
+        // 删除感悟
+        function deleteInsight(recordId, visitorId, visitId) {
+            if (!confirm('确定要删除这条感悟吗？')) {
+                return;
+            }
+
+            const data = {
+                visitor_id: visitorId,
+                visit_id: visitId,
+                record_id: recordId
+            };
+
+            fetch('http://localhost:8766/supervision_record/delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('感悟删除成功！');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                } else {
+                    alert('删除失败：' + result.error);
+                }
+            })
+            .catch(error => {
+                console.error('删除失败:', error);
+                alert('删除失败，请确保服务器已启动（端口8766）');
+            });
+        }
+
+        // ========== 感悟富文本编辑功能 ==========
+        let currentEditingInsight = null;
+
+        // 折叠/展开感悟
+        function toggleInsightCollapse(recordId) {
+            const content = document.getElementById('collapse-insight-' + recordId);
+            const icon = document.getElementById('icon-insight-' + recordId);
+
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.style.display = 'none';
+                icon.style.transform = 'rotate(-90deg)';
+            }
+        }
+
+        function toggleInsightEdit(recordId, approachName) {
+            const contentDiv = document.getElementById('insight-content-' + recordId);
+            const toolbar = document.getElementById('toolbar-insight-' + recordId);
+            const saveBtn = document.getElementById('save-btn-insight-' + recordId);
+            const editBtn = document.getElementById('edit-btn-insight-' + recordId);
+
+            const isEditing = contentDiv.getAttribute('contenteditable') === 'true';
+
+            if (isEditing) {
+                // 退出编辑模式
+                contentDiv.setAttribute('contenteditable', 'false');
+                toolbar.style.display = 'none';
+                saveBtn.style.display = 'none';
+                editBtn.style.display = 'inline-block';
+                contentDiv.style.border = '1px solid #d1d5db';
+                currentEditingInsight = null;
+            } else {
+                // 进入编辑模式
+                contentDiv.setAttribute('contenteditable', 'true');
+                toolbar.style.display = 'block';
+                saveBtn.style.display = 'inline-block';
+                editBtn.style.display = 'none';
+                contentDiv.style.border = '2px solid #6366f1';
+                contentDiv.focus();
+                currentEditingInsight = recordId;
+            }
+        }
+
+        function formatInsightText(recordId, command) {
+            document.execCommand(command, false, null);
+        }
+
+        function formatInsightColor(recordId, color) {
+            document.execCommand('foreColor', false, color);
+        }
+
+        function saveInsightEdit(recordId, approachName, visitorId, visitId) {
+            const contentDiv = document.getElementById('insight-content-' + recordId);
+
+            const data = {
+                visitor_id: visitorId,
+                visit_id: visitId,
+                record_id: recordId,
+                approach: approachName,
+                content: contentDiv.innerHTML
+            };
+
+            // 保存到服务器
+            fetch('http://localhost:8766/supervision_record/edit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('感悟保存成功！');
+                    // 退出编辑模式
+                    toggleInsightEdit(recordId, approachName);
+                    // 刷新页面以显示更新
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                } else {
+                    alert('保存失败：' + result.error);
+                }
+            })
+            .catch(error => {
+                console.error('保存失败:', error);
+                alert('保存失败，请确保服务器已启动（端口8766）');
+            });
+        }
+
+        // 下载感悟为Word
+        function downloadInsightWord(recordId, approachName, caseId, insightNum) {
+            const contentDiv = document.getElementById('insight-content-' + recordId);
+
+            // 构建HTML内容
+            let htmlContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        body { font-family: "Microsoft YaHei", "SimSun", sans-serif; }
+                        h1 { text-align: center; color: #333; }
+                        p { line-height: 1.8; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${approachName}视角 - 第${insightNum}次感悟</h1>
+                    <p><strong>案例编号：</strong>${caseId}</p>
+                    <div>
+                        ${contentDiv.innerHTML}
+                    </div>
+                </body>
+                </html>
+            `;
+
+            // 使用html-docx-js转换并下载
+            const converted = htmlDocx.asBlob(htmlContent);
+            saveAs(converted, `${caseId}_${approachName}_感悟${insightNum}.docx`);
+        }
+
+        // 上传Word文档并导入感悟内容
+        function uploadInsightWord(recordId, approachName, visitorId, visitId) {
+            const contentDiv = document.getElementById('insight-content-' + recordId);
+            const hasExistingContent = contentDiv && contentDiv.textContent.trim();
+
+            // 如果有现有内容，显示确认对话框
+            if (hasExistingContent) {
+                const confirmDialog = document.createElement('div');
+                confirmDialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9998; display: flex; align-items: center; justify-content: center;';
+
+                const dialogBox = document.createElement('div');
+                dialogBox.style.cssText = 'background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); max-width: 450px; width: 90%;';
+                dialogBox.innerHTML = `
+                    <div style="font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #dc2626;">
+                        <i class="fa fa-exclamation-triangle"></i> 确认上传
+                    </div>
+                    <div style="font-size: 15px; line-height: 1.6; color: #374151; margin-bottom: 25px;">
+                        当前感悟已有内容，上传新Word文档将<strong style="color: #dc2626;">完全覆盖</strong>现有内容。
+                        <br><br>
+                        <strong>提示：</strong>如需保留当前内容，请先下载Word备份。
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button id="cancelUploadInsight" style="padding: 10px 24px; background: #e5e7eb; color: #374151; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">
+                            取消
+                        </button>
+                        <button id="confirmUploadInsight" style="padding: 10px 24px; background: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">
+                            确认覆盖
+                        </button>
+                    </div>
+                `;
+
+                confirmDialog.appendChild(dialogBox);
+                document.body.appendChild(confirmDialog);
+
+                // 取消按钮
+                document.getElementById('cancelUploadInsight').onclick = function() {
+                    document.body.removeChild(confirmDialog);
+                };
+
+                // 确认按钮
+                document.getElementById('confirmUploadInsight').onclick = function() {
+                    document.body.removeChild(confirmDialog);
+                    proceedWithInsightUpload(recordId, approachName, visitorId, visitId);
+                };
+            } else {
+                // 无现有内容，直接上传
+                proceedWithInsightUpload(recordId, approachName, visitorId, visitId);
+            }
+        }
+
+        // 实际执行感悟上传的函数
+        function proceedWithInsightUpload(recordId, approachName, visitorId, visitId) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.docx';
+
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // 显示上传提示
+                const uploadMsg = document.createElement('div');
+                uploadMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 9999; text-align: center;';
+                uploadMsg.innerHTML = '<div style="font-size: 18px; margin-bottom: 10px;">正在处理Word文档...</div><div style="color: #666;">解析格式中，请稍候</div>';
+                document.body.appendChild(uploadMsg);
+
+                // 创建FormData
+                const formData = new FormData();
+                formData.append('file', file);
+
+                // 发送到Python服务器
+                fetch('http://localhost:8765/', {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'cors'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.body.removeChild(uploadMsg);
+
+                    if (data.success) {
+                        const contentDiv = document.getElementById('insight-content-' + recordId);
+                        if (contentDiv) {
+                            contentDiv.innerHTML = data.html;
+
+                            // 自动保存到服务器
+                            const saveData = {
+                                visitor_id: visitorId,
+                                visit_id: visitId,
+                                record_id: recordId,
+                                approach: approachName,
+                                content: data.html
+                            };
+
+                            fetch('http://localhost:8766/supervision_record/edit', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(saveData)
+                            })
+                            .then(response => response.json())
+                            .then(saveResult => {
+                                console.log('自动保存结果:', saveResult);
+                            })
+                            .catch(error => {
+                                console.error('自动保存失败:', error);
+                            });
+
+                            // 成功提示
+                            const successDialog = document.createElement('div');
+                            successDialog.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 9999; max-width: 400px;';
+                            successDialog.innerHTML = `
+                                <div style="text-align: center;">
+                                    <div style="font-size: 48px; color: #10b981; margin-bottom: 15px;">✓</div>
+                                    <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">导入成功！</div>
+                                    <div style="font-size: 14px; color: #6b7280; line-height: 1.6;">
+                                        已完整保留：<br>
+                                        ✓ 文字颜色和背景色<br>
+                                        ✓ 加粗、斜体、下划线<br>
+                                        ✓ 标题层级和列表结构<br><br>
+                                        内容已自动保存
+                                    </div>
+                                    <button onclick="this.parentElement.parentElement.remove()" style="margin-top: 20px; padding: 10px 30px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                                        确定
+                                    </button>
+                                </div>
+                            `;
+                            document.body.appendChild(successDialog);
+
+                            // 3秒后自动关闭
+                            setTimeout(() => {
+                                if (successDialog.parentElement) {
+                                    successDialog.remove();
+                                }
+                            }, 3000);
+                        }
+                    } else {
+                        alert('❌ Word文档解析失败\n\n' + (data.error || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    document.body.removeChild(uploadMsg);
+                    console.error('上传失败:', error);
+                    alert('❌ 上传失败\n\n请确保：\n1. Word上传服务器已启动\n2. 运行命令：python src/word_upload_server.py\n3. 服务器端口：8765\n\n错误信息：' + error.message);
+                });
+            };
+
+            input.click();
+        }
+
+        // ========== 录音管理功能 ==========
+
+        // 显示上传录音对话框
+        function showUploadRecordingDialog() {
+            const dialog = document.createElement('div');
+            dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+            dialog.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); max-width: 500px; width: 90%;">
+                    <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #374151;">
+                        <i class="fa fa-upload"></i> 上传录音文件
+                    </h3>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #374151;">选择文件：</label>
+                        <input type="file" id="recording-file-input" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.wma"
+                               style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">
+                            支持格式：MP3, WAV, M4A, AAC, OGG, FLAC, WMA
+                        </p>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #374151;">备注（可选）：</label>
+                        <textarea id="recording-description-input" rows="3"
+                                  placeholder="例如：第一次咨询完整录音、重点片段等"
+                                  style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button onclick="this.closest('div[style*=fixed]').remove()"
+                                style="padding: 10px 20px; background: #e5e7eb; color: #374151; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            取消
+                        </button>
+                        <button onclick="uploadRecording()"
+                                style="padding: 10px 20px; background: #7c3aed; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            <i class="fa fa-upload"></i> 开始上传
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(dialog);
+        }
+
+        // 上传录音
+        function uploadRecording() {
+            const fileInput = document.getElementById('recording-file-input');
+            const descriptionInput = document.getElementById('recording-description-input');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('请选择要上传的录音文件');
+                return;
+            }
+
+            // 关闭对话框
+            const dialog = fileInput.closest('div[style*=fixed]');
+            dialog.remove();
+
+            // 显示上传进度
+            const progressMsg = document.createElement('div');
+            progressMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 9999; text-align: center;';
+            progressMsg.innerHTML = `
+                <div style="font-size: 48px; margin-bottom: 15px;">⏳</div>
+                <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">正在上传录音...</div>
+                <div style="font-size: 14px; color: #6b7280;">请稍候，文件较大可能需要一些时间</div>
+            `;
+            document.body.appendChild(progressMsg);
+
+            // 构建FormData
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('visitor_id', VISITOR_ID);
+            formData.append('visit_id', VISIT_ID);
+            formData.append('description', descriptionInput.value);
+
+            // 上传
+            fetch('http://localhost:8767/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                document.body.removeChild(progressMsg);
+
+                if (result.success) {
+                    alert('录音上传成功！页面即将刷新...');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                } else {
+                    alert('上传失败：' + result.error);
+                }
+            })
+            .catch(error => {
+                document.body.removeChild(progressMsg);
+                console.error('上传失败:', error);
+                alert('上传失败，请确保录音服务器已启动（端口8767）\n\n错误信息：' + error.message);
+            });
+        }
+
+        // 删除录音
+        function deleteRecording(recordingId, visitorId, visitId) {
+            if (!confirm('确定要删除这个录音文件吗？\n\n删除后无法恢复！')) {
+                return;
+            }
+
+            const data = {
+                visitor_id: visitorId,
+                visit_id: visitId,
+                recording_id: recordingId
+            };
+
+            fetch('http://localhost:8767/delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('录音删除成功！页面即将刷新...');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                } else {
+                    alert('删除失败：' + result.error);
+                }
+            })
+            .catch(error => {
+                console.error('删除失败:', error);
+                alert('删除失败，请确保录音服务器已启动（端口8767）');
+            });
+        }
+
+        // ========== 逐字稿管理功能 ==========
+
+        // 显示上传逐字稿对话框
+        function showUploadTranscriptDialog() {
+            const dialog = document.createElement('div');
+            dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+            dialog.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); max-width: 500px; width: 90%;">
+                    <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #374151;">
+                        <i class="fa fa-upload"></i> 上传逐字稿文件
+                    </h3>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #374151;">选择文件：</label>
+                        <input type="file" id="transcript-file-input" accept=".txt,.docx,.xlsx,.csv"
+                               style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">
+                            支持格式：TXT, DOCX, XLSX, CSV
+                        </p>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button onclick="this.closest('div').parentElement.parentElement.remove()"
+                                style="padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            取消
+                        </button>
+                        <button onclick="uploadTranscript()"
+                                style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            <i class="fa fa-upload"></i> 开始上传
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(dialog);
+        }
+
+        // 上传逐字稿
+        function uploadTranscript() {
+            const fileInput = document.getElementById('transcript-file-input');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('请选择要上传的逐字稿文件');
+                return;
+            }
+
+            // 关闭对话框
+            fileInput.closest('div').parentElement.parentElement.remove();
+
+            // 显示上传进度
+            const progressDiv = document.createElement('div');
+            progressDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000;';
+            progressDiv.innerHTML = '<div style="display: flex; align-items: center; gap: 10px;"><i class="fa fa-spinner fa-spin" style="color: #2563eb;"></i><span>正在上传逐字稿...</span></div>';
+            document.body.appendChild(progressDiv);
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('visitor_id', 'V20260522003');
+            formData.append('visit_id', 'visit_001');
+
+            fetch('http://localhost:8769/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                progressDiv.remove();
+                if (result.success) {
+                    alert('✅ 逐字稿上传成功！\n\n页面即将刷新显示新内容...');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    alert('❌ 上传失败：' + result.error);
+                }
+            })
+            .catch(error => {
+                progressDiv.remove();
+                console.error('上传失败:', error);
+                alert('上传失败，请确保逐字稿服务器已启动（端口8769）\n\n错误信息：' + error.message);
+            });
+        }
+
+        // 删除逐字稿
+        function deleteTranscript(transcriptId, visitorId, visitId) {
+            if (!confirm('确定要删除这个逐字稿文件吗？\n\n删除后无法恢复！')) {
+                return;
+            }
+
+            const data = {
+                visitor_id: visitorId,
+                visit_id: visitId,
+                transcript_id: transcriptId
+            };
+
+            fetch('http://localhost:8769/delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('逐字稿删除成功！页面即将刷新...');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                } else {
+                    alert('删除失败：' + result.error);
+                }
+            })
+            .catch(error => {
+                console.error('删除失败:', error);
+                alert('删除失败，请确保逐字稿服务器已启动（端口8769）');
+            });
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,70 @@
+{
+  "visitor_id": "V20260522002",
+  "basic_info": {
+    "name": "妻子患癌+自身确诊癌症",
+    "gender": "男",
+    "age": "45",
+    "birth_date": "",
+    "occupation": "公务员",
+    "marital_status": "丧偶",
+    "sexual_orientation": "异性恋",
+    "religion": "无",
+    "contact_phone": "无",
+    "emergency_contact": "无",
+    "emergency_contact_relation": "无",
+    "emergency_contact_phone": "无",
+    "medication": "",
+    "notes": "",
+    "background": "",
+    "initial_complaint": "妻子患癌经过一年治疗后离世，自己上个月又确诊为癌症，孩子大学刚毕业异地工作，不知道如何活下去",
+    "counseling_goal": "直面死亡，言语很多时候无法去安抚那种悲伤，只能缓解和陪伴",
+    "counseling_progress": "心理热线-已结案"
+  },
+  "family_structure": {
+    "father_age": "",
+    "father_occupation": "",
+    "father_health": "已离世",
+    "mother_age": "",
+    "mother_occupation": "",
+    "mother_health": "已离世",
+    "parents_relationship": "",
+    "siblings": "姐",
+    "spouse_gender": "女",
+    "spouse_age": "40",
+    "spouse_occupation": "",
+    "spouse_health": "已离世",
+    "children": [
+      {
+        "id": 1786177698096,
+        "gender": "",
+        "age": "24",
+        "health": "健康",
+        "education": "大学毕业",
+        "occupation": "异地上班"
+      }
+    ],
+    "family_notes": ""
+  },
+  "history": {
+    "complaint": "妻子患癌经过一年治疗后离世，自己上个月又确诊为癌症，孩子大学刚毕业异地工作，不知道如何活下去",
+    "past_history": {
+      "有既往咨询史": false,
+      "有精神科就诊史": false,
+      "既往史详情": "无"
+    }
+  },
+  "psych_tests": [],
+  "visit_history": [
+    {
+      "visit_id": "visit_001",
+      "visit_number": 1,
+      "date": "2026-05-22",
+      "counselor": "吴老师",
+      "duration": 30
+    }
+  ],
+  "metadata": {
+    "created_at": "2026-08-08T16:32:26.504335",
+    "updated_at": "2026-08-08T16:32:26.504335"
+  }
+}

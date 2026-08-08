@@ -333,14 +333,30 @@ def generate_all_downloads():
 
     sp(f"\n开始生成下载文件，共 {len(case_files)} 个案例...\n")
 
-    # 流派配置（硬编码，后续可改为动态加载）
-    approaches = [
-        {"id": "daguanpai", "name": "大观学派"},
-        {"id": "cbt", "name": "CBT"},
-        {"id": "psychodynamic", "name": "精神动力学"},
-        {"id": "humanistic", "name": "人本主义"},
-        {"id": "existential", "name": "存在主义"}
-    ]
+    # 动态加载流派配置
+    approaches = []
+    config_dir = PROJECT_ROOT / 'data' / 'config' / 'approaches'
+    if config_dir.exists():
+        for config_file in sorted(config_dir.glob('*.json')):
+            try:
+                with open(config_file, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                if config.get('enabled', True):
+                    approaches.append({
+                        "id": config['id'],
+                        "name": config.get('name_short') or config['name']
+                    })
+            except Exception:
+                pass
+    if not approaches:
+        # 降级：默认5个流派
+        approaches = [
+            {"id": "daguanpai", "name": "大观学派"},
+            {"id": "cbt", "name": "CBT"},
+            {"id": "psychodynamic", "name": "精神动力学"},
+            {"id": "humanistic", "name": "人本主义"},
+            {"id": "existential", "name": "存在主义"}
+        ]
 
     for case_file in case_files:
         try:

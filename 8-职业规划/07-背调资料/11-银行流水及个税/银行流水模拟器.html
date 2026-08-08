@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>银行流水模拟器（农行格式）</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+  <style>
+    body { font-family: 'Microsoft YaHei', SimSun, sans-serif; }
+    /* 银行流水打印样式 */
+    #statement { font-family: SimSun, 'Microsoft YaHei', serif; font-size: 12px; }
+    #statement table { border-collapse: collapse; width: 100%; }
+    #statement th, #statement td {
+      border: 1px solid #000; padding: 4px 6px;
+      text-align: center; white-space: nowrap; font-size: 11px;
+    }
+    #statement th { background: #f0f0f0; font-weight: bold; }
+    #statement .income { color: #1a7c1a; font-weight: bold; }
+    #statement .expense { color: #cc0000; }
+    @media print {
+      .no-print { display: none !important; }
+      #statement { padding: 0; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+<div class="max-w-7xl mx-auto p-4">
+
+  <!-- 顶部标题 -->
+  <div class="text-center mb-4 no-print">
+    <h1 class="text-2xl font-bold text-gray-800">🏦 银行流水模拟器</h1>
+    <p class="text-sm text-gray-500 mt-1">按农业银行活期交易明细格式生成 · 支持导出 Excel</p>
+  </div>
+
+  <!-- 输入表单 -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-4 no-print">
+
+    <!-- 联动提示横幅（有数据时显示） -->
+    <div id="syncBanner" class="hidden mb-4 rounded-lg px-4 py-3 flex items-center justify-between"
+      style="background:#f0fdf4;border:1px solid #bbf7d0">
+      <div class="flex items-center gap-2 text-sm text-green-700">
+        <i class="fa fa-link text-green-500"></i>
+        <span>检测到个税计算器数据：<strong id="syncInfo"></strong></span>
+        <span class="text-green-500 text-xs" id="syncMode">（已导入，按逐月实际到手金额生成）</span>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="importFromCalculator()"
+          class="text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md">
+          <i class="fa fa-download mr-1"></i>导入
+        </button>
+        <button onclick="clearSync()"
+          class="text-xs text-gray-400 hover:text-gray-600 border border-gray-200 rounded-md px-3 py-1">清除</button>
+      </div>
+    </div>
+
+    <h2 class="font-semibold text-gray-700 mb-4"><i class="fa fa-edit mr-2 text-blue-500"></i>账户与工资参数</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">户名</label>
+        <input id="holderName" type="text" value="吴建龙" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300">
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">账号</label>
+        <input id="accountNo" type="text" value="6228483968603006870" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300">
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">起始月份</label>
+        <input id="startDate" type="month" value="2025-01" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300">
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">结束月份</label>
+        <input id="endDate" type="month" value="2025-12" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300">
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">税后月薪（到账金额）</label>
+        <input id="netSalary" type="number" value="11500" class="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-blue-300">
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">发薪单位名称</label>
+        <input id="employer" type="text" value="某某科技有限公司" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300">
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">发薪日（每月几号）</label>
+        <input id="payDay" type="number" value="15" min="1" max="28" class="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-blue-300">
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">期初余额（元）</label>
+        <input id="initBalance" type="number" value="500.00" step="0.01" class="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-blue-300">
+      </div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
+      <div class="flex items-center gap-2 col-span-2">
+        <input id="addExpenses" type="checkbox" checked class="w-4 h-4">
+        <label class="text-sm text-gray-600">自动添加生活消费流水（增加真实感）</label>
+      </div>
+      <div class="flex items-center gap-2 col-span-2">
+        <input id="addInterest" type="checkbox" checked class="w-4 h-4">
+        <label class="text-sm text-gray-600">添加每季度结息记录</label>
+      </div>
+    </div>
+    <div class="mt-4 flex gap-3">
+      <button onclick="generate()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg transition">
+        <i class="fa fa-refresh mr-2"></i>生成流水
+      </button>
+      <button onclick="exportExcel()" class="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-lg transition">
+        <i class="fa fa-file-excel-o mr-2"></i>导出 Excel
+      </button>
+      <button onclick="window.print()" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold px-6 py-2 rounded-lg transition">
+        <i class="fa fa-print mr-2"></i>打印
+      </button>
+    </div>
+  </div>
+
+  <!-- 流水预览 -->
+  <div id="statement" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div class="text-center text-gray-400 py-8">点击「生成流水」查看预览</div>
+  </div>
+
+</div>
+
+<script>
+// ─── 工具函数 ───────────────────────────────────────────
+let allRows = []; // 全局保存，供Excel导出用
+let syncedMonths = null; // 从个税计算器导入的逐月数据
+
+function pad(n, w=2) { return String(n).padStart(w, '0'); }
+
+function fmtDate(y, m, d) { return `${y}${pad(m)}${pad(d)}`; }
+
+function fmtTime(h, mi, s) { return `${pad(h)}${pad(mi)}${pad(s)}`; }
+
+function randInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+
+function randLogNo() {
+  const letters = 'QRWXYMSKNPF';
+  return letters[randInt(0, letters.length-1)] + String(randInt(100000000, 999999999));
+}
+
+function fmtAmt(n) {
+  const sign = n >= 0 ? '+' : '';
+  return sign + n.toFixed(2);
+}
+
+function fmtBal(n) { return n.toFixed(2); }
+
+// 生成真实附言代码
+function genTransactionCode(type, y, m, d, h, mi, s, desc) {
+  const yyyymmdd = `${y}${pad(m)}${pad(d)}`;
+  const hhmmss = `${pad(h)}${pad(mi)}${pad(s)}`;
+  const randNum = (len) => String(Math.floor(Math.random() * Math.pow(10, len))).padStart(len, '0');
+
+  switch(type) {
+    case 'salary': // 代发工资
+      // 格式: DFDG + YYYYMMDDHHMMSS + 12位流水号 + 公司简称
+      return `DFDG${yyyymmdd}${hhmmss}${randNum(12)}`;
+    case 'wechat': // 微信支付
+      // 格式: NG + YYYYMMDDHHMMSS + 12位号 + S + 7位号 + 描述
+      return `NG${yyyymmdd}${hhmmss}${randNum(12)}S${randNum(7)}微信支付${desc}`;
+    case 'alipay': // 支付宝
+      // 格式: NA + YYYYMMDD + 长串数字 + 描述
+      return `NA${yyyymmdd}${randNum(23)}支付宝${desc}`;
+    case 'union': // 银联POS
+      // 格式: POS机交易流水号
+      return `${randNum(6)}${yyyymmdd}${randNum(8)}`;
+    case 'atm': // ATM取现
+      return ''; // ATM一般无附言
+    case 'interest': // 结息
+      return ''; // 结息无附言
+    default:
+      return '';
+  }
+}
+
+// 生活消费模板（附言, 摘要, 渠道）
+const EXPENSE_TEMPLATES = [
+  { desc:'支付宝', channel:'电子商务', counterPart:'美团外卖', note:'外卖订单', min:15, max:60, type:'alipay' },
+  { desc:'微信支付', channel:'电子商务', counterPart:'沃尔玛超市', note:'日常购物', min:80, max:350, type:'wechat' },
+  { desc:'支付宝', channel:'电子商务', counterPart:'饿了么', note:'外卖订单', min:20, max:55, type:'alipay' },
+  { desc:'微信支付', channel:'电子商务', counterPart:'滴滴出行', note:'打车费用', min:12, max:80, type:'wechat' },
+  { desc:'银联消费', channel:'POS消费', counterPart:'便利蜂', note:'便利店消费', min:8, max:45, type:'union' },
+  { desc:'支付宝', channel:'电子商务', counterPart:'京东商城', note:'网购', min:100, max:600, type:'alipay' },
+  { desc:'微信支付', channel:'电子商务', counterPart:'星巴克咖啡', note:'饮品消费', min:30, max:70, type:'wechat' },
+  { desc:'现支', channel:'自动柜员机', counterPart:'--', note:'', min:300, max:2000, type:'atm' },
+];
+
+// ─── 主生成函数 ─────────────────────────────────────────
+function generate() {
+  const holderName  = document.getElementById('holderName').value.trim();
+  const accountNo   = document.getElementById('accountNo').value.trim();
+  const startM      = document.getElementById('startDate').value;
+  const endM        = document.getElementById('endDate').value;
+  const netSalary   = parseFloat(document.getElementById('netSalary').value) || 0;
+  const employer    = document.getElementById('employer').value.trim();
+  const payDay      = parseInt(document.getElementById('payDay').value) || 15;
+  const initBal     = parseFloat(document.getElementById('initBalance').value) || 0;
+  const addExp      = document.getElementById('addExpenses').checked;
+  const addInt      = document.getElementById('addInterest').checked;
+
+  let [sy, sm] = startM.split('-').map(Number);
+  let [ey, em] = endM.split('-').map(Number);
+
+  // 生成月份列表
+  const months = [];
+  let y = sy, m = sm;
+  while (y < ey || (y === ey && m <= em)) {
+    months.push({ y, m });
+    m++; if (m > 12) { m = 1; y++; }
+  }
+
+  allRows = [];
+  let balance = initBal;
+
+  months.forEach(({ y, m }, index) => {
+    // ① 发薪（月中）— 使用 syncedMonths 或固定 netSalary
+    let thisMonthSalary = netSalary;
+    if (syncedMonths && syncedMonths.length > index) {
+      thisMonthSalary = syncedMonths[index].net;
+    }
+    const salaryH = randInt(9,12), salaryMi = randInt(0,59), salaryS = randInt(0,59);
+    const salaryTime = fmtTime(salaryH, salaryMi, salaryS);
+    const salaryDay = Math.min(payDay, 28);
+    balance += thisMonthSalary;
+    allRows.push({
+      date: fmtDate(y, m, salaryDay),
+      time: salaryTime,
+      desc: '代发工资',
+      amt:  fmtAmt(thisMonthSalary),
+      bal:  fmtBal(balance),
+      counter: employer,
+      logNo: randLogNo(),
+      channel: '代发',
+      note: genTransactionCode('salary', y, m, salaryDay, salaryH, salaryMi, salaryS, employer),
+      type: 'income'
+    });
+
+    // ② 生活消费（随机2-4笔）
+    if (addExp) {
+      const count = randInt(2, 4);
+      const usedDays = new Set([Math.min(payDay,28)]);
+      for (let i = 0; i < count; i++) {
+        let day;
+        do { day = randInt(1, 28); } while (usedDays.has(day));
+        usedDays.add(day);
+
+        const tpl = EXPENSE_TEMPLATES[randInt(0, EXPENSE_TEMPLATES.length-1)];
+        const amt = randInt(tpl.min, tpl.max);
+        balance -= amt;
+        // 防止余额为负
+        if (balance < 0) { balance += amt; continue; }
+        const noteStr = tpl.note || '';
+        const counterStr = tpl.counterPart === '--' ? '--' : tpl.counterPart;
+        const expH = randInt(8,22), expMi = randInt(0,59), expS = randInt(0,59);
+        allRows.push({
+          date: fmtDate(y, m, day),
+          time: fmtTime(expH, expMi, expS),
+          desc: tpl.desc,
+          amt:  fmtAmt(-amt),
+          bal:  fmtBal(balance),
+          counter: counterStr,
+          logNo: randLogNo(),
+          channel: tpl.channel,
+          note: genTransactionCode(tpl.type, y, m, day, expH, expMi, expS, counterStr),
+          type: 'expense'
+        });
+      }
+    }
+
+    // ③ 季度结息（3/6/9/12月）
+    if (addInt && [3,6,9,12].includes(m)) {
+      const interest = parseFloat((balance * 0.00015).toFixed(2));
+      balance += interest;
+      allRows.push({
+        date: fmtDate(y, m, 21),
+        time: '',
+        desc: '结息',
+        amt:  '+' + interest.toFixed(2),
+        bal:  fmtBal(balance),
+        counter: '--',
+        logNo: '0000000001',
+        channel: '个人活期结息',
+        note: '',
+        type: 'income'
+      });
+    }
+  });
+
+  // 按日期排序
+  allRows.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+
+  // ─── 渲染HTML ───────────────────────────────────────
+  const startFmt = `${sy}${pad(sm)}01`;
+  const endFmt   = `${ey}${pad(em)}${new Date(ey, em, 0).getDate()}`;
+  const elecNo   = Date.now().toString().slice(-17).padStart(20,'2');
+
+  let html = `
+    <div style="text-align:center;font-size:16px;font-weight:bold;margin-bottom:8px">
+      中国农业银行账户活期交易明细清单
+    </div>
+    <div style="font-size:11px;margin-bottom:6px;line-height:1.8">
+      户名：${holderName}&nbsp;&nbsp;&nbsp;
+      账户：${accountNo}&nbsp;&nbsp;&nbsp;
+      币种：人民币&nbsp;&nbsp;&nbsp;
+      汇钞标识：本币&nbsp;&nbsp;&nbsp;
+      起止日期：${startFmt}-${endFmt}&nbsp;&nbsp;&nbsp;
+      电子流水号：${elecNo}
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>交易日期</th><th>交易时间</th><th>交易摘要</th>
+          <th>交易金额</th><th>本次余额</th><th>对手信息</th>
+          <th>日志号</th><th>交易渠道</th><th>交易附言</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+  allRows.forEach(r => {
+    const cls = r.type === 'income' ? 'income' : (r.type === 'expense' ? 'expense' : '');
+    html += `<tr>
+      <td>${r.date}</td>
+      <td>${r.time}</td>
+      <td>${r.desc}</td>
+      <td class="${cls}">${r.amt}</td>
+      <td>${r.bal}</td>
+      <td>${r.counter}</td>
+      <td>${r.logNo}</td>
+      <td>${r.channel}</td>
+      <td style="text-align:left;font-size:10px">${r.note}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>
+    <div style="font-size:10px;color:#555;margin-top:8px">
+      该交易明细因不可预测的非人控技术原因可能导致数据缺失，明细内容仅供参考
+    </div>
+    <div style="text-align:right;font-size:10px;margin-top:4px">第1页，共1页</div>`;
+
+  document.getElementById('statement').innerHTML = html;
+}
+
+// ─── Excel 导出 ─────────────────────────────────────────
+function exportExcel() {
+  if (!allRows.length) { generate(); }
+
+  const header = ['交易日期','交易时间','交易摘要','交易金额','本次余额','对手信息','日志号','交易渠道','交易附言'];
+  const data = [header, ...allRows.map(r =>
+    [r.date, r.time, r.desc, r.amt, r.bal, r.counter, r.logNo, r.channel, r.note]
+  )];
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+
+  // 设置列宽
+  ws['!cols'] = [
+    {wch:12},{wch:10},{wch:12},{wch:14},{wch:14},
+    {wch:20},{wch:12},{wch:14},{wch:40}
+  ];
+
+  // 首行加粗（通过 cell style）
+  header.forEach((_, i) => {
+    const cell = XLSX.utils.encode_cell({r:0, c:i});
+    if (ws[cell]) ws[cell].s = { font: { bold: true }, fill: { fgColor: { rgb: 'F0F0F0' } } };
+  });
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '银行流水明细');
+
+  const holderName = document.getElementById('holderName').value.trim();
+  const startM = document.getElementById('startDate').value.replace('-','');
+  const endM   = document.getElementById('endDate').value.replace('-','');
+  XLSX.writeFile(wb, `${holderName}_银行流水_${startM}-${endM}.xlsx`);
+}
+
+// ─── 联动功能 ───────────────────────────────────────────
+function checkSyncData() {
+  const raw = localStorage.getItem('ixt_calc_sync');
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    if (data.months && data.months.length > 0) {
+      const info = `${data.months.length}个月，${data.syncTime}`;
+      document.getElementById('syncInfo').textContent = info;
+      document.getElementById('syncBanner').classList.remove('hidden');
+    }
+  } catch(e) {}
+}
+
+function importFromCalculator() {
+  const raw = localStorage.getItem('ixt_calc_sync');
+  if (!raw) { alert('未检测到个税计算器数据'); return; }
+  try {
+    const data = JSON.parse(raw);
+    syncedMonths = data.months;
+
+    // 自动填充起止日期
+    if (syncedMonths.length > 0) {
+      const first = syncedMonths[0];
+      const last  = syncedMonths[syncedMonths.length - 1];
+      document.getElementById('startDate').value = `${first.year}-${String(first.mon).padStart(2,'0')}`;
+      document.getElementById('endDate').value   = `${last.year}-${String(last.mon).padStart(2,'0')}`;
+    }
+
+    // 禁用固定月薪输入，提示已使用逐月数据
+    document.getElementById('netSalary').disabled = true;
+    document.getElementById('netSalary').style.background = '#f3f4f6';
+    document.getElementById('netSalary').value = '（使用逐月数据）';
+
+    // 更新横幅提示
+    document.getElementById('syncMode').style.display = 'inline';
+
+    alert(`✅ 已导入 ${syncedMonths.length} 个月的逐月到手金额\n每月金额随个税累计变化，自动生成真实流水`);
+    generate(); // 自动生成
+  } catch(e) {
+    alert('数据解析失败：' + e.message);
+  }
+}
+
+function clearSync() {
+  syncedMonths = null;
+  localStorage.removeItem('ixt_calc_sync');
+  document.getElementById('syncBanner').classList.add('hidden');
+  document.getElementById('netSalary').disabled = false;
+  document.getElementById('netSalary').style.background = '#fff';
+  document.getElementById('netSalary').value = '11500';
+  document.getElementById('syncMode').style.display = 'none';
+  alert('已清除同步数据');
+}
+
+// 页面加载时检查
+window.onload = () => {
+  checkSyncData();
+  generate();
+};
+</script>
+</body>
+</html>

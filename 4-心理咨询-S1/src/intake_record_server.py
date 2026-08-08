@@ -113,6 +113,7 @@ def save_new_case():
         # 创建profile.json
         profile_data = {
             'visitor_id': visitor_id,
+            'case_status': data['session_info'].get('案例状态', '进行中'),  # 案例状态
             'basic_info': {
                 'name': data['basic_info']['代号'],
                 'gender': data['basic_info']['性别'],
@@ -160,6 +161,7 @@ def save_new_case():
                     'visit_number': 1,
                     'date': visit_date,
                     'counselor': data['session_info']['咨询师姓名'],
+                    'channel': data['session_info'].get('咨询渠道', ''),
                     'duration': int(data['session_info']['通话时长']) if data['session_info']['通话时长'] else 0
                 }
             ],
@@ -358,6 +360,7 @@ def save_follow_up():
                 'visit_number': visit_number,
                 'date': data['session_info']['接访日期'],
                 'counselor': data['session_info']['咨询师姓名'],
+                'channel': data['session_info'].get('咨询渠道', ''),
                 'duration': int(data['session_info']['通话时长']) if data['session_info']['通话时长'] else 0
             }
             profile_data['visit_history'].append(new_visit_record)
@@ -384,6 +387,9 @@ def save_follow_up():
                 profile_data['basic_info']['notes'] = data['basic_info']['来访备注']
 
         profile_data['metadata']['updated_at'] = datetime.now().isoformat()
+        # 更新案例状态
+        if data['session_info'].get('案例状态'):
+            profile_data['case_status'] = data['session_info']['案例状态']
 
         # 保存profile.json
         with open(profile_path, 'w', encoding='utf-8') as f:

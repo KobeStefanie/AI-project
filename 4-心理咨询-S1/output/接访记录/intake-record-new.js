@@ -1312,6 +1312,34 @@ async function saveNewCase(formData) {
         }
     }
 
+    // 上传逐字稿文件
+    if (selectedTranscriptFiles.length > 0) {
+        console.log(`开始上传 ${selectedTranscriptFiles.length} 个逐字稿文件...`);
+        for (const file of selectedTranscriptFiles) {
+            try {
+                const tFormData = new FormData();
+                tFormData.append('file', file);
+                tFormData.append('visitor_id', visitorId);
+                tFormData.append('visit_id', visitId);
+                tFormData.append('description', `接访记录上传 - ${file.name}`);
+
+                const uploadResponse = await fetch(`${TRANSCRIPT_UPLOAD_API}/upload`, {
+                    method: 'POST',
+                    body: tFormData
+                });
+
+                const uploadResult = await uploadResponse.json();
+                if (uploadResult.success) {
+                    console.log(`✓ 逐字稿上传成功: ${file.name}`);
+                } else {
+                    console.error(`✗ 逐字稿上传失败: ${file.name}`, uploadResult.error);
+                }
+            } catch (error) {
+                console.error('逐字稿上传失败:', file.name, error);
+            }
+        }
+    }
+
     alert(`案例创建成功！\n来访者ID：${visitorId}\n来访ID：${visitId}`);
 }
 

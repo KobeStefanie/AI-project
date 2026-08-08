@@ -1,8 +1,9 @@
 {
   "id": "temp_2",
   "name": "布莱尼",
+  "name_short": "布莱尼",
   "color": "#2563eb",
   "icon": "fa-circle",
-  "enabled": true,
-  "sort_order": 7
+  "enabled": false,
+  "sort_order": 8
 }

@@ -1,38 +1,22 @@
-@echo off
+﻿@echo off
 chcp 65001 >nul
 echo ============================================================
-echo 停止心理咨询-S1所有服务器
+echo   心理咨询-S1 全部服务器停止
 echo ============================================================
 echo.
 
-echo 正在查找并停止所有Python服务器进程...
+set PORTS=5001 8003 8004 8005 8006 8007 8765 8766 8767 8768 8769 8770
 
-for /f "tokens=2,5" %%a in ('netstat -ano ^| findstr ":8004 :8005 :8006 :8765 :8766"') do (
-    if "%%a"=="0.0.0.0:8004" (
-        echo 停止音频服务器 (PID: %%b^)...
-        taskkill //F //PID %%b >nul 2>&1
-    )
-    if "%%a"=="0.0.0.0:8005" (
-        echo 停止配置服务器 (PID: %%b^)...
-        taskkill //F //PID %%b >nul 2>&1
-    )
-    if "%%a"=="0.0.0.0:8006" (
-        echo 停止督导服务器 (PID: %%b^)...
-        taskkill //F //PID %%b >nul 2>&1
-    )
-    if "%%a"=="0.0.0.0:8765" (
-        echo 停止Word上传服务器 (PID: %%b^)...
-        taskkill //F //PID %%b >nul 2>&1
-    )
-    if "%%a"=="0.0.0.0:8766" (
-        echo 停止流派分析保存服务器 (PID: %%b^)...
-        taskkill //F //PID %%b >nul 2>&1
+for %%p in (%PORTS%) do (
+    for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":%%p " ^| findstr "LISTENING"') do (
+        echo 停止端口 %%p (PID: %%a)...
+        taskkill /F /PID %%a >nul 2>&1
     )
 )
 
 echo.
 echo ============================================================
-echo 所有服务器已停止！
+echo   所有服务器已停止！
 echo ============================================================
 echo.
 pause

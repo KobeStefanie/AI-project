@@ -68,6 +68,38 @@ def get_html_template():
         }}
         .tab-content {{ display: none; }}
         .tab-content.active {{ display: block; }}
+        .view-toggle-btn {{
+            color: #6b7280;
+        }}
+        .view-toggle-btn.active {{
+            background-color: #6366f1;
+            color: white;
+        }}
+        .view-toggle-btn:hover:not(.active) {{
+            background-color: #f3f4f6;
+        }}
+        .view-container.hidden {{
+            display: none;
+        }}
+        #listView table tbody tr:hover {{
+            background-color: #f9fafb;
+        }}
+        .status-badge {{
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }}
+        .status-high {{ background-color: #fee; color: #991b1b; }}
+        .status-medium {{ background-color: #fef3c7; color: #92400e; }}
+        .status-low {{ background-color: #d1fae5; color: #065f46; }}
+        .status-none {{ background-color: #f3f4f6; color: #374151; }}
+        /* 案例状态徽章 */
+        .case-status-active {{ background-color: #d1fae5; color: #065f46; }}
+        .case-status-paused {{ background-color: #fef3c7; color: #92400e; }}
+        .case-status-closed {{ background-color: #f3f4f6; color: #374151; }}
+        .case-status-referred {{ background-color: #dbeafe; color: #1e40af; }}
     </style>
 </head>
 <body class="bg-gray-50">
@@ -78,6 +110,14 @@ def get_html_footer():
     """获取HTML模板尾部"""
     return """
     <script>
+        // 视图切换
+        function switchView(view) {
+            document.getElementById('cardView').classList.toggle('hidden', view !== 'card');
+            document.getElementById('listView').classList.toggle('hidden', view !== 'list');
+            document.getElementById('btnCardView').classList.toggle('active', view === 'card');
+            document.getElementById('btnListView').classList.toggle('active', view === 'list');
+        }
+
         // 折叠功能
         document.querySelectorAll('.collapsible').forEach(item => {
             item.addEventListener('click', function() {
@@ -154,6 +194,19 @@ def get_html_footer():
 </body>
 </html>
 """
+
+
+
+
+def get_case_status_badge(case_status):
+    """返回案例状态的CSS类名和显示文字"""
+    status_map = {
+        '进行中': ('case-status-active', '🟢 进行中'),
+        '暂停':   ('case-status-paused', '🟡 暂停'),
+        '结案':   ('case-status-closed', '⚫ 结案'),
+        '转介':   ('case-status-referred', '🔵 转介'),
+    }
+    return status_map.get(case_status, ('case-status-closed', f'⚪ {case_status}' if case_status else '⚪ 未设置'))
 
 
 def extract_crisis_level_display(crisis_assessment):
@@ -282,10 +335,23 @@ def generate_visitor_index():
 
     html += """
     <div class="container mx-auto px-4 py-8">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">来访者库</h1>
-            <p class="text-gray-600">以来访者为中心的咨询案例管理系统</p>
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">来访者库</h1>
+                <p class="text-gray-600">以来访者为中心的咨询案例管理系统</p>
+            </div>
+            <div class="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                <button onclick="switchView('card')" id="btnCardView" class="view-toggle-btn active px-4 py-2 rounded-md font-medium transition">
+                    <i class="fa fa-th-large mr-1"></i> 卡片视图
+                </button>
+                <button onclick="switchView('list')" id="btnListView" class="view-toggle-btn px-4 py-2 rounded-md font-medium transition">
+                    <i class="fa fa-list mr-1"></i> 列表视图
+                </button>
+            </div>
         </div>
+
+        <!-- 卡片视图 -->
+        <div id="cardView" class="view-container">
 """
 
     # 获取所有来访者
@@ -309,6 +375,10 @@ def generate_visitor_index():
         basic_info = profile['basic_info']
         visit_history = profile['visit_history']
         total_visits = len(visit_history)
+
+        # 案例状态
+        case_status = profile.get('case_status', '进行中')
+        status_css, status_label = get_case_status_badge(case_status)
 
         # 获取最近一次来访的危机评估
         last_visit = visit_history[-1] if visit_history else {}
@@ -336,6 +406,7 @@ def generate_visitor_index():
             <div class="flex justify-between items-start mb-4">
                 <a href="{visitor_id}/profile.html" class="flex-1">
                     <h3 class="text-xl font-semibold text-gray-800">{basic_info.get('name', visitor_id)}</h3>
+                    <span class="status-badge {status_css} mt-1 inline-block">{status_label}</span>
                 </a>
                 <div class="flex items-center gap-2">
                     <span class="px-3 py-1 text-sm rounded-full {risk_color}">
@@ -362,8 +433,101 @@ def generate_visitor_index():
         </div>
 """
 
-    html += '</div>\n'
-    html += '</div>\n'
+    html += '</div>\n'  # 关闭卡片grid
+    html += '</div>\n'  # 关闭cardView
+
+    # 列表视图
+    html += """
+        <!-- 列表视图 -->
+        <div id="listView" class="view-container hidden">
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-50 border-b">
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">来访者</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">年龄/性别</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">职业</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">案例状态</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">危机等级</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">来访次数</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">最近来访</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+"""
+    for i, profile in enumerate(visitors):
+        visitor_id = profile['visitor_id']
+        basic_info = profile['basic_info']
+        visit_history = profile['visit_history']
+        total_visits = len(visit_history)
+        last_visit = visit_history[-1] if visit_history else {}
+        last_date = last_visit.get('date', '未知')
+
+        # 案例状态
+        case_status_val = profile.get('case_status', '进行中')
+        lv_status_css, lv_status_label = get_case_status_badge(case_status_val)
+
+        crisis_display = "未评估"
+        status_class = "status-none"
+        if last_visit:
+            visit_id = last_visit.get('visit_id', '')
+            if visit_id:
+                visit_file = VISITORS_DIR / visitor_id / 'visits' / f'{visit_id}.json'
+                if visit_file.exists():
+                    try:
+                        with open(visit_file, 'r', encoding='utf-8') as f:
+                            visit_data = json.load(f)
+                            crisis = visit_data.get('case_data', {}).get('crisis_assessment', {})
+                            crisis_display, risk_color = extract_crisis_level_display(crisis)
+                            if risk_color and 'red' in risk_color:
+                                status_class = "status-high"
+                            elif risk_color and 'yellow' in risk_color:
+                                status_class = "status-medium"
+                            elif risk_color and 'green' in risk_color:
+                                status_class = "status-low"
+                    except:
+                        pass
+
+        row_bg = "bg-gray-50" if i % 2 == 0 else "bg-white"
+        html += f"""
+                        <tr class="{row_bg} border-b hover:bg-blue-50 transition">
+                            <td class="px-4 py-3">
+                                <a href="{visitor_id}/profile.html" class="text-blue-600 hover:text-blue-800 font-medium">
+                                    {basic_info.get('name', visitor_id)}
+                                </a>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600">
+                                {basic_info.get('age', '-')} · {basic_info.get('gender', '-')}
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600">{basic_info.get('occupation', '-')}</td>
+                            <td class="px-4 py-3">
+                                <span class="status-badge {lv_status_css}">{lv_status_label}</span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="status-badge {status_class}">{crisis_display}</span>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600">{total_visits} 次</td>
+                            <td class="px-4 py-3 text-sm text-gray-600">{last_date}</td>
+                            <td class="px-4 py-3">
+                                <a href="{visitor_id}/profile.html" class="text-blue-600 hover:text-blue-800 text-sm mr-3">
+                                    <i class="fa fa-eye"></i> 查看
+                                </a>
+                                <button onclick="deleteVisitor('{visitor_id}', '{basic_info.get('name', visitor_id)}')"
+                                        class="text-red-600 hover:text-red-800 text-sm">
+                                    <i class="fa fa-trash"></i> 删除
+                                </button>
+                            </td>
+                        </tr>
+"""
+    html += """
+                    </tbody>
+                </table>
+            </div>
+        </div>
+"""
+
+    html += '</div>\n'  # 关闭 container
     html += get_html_footer()
 
     # 写入文件
@@ -384,6 +548,16 @@ def generate_visitor_profile_page(profile_data):
     basic_info = profile_data['basic_info']
     overall_progress = profile_data.get('overall_progress', {})
     visit_history = profile_data['visit_history']
+    # 案例状态
+    case_status_val = profile_data.get('case_status', '进行中')
+    profile_status_css, profile_status_label = get_case_status_badge(case_status_val)
+    # 从visit_history提取首次接访信息（session_info字段不再使用）
+    first_visit = visit_history[0] if visit_history else {}
+    first_visit_date = first_visit.get('date', profile_data.get('session_info', {}).get('first_session_date', '未知'))
+    first_visit_counselor = first_visit.get('counselor', profile_data.get('session_info', {}).get('counselor', '未知'))
+    first_visit_channel = (first_visit.get('channel') or
+                           profile_data.get('basic_info', {}).get('channel') or
+                           profile_data.get('session_info', {}).get('channel') or '未知')
 
     html = get_html_template().format(title=f"{basic_info.get('name', visitor_id)} - 来访者档案")
 
@@ -407,6 +581,7 @@ def generate_visitor_profile_page(profile_data):
             <div>
                 <h1 class="text-3xl font-bold text-gray-800 mb-2">{basic_info.get('name', visitor_id)}</h1>
                 <p class="text-gray-600">来访者档案 · {visitor_id}</p>
+                <span class="status-badge {profile_status_css} mt-2 inline-block text-sm">{profile_status_label}</span>
             </div>
             <div class="flex gap-2">
                 <a href="comparison.html" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
@@ -470,15 +645,15 @@ def generate_visitor_profile_page(profile_data):
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div class="p-4 bg-blue-50 rounded">
                 <p class="text-sm text-gray-600 mb-1">首次接访日期</p>
-                <p class="text-base font-semibold text-blue-800">{profile_data.get('session_info', {}).get('first_session_date', '未知')}</p>
+                <p class="text-base font-semibold text-blue-800">{first_visit_date}</p>
             </div>
             <div class="p-4 bg-blue-50 rounded">
                 <p class="text-sm text-gray-600 mb-1">咨询渠道</p>
-                <p class="text-base font-semibold text-blue-800">{profile_data.get('session_info', {}).get('channel', '未知')}</p>
+                <p class="text-base font-semibold text-blue-800">{first_visit_channel}</p>
             </div>
             <div class="p-4 bg-blue-50 rounded">
                 <p class="text-sm text-gray-600 mb-1">咨询师</p>
-                <p class="text-base font-semibold text-blue-800">{profile_data.get('session_info', {}).get('counselor', '未知')}</p>
+                <p class="text-base font-semibold text-blue-800">{first_visit_counselor}</p>
             </div>
         </div>
 

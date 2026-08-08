@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个税 & 银行流水计算器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+  <style>
+    body { font-family: 'Microsoft YaHei', sans-serif; }
+    .card { background:#fff; border-radius:12px; box-shadow:0 1px 3px #0001; border:1px solid #f0f0f0; padding:20px; }
+    table { border-collapse:collapse; width:100%; }
+    th, td { border:1px solid #e5e7eb; padding:7px 10px; text-align:right; font-size:13px; }
+    th { background:#f3f4f6; font-weight:600; text-align:center; }
+    td:first-child, th:first-child { text-align:center; }
+    tr:nth-child(even) td { background:#f9fafb; }
+    .income { color:#16a34a; }
+    .expense { color:#dc2626; }
+    input[type=number] { -moz-appearance:textfield; }
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance:none; }
+    .si-table th, .si-table td { padding:5px 8px; font-size:12px; }
+    .si-table input { width:70px; border:1px solid #d1d5db; border-radius:6px; padding:3px 6px;
+                      text-align:right; font-size:12px; }
+    .hint { font-size:10px; color:#9ca3af; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div class="max-w-5xl mx-auto p-4 space-y-4">
+
+  <!-- 标题 -->
+  <div class="text-center pt-3">
+    <h1 class="text-2xl font-bold text-gray-800">📊 个税 & 银行流水计算器</h1>
+    <p class="text-gray-400 text-sm mt-1">2024年个税法 · 累计预扣法 · 支持社保清零</p>
+  </div>
+
+  <!-- ① 基本参数 -->
+  <div class="card">
+    <h2 class="font-semibold text-gray-700 mb-3"><i class="fa fa-sliders mr-2 text-blue-500"></i>基本参数</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">税前月薪（元）</label>
+        <input id="salary" type="number" value="15000"
+          class="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-blue-300">
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">起始月份</label>
+        <input id="startMonth" type="month" value="2025-01"
+          class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300">
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">发薪日（每月几号）</label>
+        <input id="payDay" type="number" value="15" min="1" max="28"
+          class="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-blue-300">
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">计算月数</label>
+        <input id="months" type="number" value="12" min="1" max="24"
+          class="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-blue-300">
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 社保公积金（个人+单位，全部可填零） -->
+  <div class="card">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold text-gray-700"><i class="fa fa-shield mr-2 text-orange-500"></i>社保 & 公积金比例</h2>
+      <div class="flex gap-3">
+        <button onclick="resetSI()" class="text-xs text-gray-500 hover:text-gray-700 border rounded px-2 py-1">恢复默认</button>
+        <button onclick="clearSI()" class="text-xs text-red-500 hover:text-red-700 border border-red-200 rounded px-2 py-1">全部清零</button>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="si-table">
+        <thead>
+          <tr>
+            <th class="text-left">险种</th>
+            <th>个人缴纳（%）</th>
+            <th>单位缴纳（%）</th>
+            <th class="text-left hint">备注</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left font-medium">养老保险</td>
+            <td><input id="si_pension_emp" type="number" value="8" step="0.1" min="0"></td>
+            <td><input id="si_pension_co"  type="number" value="16" step="0.1" min="0"></td>
+            <td class="hint text-left">个人8% / 单位16%（全国统一）</td>
+          </tr>
+          <tr>
+            <td class="text-left font-medium">医疗保险</td>
+            <td><input id="si_medical_emp" type="number" value="2" step="0.1" min="0"></td>
+            <td><input id="si_medical_co"  type="number" value="8" step="0.1" min="0"></td>
+            <td class="hint text-left">个人2% / 单位8%（各地略有差异）</td>
+          </tr>
+          <tr>
+            <td class="text-left font-medium">失业保险</td>
+            <td><input id="si_unemp_emp"   type="number" value="0.5" step="0.1" min="0"></td>
+            <td><input id="si_unemp_co"    type="number" value="0.5" step="0.1" min="0"></td>
+            <td class="hint text-left">个人0.5% / 单位0.5%</td>
+          </tr>
+          <tr>
+            <td class="text-left font-medium">工伤保险</td>
+            <td><input id="si_injury_emp"  type="number" value="0" step="0.1" min="0" style="color:#9ca3af"></td>
+            <td><input id="si_injury_co"   type="number" value="0.5" step="0.1" min="0"></td>
+            <td class="hint text-left">个人不缴 / 单位约0.2-0.8%</td>
+          </tr>
+          <tr>
+            <td class="text-left font-medium">生育保险</td>
+            <td><input id="si_maternity_emp" type="number" value="0" step="0.1" min="0" style="color:#9ca3af"></td>
+            <td><input id="si_maternity_co"  type="number" value="0.8" step="0.1" min="0"></td>
+            <td class="hint text-left">个人不缴 / 单位约0.8%</td>
+          </tr>
+          <tr style="background:#eff6ff">
+            <td class="text-left font-medium text-blue-700">住房公积金</td>
+            <td><input id="hf_emp" type="number" value="7" step="1" min="0"></td>
+            <td><input id="hf_co"  type="number" value="7" step="1" min="0"></td>
+            <td class="hint text-left">5%~12%，各地不同；可填0表示不缴</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="text-xs text-gray-400 mt-2">💡 全部填 0 即可模拟无社保场景；仅个人承担部分影响个税计算</p>
+  </div>
+
+  <!-- ③ 专项附加扣除明细 -->
+  <div class="card">
+    <h2 class="font-semibold text-gray-700 mb-3"><i class="fa fa-minus-circle mr-2 text-green-500"></i>专项附加扣除明细（月）</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">子女教育</label>
+        <input id="d_child" type="number" value="0" step="100"
+          class="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-green-300">
+        <span class="hint">每孩2000元/月</span>
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">3岁以下婴幼儿照护</label>
+        <input id="d_infant" type="number" value="0" step="100"
+          class="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-green-300">
+        <span class="hint">每孩2000元/月</span>
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">继续教育</label>
+        <input id="d_edu" type="number" value="0" step="100"
+          class="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-green-300">
+        <span class="hint">学历400/月，职业400/月</span>
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">住房贷款利息</label>
+        <input id="d_loan" type="number" value="0" step="100"
+          class="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-green-300">
+        <span class="hint">上限1000元/月</span>
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">住房租金</label>
+        <input id="d_rent" type="number" value="0" step="100"
+          class="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-green-300">
+        <span class="hint">800-1500元/月（因城市而异）</span>
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">赡养老人</label>
+        <input id="d_elder" type="number" value="0" step="100"
+          class="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-green-300">
+        <span class="hint">独生子女3000/月，非独2000/月</span>
+      </div>
+      <div>
+        <label class="text-sm text-gray-600 block mb-1">大病医疗</label>
+        <input id="d_illness" type="number" value="0" step="100"
+          class="w-full border rounded-lg px-3 py-2 text-right focus:outline-none focus:ring-2 focus:ring-green-300">
+        <span class="hint">年度汇算清缴填写，上限80000/年</span>
+      </div>
+      <div class="flex items-end">
+        <div class="w-full bg-green-50 rounded-lg px-3 py-2 text-right border border-green-100">
+          <div class="text-xs text-gray-400 mb-0.5">月合计扣除</div>
+          <div id="totalDeduct" class="text-lg font-bold text-green-600">¥0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 计算按钮 -->
+  <div class="text-center flex justify-center gap-3 flex-wrap">
+    <button onclick="calculate()"
+      class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-10 py-2.5 rounded-lg transition shadow">
+      <i class="fa fa-calculator mr-2"></i>开始计算
+    </button>
+    <button id="syncBtn" onclick="syncToBank()" title="将逐月到手金额同步到银行流水模拟器"
+      class="hidden bg-purple-500 hover:bg-purple-600 text-white font-semibold px-6 py-2.5 rounded-lg transition shadow">
+      <i class="fa fa-share-square-o mr-2"></i>同步到流水模拟器
+    </button>
+    <span id="syncToast" class="hidden items-center gap-1 text-sm text-green-600 font-medium self-center">
+      <i class="fa fa-check-circle"></i> 已同步，切换到流水模拟器即可导入
+    </span>
+  </div>
+
+  <!-- 汇总卡片 -->
+  <div id="summaryCards" class="hidden">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div class="card text-center">
+        <div class="text-xs text-gray-400 mb-1">税前月薪</div>
+        <div id="s_gross" class="text-xl font-bold text-gray-800"></div>
+      </div>
+      <div class="card text-center">
+        <div class="text-xs text-gray-400 mb-1">个人社保+公积金</div>
+        <div id="s_si_emp" class="text-xl font-bold text-red-500"></div>
+      </div>
+      <div class="card text-center">
+        <div class="text-xs text-gray-400 mb-1">单位社保+公积金</div>
+        <div id="s_si_co" class="text-xl font-bold text-orange-400"></div>
+        <div class="text-xs text-gray-400 mt-0.5">（单位额外成本）</div>
+      </div>
+      <div class="card text-center">
+        <div class="text-xs text-gray-400 mb-1">全年个税</div>
+        <div id="s_tax" class="text-xl font-bold text-orange-600"></div>
+      </div>
+      <div class="card text-center">
+        <div class="text-xs text-gray-400 mb-1">月均税后到手</div>
+        <div id="s_net" class="text-xl font-bold text-green-600"></div>
+      </div>
+    </div>
+    <div class="card mt-3 bg-blue-50 border-blue-100">
+      <div class="flex flex-wrap gap-6 text-sm">
+        <span>🏢 单位月总用工成本：<strong id="s_total_cost" class="text-blue-700"></strong></span>
+        <span>📋 专项附加扣除（月）：<strong id="s_deduct" class="text-green-700"></strong></span>
+        <span>💰 税后年收入：<strong id="s_net_year" class="text-green-700"></strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 个税明细表 -->
+  <div id="taxTable" class="card hidden">
+    <h2 class="font-semibold text-gray-700 mb-3">
+      <i class="fa fa-table mr-2 text-green-500"></i>逐月个税明细（累计预扣法）
+    </h2>
+    <div class="overflow-x-auto">
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2">月份</th>
+            <th rowspan="2">税前工资</th>
+            <th colspan="2">个人社保</th>
+            <th rowspan="2">个人公积金</th>
+            <th rowspan="2">专项附加合计</th>
+            <th rowspan="2">累计应税收入</th>
+            <th rowspan="2">本月预扣税</th>
+            <th rowspan="2">税后到手</th>
+          </tr>
+          <tr>
+            <th>社保小计</th>
+            <th style="font-size:11px">(养老+医疗+失业)</th>
+          </tr>
+        </thead>
+        <tbody id="taxRows"></tbody>
+        <tfoot id="taxFoot"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- 单位用工成本表 -->
+  <div id="costTable" class="card hidden">
+    <h2 class="font-semibold text-gray-700 mb-3">
+      <i class="fa fa-building-o mr-2 text-orange-500"></i>单位用工成本明细
+    </h2>
+    <div class="overflow-x-auto">
+      <table>
+        <thead>
+          <tr>
+            <th>月份</th>
+            <th>税前工资</th>
+            <th>单位养老</th>
+            <th>单位医疗</th>
+            <th>单位失业</th>
+            <th>单位工伤</th>
+            <th>单位生育</th>
+            <th>单位公积金</th>
+            <th>单位社保合计</th>
+            <th>单位月总成本</th>
+          </tr>
+        </thead>
+        <tbody id="costRows"></tbody>
+        <tfoot id="costFoot"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- 银行流水模拟 -->
+  <div id="bankTable" class="card hidden">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold text-gray-700">
+        <i class="fa fa-university mr-2 text-purple-500"></i>银行流水模拟（工资入账记录）
+      </h2>
+      <button onclick="copyBank()"
+        class="text-sm text-blue-500 hover:text-blue-700 border border-blue-300 rounded px-3 py-1">
+        <i class="fa fa-copy mr-1"></i>复制表格
+      </button>
+    </div>
+    <div class="overflow-x-auto">
+      <table>
+        <thead>
+          <tr>
+            <th>交易日期</th><th>交易摘要</th>
+            <th>交易金额（元）</th><th>对手方</th><th>备注</th>
+          </tr>
+        </thead>
+        <tbody id="bankRows"></tbody>
+      </table>
+    </div>
+    <p class="text-xs text-gray-400 mt-2">* 此流水为根据工资参数生成的模拟记录，仅供个人财务规划参考</p>
+  </div>
+
+</div>
+<script>
+// ── 税率表 ──────────────────────────────────────────────
+const TAX_BRACKETS = [
+  { limit:36000,    rate:0.03, ded:0      },
+  { limit:144000,   rate:0.10, ded:2520   },
+  { limit:300000,   rate:0.20, ded:16920  },
+  { limit:420000,   rate:0.25, ded:31920  },
+  { limit:660000,   rate:0.30, ded:52920  },
+  { limit:960000,   rate:0.35, ded:85920  },
+  { limit:Infinity, rate:0.45, ded:181920 },
+];
+function calcTax(cum) {
+  for (const b of TAX_BRACKETS)
+    if (cum <= b.limit) return Math.max(0, cum * b.rate - b.ded);
+}
+function fmt(n)  { return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+function fmtI(n) { return Math.round(n).toLocaleString('zh-CN'); }
+function pct(id) { return (parseFloat(document.getElementById(id).value) || 0) / 100; }
+function val(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+// 专项附加合计联动显示
+['d_child','d_infant','d_edu','d_loan','d_rent','d_elder','d_illness'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updateDeductTotal);
+});
+function updateDeductTotal() {
+  const total = ['d_child','d_infant','d_edu','d_loan','d_rent','d_elder','d_illness']
+    .reduce((s,id) => s + val(id), 0);
+  document.getElementById('totalDeduct').textContent = '¥' + fmtI(total);
+}
+
+// 社保清零 / 恢复默认
+const SI_DEFAULTS = {
+  si_pension_emp:8, si_pension_co:16,
+  si_medical_emp:2, si_medical_co:8,
+  si_unemp_emp:0.5, si_unemp_co:0.5,
+  si_injury_emp:0,  si_injury_co:0.5,
+  si_maternity_emp:0, si_maternity_co:0.8,
+  hf_emp:7, hf_co:7
+};
+function clearSI() {
+  Object.keys(SI_DEFAULTS).forEach(id => document.getElementById(id).value = 0);
+}
+function resetSI() {
+  Object.entries(SI_DEFAULTS).forEach(([id,v]) => document.getElementById(id).value = v);
+}
+
+// ── 主计算 ──────────────────────────────────────────────
+function calculate() {
+  const salary  = val('salary');
+  const [sy,sm] = document.getElementById('startMonth').value.split('-').map(Number);
+  const payDay  = parseInt(document.getElementById('payDay').value) || 15;
+  const nMonths = parseInt(document.getElementById('months').value) || 12;
+
+  // 个人社保率
+  const empSI = {
+    pension:  pct('si_pension_emp'),
+    medical:  pct('si_medical_emp'),
+    unemp:    pct('si_unemp_emp'),
+    injury:   pct('si_injury_emp'),
+    maternity:pct('si_maternity_emp'),
+    hf:       pct('hf_emp'),
+  };
+  // 单位社保率
+  const coSI = {
+    pension:  pct('si_pension_co'),
+    medical:  pct('si_medical_co'),
+    unemp:    pct('si_unemp_co'),
+    injury:   pct('si_injury_co'),
+    maternity:pct('si_maternity_co'),
+    hf:       pct('hf_co'),
+  };
+
+  // 专项附加
+  const extraDeduct = ['d_child','d_infant','d_edu','d_loan','d_rent','d_elder','d_illness']
+    .reduce((s,id) => s + val(id), 0);
+
+  const STD = 5000;
+  let cumTaxable=0, cumTaxPaid=0;
+  const months = [];
+
+  for (let i=0; i<nMonths; i++) {
+    const mon  = ((sm-1+i) % 12) + 1;
+    const year = sy + Math.floor((sm-1+i)/12);
+    const pad  = n => String(n).padStart(2,'0');
+
+    // 个人应缴（影响个税）
+    const si_emp = salary * (empSI.pension + empSI.medical + empSI.unemp + empSI.injury + empSI.maternity);
+    const hf_emp = salary * empSI.hf;
+    const totalEmpSI = si_emp + hf_emp;
+
+    // 单位应缴（不影响个税，但影响用工成本）
+    const si_co  = salary * (coSI.pension + coSI.medical + coSI.unemp + coSI.injury + coSI.maternity);
+    const hf_co  = salary * coSI.hf;
+    const totalCoSI  = si_co + hf_co;
+
+    // 个税（累计预扣法）
+    cumTaxable += Math.max(0, salary - STD - si_emp - hf_emp - extraDeduct);
+    const taxDue   = calcTax(cumTaxable);
+    const monthTax = Math.max(0, taxDue - cumTaxPaid);
+    cumTaxPaid += monthTax;
+
+    const net = salary - totalEmpSI - monthTax;
+
+    months.push({
+      year, mon, salary, si_emp, hf_emp, totalEmpSI, extraDeduct, monthTax, net, cumTaxable,
+      coBreakdown: {
+        pension:  salary * coSI.pension,
+        medical:  salary * coSI.medical,
+        unemp:    salary * coSI.unemp,
+        injury:   salary * coSI.injury,
+        maternity:salary * coSI.maternity,
+        hf:       hf_co,
+      },
+      totalCoSI,
+      totalCost: salary + totalCoSI,
+      date: `${year}-${pad(mon)}-${pad(Math.min(payDay,28))}`,
+    });
+  }
+
+  // ── 汇总 ───────────────────────────────────────────────
+  const totalTax  = months.reduce((s,m) => s + m.monthTax, 0);
+  const avgNet    = months.reduce((s,m) => s + m.net, 0) / nMonths;
+  const avgEmpSI  = months.reduce((s,m) => s + m.totalEmpSI, 0) / nMonths;
+  const avgCoSI   = months.reduce((s,m) => s + m.totalCoSI, 0) / nMonths;
+  const avgCost   = months.reduce((s,m) => s + m.totalCost, 0) / nMonths;
+
+  document.getElementById('s_gross').textContent     = `¥${fmtI(salary)}`;
+  document.getElementById('s_si_emp').textContent    = `-¥${fmtI(avgEmpSI)}`;
+  document.getElementById('s_si_co').textContent     = `¥${fmtI(avgCoSI)}`;
+  document.getElementById('s_tax').textContent       = `¥${fmtI(totalTax)}`;
+  document.getElementById('s_net').textContent       = `¥${fmtI(avgNet)}`;
+  document.getElementById('s_total_cost').textContent= `¥${fmtI(avgCost)}/月`;
+  document.getElementById('s_deduct').textContent    = `¥${fmtI(extraDeduct)}/月`;
+  document.getElementById('s_net_year').textContent  = `¥${fmtI(avgNet * nMonths)}`;
+
+  // ── 个税明细表 ─────────────────────────────────────────
+  let taxHTML = '';
+  months.forEach(m => {
+    taxHTML += `<tr>
+      <td>${m.year}年${m.mon}月</td>
+      <td>¥${fmt(m.salary)}</td>
+      <td class="expense">-¥${fmt(m.si_emp)}</td>
+      <td class="hint" style="font-size:11px;color:#9ca3af">养老+医疗+失业</td>
+      <td class="expense">-¥${fmt(m.hf_emp)}</td>
+      <td class="expense">-¥${fmt(m.extraDeduct)}</td>
+      <td>¥${fmt(m.cumTaxable)}</td>
+      <td class="expense">-¥${fmt(m.monthTax)}</td>
+      <td class="income font-semibold">¥${fmt(m.net)}</td>
+    </tr>`;
+  });
+  document.getElementById('taxRows').innerHTML = taxHTML;
+  document.getElementById('taxFoot').innerHTML = `
+    <tr style="background:#f3f4f6;font-weight:700">
+      <td>合计/均值</td>
+      <td>¥${fmt(salary*nMonths)}</td>
+      <td class="expense">-¥${fmt(avgEmpSI*nMonths)}</td>
+      <td>-</td>
+      <td>-</td><td>-</td><td>-</td>
+      <td class="expense">-¥${fmt(totalTax)}</td>
+      <td class="income">¥${fmt(avgNet*nMonths)}</td>
+    </tr>`;
+
+  // ── 单位成本表 ─────────────────────────────────────────
+  let costHTML = '';
+  months.forEach(m => {
+    const c = m.coBreakdown;
+    costHTML += `<tr>
+      <td>${m.year}年${m.mon}月</td>
+      <td>¥${fmt(m.salary)}</td>
+      <td class="expense">¥${fmt(c.pension)}</td>
+      <td class="expense">¥${fmt(c.medical)}</td>
+      <td class="expense">¥${fmt(c.unemp)}</td>
+      <td class="expense">¥${fmt(c.injury)}</td>
+      <td class="expense">¥${fmt(c.maternity)}</td>
+      <td class="expense">¥${fmt(c.hf)}</td>
+      <td class="expense font-semibold">¥${fmt(m.totalCoSI)}</td>
+      <td style="color:#d97706;font-weight:700">¥${fmt(m.totalCost)}</td>
+    </tr>`;
+  });
+  document.getElementById('costRows').innerHTML = costHTML;
+  document.getElementById('costFoot').innerHTML = `
+    <tr style="background:#fff7ed;font-weight:700">
+      <td>合计/均值</td>
+      <td>¥${fmt(salary*nMonths)}</td>
+      <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+      <td class="expense">¥${fmt(avgCoSI*nMonths)}</td>
+      <td style="color:#d97706">¥${fmt(avgCost*nMonths)}</td>
+    </tr>`;
+
+  // ── 银行流水 ───────────────────────────────────────────
+  let bankHTML = '';
+  months.forEach(m => {
+    bankHTML += `<tr>
+      <td>${m.date}</td>
+      <td>代发工资</td>
+      <td class="income font-semibold">+${fmt(m.net)}</td>
+      <td>单位代发</td>
+      <td>${m.year}年${m.mon}月工资</td>
+    </tr>`;
+  });
+  document.getElementById('bankRows').innerHTML = bankHTML;
+
+  ['summaryCards','taxTable','costTable','bankTable'].forEach(id =>
+    document.getElementById(id).classList.remove('hidden'));
+
+  // 自动存 localStorage，并显示同步按钮
+  const syncData = {
+    months: months.map(m => ({
+      year: m.year, mon: m.mon,
+      date: m.date,
+      net:  parseFloat(m.net.toFixed(2)),
+    })),
+    startMonth: document.getElementById('startMonth').value,
+    syncTime: new Date().toLocaleString('zh-CN'),
+  };
+  localStorage.setItem('ixt_calc_sync', JSON.stringify(syncData));
+  document.getElementById('syncBtn').classList.remove('hidden');
+  document.getElementById('syncToast').classList.add('hidden');
+}
+
+function syncToBank() {
+  // 数据已在 calculate() 末尾存好，仅需提示用户
+  document.getElementById('syncToast').classList.remove('hidden');
+  document.getElementById('syncToast').classList.add('flex');
+  setTimeout(() => {
+    document.getElementById('syncToast').classList.add('hidden');
+    document.getElementById('syncToast').classList.remove('flex');
+  }, 3000);
+}
+
+function copyBank() {
+  const rows = document.querySelectorAll('#bankRows tr');
+  let text = '交易日期\t交易摘要\t交易金额\t对手方\t备注\n';
+  rows.forEach(r => {
+    text += Array.from(r.querySelectorAll('td')).map(c => c.textContent.trim()).join('\t') + '\n';
+  });
+  navigator.clipboard.writeText(text).then(() => alert('已复制到剪贴板！'));
+}
+
+window.onload = () => { updateDeductTotal(); calculate(); };
+</script>
+</body>
+</html>
