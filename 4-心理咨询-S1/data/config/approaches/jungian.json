@@ -1,0 +1,46 @@
+{
+  "id": "jungian",
+  "name": "荣格分析心理学",
+  "name_short": "荣格",
+  "enabled": true,
+  "color": "#d97706",
+  "icon": "☀️",
+  "description": "荣格分析心理学取向，关注原型、集体无意识与个性化历程",
+  "fields": {
+    "archetype_analysis": {
+      "label": "原型分析",
+      "type": "text",
+      "required": true,
+      "description": "识别阴影、阿尼玛/阿尼姆斯、人格面具等原型的激活状态"
+    },
+    "individuation": {
+      "label": "个性化历程",
+      "type": "text",
+      "required": true,
+      "description": "来访者在自性化道路上的位置与阻力"
+    },
+    "symbol_and_dream": {
+      "label": "象征与梦",
+      "type": "text",
+      "required": false,
+      "description": "梦境、意象与象征的扩充诠释"
+    }
+  },
+  "techniques": [
+    "原型识别",
+    "阴影工作",
+    "梦的扩充分析",
+    "积极想象",
+    "象征诠释",
+    "情结识别",
+    "补偿分析",
+    "心理类型评估"
+  ],
+  "metadata": {
+    "created_at": "2026-08-09",
+    "version": "1.0",
+    "author": "系统生成",
+    "note": "基于Carl Gustav Jung的分析心理学理论"
+  },
+  "sort_order": 8
+}

@@ -602,6 +602,176 @@ def delete_visitor():
         }), 500
 
 
+@app.route('/api/add_insight', methods=['POST'])
+def add_insight():
+    """添加感悟记录（支持AI对话保存）"""
+    try:
+        data = request.json
+        visitor_id = data.get('visitor_id')
+        visit_id = data.get('visit_id')
+        approach = data.get('approach', '')
+        content = data.get('content', '')
+        source = data.get('source', 'manual')  # manual | ai_chat
+
+        if not all([visitor_id, visit_id, content]):
+            return jsonify({'success': False, 'error': '缺少必要参数'}), 400
+
+        visit_path = VISITORS_DIR / visitor_id / 'visits' / f'{visit_id}.json'
+        if not visit_path.exists():
+            return jsonify({'success': False, 'error': f'找不到记录: {visitor_id}/{visit_id}'}), 404
+
+        with open(visit_path, 'r', encoding='utf-8') as f:
+            visit_data = json.load(f)
+
+        if 'case_data' not in visit_data:
+            visit_data['case_data'] = {}
+        if 'supervision_records' not in visit_data['case_data']:
+            visit_data['case_data']['supervision_records'] = []
+
+        import uuid
+        record = {
+            'id': str(uuid.uuid4())[:8],
+            'approach': approach,
+            'content': content,
+            'source': source,
+            'created_at': datetime.now().isoformat(),
+            'updated_at': datetime.now().isoformat()
+        }
+        visit_data['case_data']['supervision_records'].append(record)
+
+        with open(visit_path, 'w', encoding='utf-8') as f:
+            json.dump(visit_data, f, ensure_ascii=False, indent=2)
+
+        trigger_html_generation()
+        print(f"✓ 添加感悟: {visitor_id}/{visit_id} [{approach}]")
+        return jsonify({'success': True, 'record_id': record['id']})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/delete_insight', methods=['POST'])
+def delete_insight_api():
+    """删除感悟记录"""
+    try:
+        data = request.json
+        visitor_id = data.get('visitor_id')
+        visit_id = data.get('visit_id')
+        record_id = data.get('record_id')
+
+        if not all([visitor_id, visit_id, record_id]):
+            return jsonify({'success': False, 'error': '缺少必要参数'}), 400
+
+        visit_path = VISITORS_DIR / visitor_id / 'visits' / f'{visit_id}.json'
+        if not visit_path.exists():
+            return jsonify({'success': False, 'error': '找不到记录'}), 404
+
+        with open(visit_path, 'r', encoding='utf-8') as f:
+            visit_data = json.load(f)
+
+        records = visit_data.get('case_data', {}).get('supervision_records', [])
+        before = len(records)
+        records = [r for r in records if r.get('id') != record_id]
+        visit_data['case_data']['supervision_records'] = records
+
+        if len(records) == before:
+            return jsonify({'success': False, 'error': '未找到该感悟记录'}), 404
+
+        with open(visit_path, 'w', encoding='utf-8') as f:
+            json.dump(visit_data, f, ensure_ascii=False, indent=2)
+
+        trigger_html_generation()
+        print(f"✓ 删除感悟: {record_id}")
+        return jsonify({'success': True})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/add_supervisor_record', methods=['POST'])
+def add_supervisor_record():
+    """添加督导记录（跨流派综合督导对话保存）"""
+    try:
+        data = request.json
+        visitor_id = data.get('visitor_id')
+        visit_id = data.get('visit_id')
+        content = data.get('content', '')
+        approaches_covered = data.get('approaches_covered', [])
+
+        if not all([visitor_id, visit_id, content]):
+            return jsonify({'success': False, 'error': '缺少必要参数'}), 400
+
+        visit_path = VISITORS_DIR / visitor_id / 'visits' / f'{visit_id}.json'
+        if not visit_path.exists():
+            return jsonify({'success': False, 'error': f'找不到记录: {visitor_id}/{visit_id}'}), 404
+
+        with open(visit_path, 'r', encoding='utf-8') as f:
+            visit_data = json.load(f)
+
+        if 'case_data' not in visit_data:
+            visit_data['case_data'] = {}
+        if 'supervisor_records' not in visit_data['case_data']:
+            visit_data['case_data']['supervisor_records'] = []
+
+        import uuid
+        record = {
+            'id': str(uuid.uuid4())[:8],
+            'content': content,
+            'approaches_covered': approaches_covered,
+            'created_at': datetime.now().isoformat(),
+            'updated_at': datetime.now().isoformat()
+        }
+        visit_data['case_data']['supervisor_records'].append(record)
+
+        with open(visit_path, 'w', encoding='utf-8') as f:
+            json.dump(visit_data, f, ensure_ascii=False, indent=2)
+
+        trigger_html_generation()
+        print(f"✓ 添加督导记录: {visitor_id}/{visit_id}")
+        return jsonify({'success': True, 'record_id': record['id']})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/delete_supervisor_record', methods=['POST'])
+def delete_supervisor_record():
+    """删除督导记录"""
+    try:
+        data = request.json
+        visitor_id = data.get('visitor_id')
+        visit_id = data.get('visit_id')
+        record_id = data.get('record_id')
+
+        if not all([visitor_id, visit_id, record_id]):
+            return jsonify({'success': False, 'error': '缺少必要参数'}), 400
+
+        visit_path = VISITORS_DIR / visitor_id / 'visits' / f'{visit_id}.json'
+        if not visit_path.exists():
+            return jsonify({'success': False, 'error': '找不到记录'}), 404
+
+        with open(visit_path, 'r', encoding='utf-8') as f:
+            visit_data = json.load(f)
+
+        records = visit_data.get('case_data', {}).get('supervisor_records', [])
+        before = len(records)
+        records = [r for r in records if r.get('id') != record_id]
+        visit_data['case_data']['supervisor_records'] = records
+
+        if len(records) == before:
+            return jsonify({'success': False, 'error': '未找到该督导记录'}), 404
+
+        with open(visit_path, 'w', encoding='utf-8') as f:
+            json.dump(visit_data, f, ensure_ascii=False, indent=2)
+
+        trigger_html_generation()
+        print(f"✓ 删除督导记录: {record_id}")
+        return jsonify({'success': True})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     print("=" * 60)
     print("接访记录保存服务器")

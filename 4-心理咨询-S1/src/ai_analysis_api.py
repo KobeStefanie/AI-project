@@ -373,6 +373,221 @@ def get_analysis_status():
         }), 500
 
 
+@app.route('/api/chat', methods=['POST'])
+def chat_about_analysis():
+    """
+    与AI督导对话（针对特定流派的分析报告）
+    POST /api/chat
+    Body: {
+        "approach_id": "psychodynamic",
+        "approach_name": "精神动力学",
+        "messages": [{"role": "user", "content": "..."}],
+        "analysis_text": "..."
+    }
+    Returns: SSE text/event-stream
+    """
+    import requests as _requests
+    from flask import Response, stream_with_context
+
+    try:
+        data = request.json
+        approach_name = data.get('approach_name', '心理咨询督导')
+        messages = data.get('messages', [])
+        analysis_text = data.get('analysis_text', '')
+        insights_text = data.get('insights_text', '').strip()
+
+        if not messages:
+            return jsonify({'success': False, 'error': '缺少消息内容'}), 400
+
+        # 感悟上下文段落（有内容才加入）
+        insights_section = ''
+        if insights_text:
+            insights_section = f"""
+
+以下是咨询师之前保存的历次感悟与思考（请结合这些已有认知来回应，保持对话连贯性）：
+
+---
+{insights_text}
+---"""
+
+        system_content = f"""你是一位资深的{approach_name}取向心理督导，拥有深厚的理论功底和丰富的临床经验。
+
+以下是本次咨询的{approach_name}视角AI分析报告：
+
+---
+{analysis_text}
+---{insights_section}
+
+请基于以上分析报告{' 和历次感悟' if insights_text else ''}，与咨询师进行专业的督导对话。你的职责是：
+1. 帮助咨询师深入理解分析报告中的理论概念和临床发现
+2. 解答咨询师对分析内容的具体疑问，并衔接其已有感悟
+3. 提供更具体、可操作的临床应用建议
+4. 引导咨询师反思自己的咨询实践和个人成长
+5. 保持{approach_name}理论视角的一致性和专业严谨性
+
+回应风格：专业而平易近人，聚焦于来访者的具体情况，避免泛泛而谈。每次回应300字以内，精准有力。
+请使用纯文本输出，禁止使用任何Markdown格式符号（**粗体**、*斜体*、# 标题、- 列表符号等一律不用），直接用中文句子表达。"""
+
+        api_url = "https://www.catkingai.com/v1/messages"
+        api_key = "sk-d285143ff8b40377e38294cc41f2f86b518349f3f6278328c439bfed7d89fdde"
+        headers = {
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json"
+        }
+        payload = {
+            "model": "claude-opus-4-8",
+            "max_tokens": 1500,
+            "system": system_content,
+            "messages": messages,
+            "stream": True
+        }
+
+        def generate():
+            try:
+                resp = _requests.post(
+                    api_url, headers=headers, json=payload,
+                    timeout=120, proxies={'http': None, 'https': None}, stream=True
+                )
+                for line in resp.iter_lines():
+                    if line:
+                        line = line.decode('utf-8')
+                        if line.startswith('data: ') and line != 'data: [DONE]':
+                            try:
+                                chunk = json.loads(line[6:])
+                                if chunk.get('type') == 'content_block_delta':
+                                    text = chunk.get('delta', {}).get('text', '')
+                                    if text:
+                                        yield f"data: {json.dumps({'text': text}, ensure_ascii=False)}\n\n"
+                            except Exception:
+                                pass
+                yield "data: [DONE]\n\n"
+            except Exception as e:
+                yield f"data: {json.dumps({'error': str(e)}, ensure_ascii=False)}\n\n"
+                yield "data: [DONE]\n\n"
+
+        return Response(
+            stream_with_context(generate()),
+            content_type='text/event-stream',
+            headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'}
+        )
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/supervisor_chat', methods=['POST'])
+def supervisor_chat():
+    """
+    跨流派综合督导对话（SSE流式）
+    POST /api/supervisor_chat
+    Body: {
+        "messages": [{"role": "user", "content": "..."}],
+        "analyses_dict": {"精神动力学": "...", "CBT": "..."},
+        "all_insights_text": "合并的所有感悟文本"
+    }
+    Returns: SSE text/event-stream
+    """
+    import requests as _requests
+    from flask import Response, stream_with_context
+
+    try:
+        data = request.json
+        messages = data.get('messages', [])
+        analyses_dict = data.get('analyses_dict', {})
+        all_insights_text = data.get('all_insights_text', '').strip()
+
+        if not messages:
+            return jsonify({'success': False, 'error': '缺少消息内容'}), 400
+
+        # 构建多流派分析摘要
+        analyses_section = ''
+        if analyses_dict:
+            parts = []
+            for approach_name, analysis_text in analyses_dict.items():
+                if analysis_text and analysis_text.strip():
+                    # 截取前1500字避免上下文过长
+                    trimmed = analysis_text.strip()[:1500]
+                    parts.append(f"【{approach_name}视角】\n{trimmed}")
+            if parts:
+                analyses_section = '\n\n---\n\n'.join(parts)
+
+        # 构建感悟摘要
+        insights_section = ''
+        if all_insights_text:
+            insights_section = f"""
+
+以下是咨询师在各流派感悟区保存的历次学习记录：
+
+---
+{all_insights_text[:2000]}
+---"""
+
+        approach_count = len(analyses_dict)
+        system_content = f"""你是一位拥有20年临床经验的整合取向心理督导，精通精神动力学、CBT、人本、存在主义、IFS内在家庭系统、大观危机干预、拉康精神分析、荣格分析心理学等多种流派理论。
+
+本次咨询已完成 {approach_count} 个流派的AI分析，汇总如下：
+
+{analyses_section if analyses_section else '（尚无流派分析内容）'}{insights_section}
+
+你的督导职责（跨流派整合视角）：
+1. 整合各流派的发现，找出共识与分歧——不同流派对来访者的理解是否一致？
+2. 从更宏观的视角识别来访者的核心议题（超越单一流派的概念框架）
+3. 指出咨询师在本次咨询中最值得深挖的成长点
+4. 提供综合策略建议——下次咨询应优先关注什么？用哪个流派的视角切入最有价值？
+5. 如有感悟记录，结合咨询师的学习轨迹给出个性化建议
+
+回应风格：整合、深刻、有温度。每次回应400字以内，聚焦实质，避免流水账式地罗列各流派观点。
+请使用纯文本输出，禁止使用任何Markdown格式符号（**粗体**、*斜体*、# 标题、- 列表符号等一律不用），直接用中文句子表达。"""
+
+        api_url = "https://www.catkingai.com/v1/messages"
+        api_key = "sk-d285143ff8b40377e38294cc41f2f86b518349f3f6278328c439bfed7d89fdde"
+        headers = {
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json"
+        }
+        payload = {
+            "model": "claude-opus-4-8",
+            "max_tokens": 2000,
+            "system": system_content,
+            "messages": messages,
+            "stream": True
+        }
+
+        def generate():
+            try:
+                resp = _requests.post(
+                    api_url, headers=headers, json=payload,
+                    timeout=120, proxies={'http': None, 'https': None}, stream=True
+                )
+                for line in resp.iter_lines():
+                    if line:
+                        line = line.decode('utf-8')
+                        if line.startswith('data: ') and line != 'data: [DONE]':
+                            try:
+                                chunk = json.loads(line[6:])
+                                if chunk.get('type') == 'content_block_delta':
+                                    text = chunk.get('delta', {}).get('text', '')
+                                    if text:
+                                        yield f"data: {json.dumps({'text': text}, ensure_ascii=False)}\n\n"
+                            except Exception:
+                                pass
+                yield "data: [DONE]\n\n"
+            except Exception as e:
+                yield f"data: {json.dumps({'error': str(e)}, ensure_ascii=False)}\n\n"
+                yield "data: [DONE]\n\n"
+
+        return Response(
+            stream_with_context(generate()),
+            content_type='text/event-stream',
+            headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'}
+        )
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     try:
         print("=" * 60)

@@ -230,20 +230,30 @@ def get_html_template():
 
         function toggleEdit(approachName) {{
             const contentDiv = document.getElementById('analysis-content-' + approachName);
+            const tabDiv = document.getElementById(approachName);
             const toolbar = document.getElementById('toolbar-' + approachName);
             const saveBtn = document.getElementById('save-btn-' + approachName);
             const isEditing = contentDiv.getAttribute('contenteditable') === 'true';
             if (isEditing) {{
-                contentDiv.setAttribute('contenteditable', 'false');
+                // 关闭编辑：所有可编辑元素
+                tabDiv.querySelectorAll('[contenteditable="true"]').forEach(el => {{
+                    el.setAttribute('contenteditable', 'false');
+                    el.style.border = '';
+                }});
                 toolbar.style.display = 'none';
                 saveBtn.style.display = 'none';
-                contentDiv.style.border = '1px solid #d1d5db';
                 currentEditingApproach = null;
             }} else {{
+                // 开启编辑：analysis-content 及 tab 内所有分析块
                 contentDiv.setAttribute('contenteditable', 'true');
+                contentDiv.style.border = '2px solid #6366f1';
+                // 让 tab 内跑出去的章节卡片也可编辑
+                tabDiv.querySelectorAll('.mb-5.bg-indigo-50, .analysis-wrapper').forEach(el => {{
+                    el.setAttribute('contenteditable', 'true');
+                    el.style.border = '1px dashed #6366f1';
+                }});
                 toolbar.style.display = 'block';
                 saveBtn.style.display = 'inline-block';
-                contentDiv.style.border = '2px solid #6366f1';
                 currentEditingApproach = approachName;
             }}
         }}
@@ -376,19 +386,42 @@ def get_html_template():
         }}
 
         function downloadApproachWord(approachName, caseId, fileName) {{
-            const contentDiv = document.getElementById('analysis-content-' + approachName);
-            let htmlContent = `
-                <!DOCTYPE html>
-                <html><head><meta charset="UTF-8">
-                <style>body {{ font-family: "Microsoft YaHei", "SimSun", sans-serif; }} h1 {{ text-align: center; color: #333; }} p {{ line-height: 1.8; }}</style>
-                </head><body>
-                <h1>${{approachName}}流派分析</h1>
-                <p><strong>案例编号：</strong>${{caseId}}</p>
-                <div>${{contentDiv.innerHTML}}</div>
-                </body></html>
-            `;
-            const converted = htmlDocx.asBlob(htmlContent);
-            saveAs(converted, `${{caseId}}_${{fileName}}.docx`);
+            // 读取整个tab div（包含bordered box外的章节），而非只读analysis-content
+            const tabDiv = document.getElementById(approachName);
+            if (!tabDiv) {{ alert('找不到分析内容'); return; }}
+
+            // 克隆后移除非内容元素
+            const clone = tabDiv.cloneNode(true);
+            // 移除按钮行
+            clone.querySelectorAll('button, [id^="toolbar-"], [id^="insights-"], .flex.gap-2').forEach(el => el.remove());
+
+            let raw = clone.innerHTML;
+            raw = raw.replace(/<h2[^>]*>/g, '<h2 style="font-size:14pt;font-weight:bold;color:#1e3a5f;border-bottom:1px solid #aac;padding:4px 0;margin:18px 0 8px 0;">');
+            raw = raw.replace(/<h3[^>]*>/g, '<h3 style="font-size:12pt;font-weight:bold;color:#374151;margin:12px 0 5px 0;">');
+            raw = raw.replace(/<p[^>]*>/g, '<p style="line-height:1.8;margin:3px 0;font-size:11pt;">');
+            raw = raw.replace(/<strong[^>]*>/g, '<strong style="font-weight:bold;">');
+            raw = raw.replace(/<ul[^>]*>/g, '<ul style="padding-left:20px;margin:4px 0;">');
+            raw = raw.replace(/<li[^>]*>/g, '<li style="line-height:1.8;font-size:11pt;">');
+            raw = raw.replace(/<div[^>]*>/g, '<div>');
+            raw = raw.replace(/<span[^>]*>/g, '<span>');
+
+            const htmlContent = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><style>
+body{{font-family:"Microsoft YaHei",sans-serif;margin:2cm;font-size:11pt;line-height:1.6;}}
+h1{{text-align:center;font-size:18pt;color:#1e3a5f;}}
+h2{{font-size:14pt;font-weight:bold;color:#1e3a5f;}}
+h3{{font-size:12pt;font-weight:bold;color:#374151;}}
+p{{line-height:1.8;margin:3px 0;}}ul{{padding-left:20px;}}li{{line-height:1.8;}}strong{{font-weight:bold;}}
+</style></head><body>
+<h1>${{approachName}}流派分析</h1>
+<p style="text-align:center"><strong>案例编号：</strong>${{caseId}}</p>
+<hr style="border:none;border-top:1px solid #ccc;margin:10px 0 16px 0;">
+${{raw}}
+</body></html>`;
+            try {{
+                const converted = htmlDocx.asBlob(htmlContent);
+                saveAs(converted, `${{VISITOR_NAME}}${{fileName}}分析_${{new Date().toISOString().slice(0,10)}}.docx`);
+            }} catch(e) {{ alert('下载失败：' + e.message); }}
         }}
 
         function downloadReviewWord(caseId) {{
@@ -560,6 +593,7 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
     visit_summary = visit_data['visit_summary']
     case_data = visit_data['case_data']
     case_id = case_data.get('case_id', '')
+    visitor_name = profile_data.get('basic_info', {}).get('name', '') or visitor_id
 
     # 获取所有来访记录（用于顶部标签切换）
     visit_history = profile_data['visit_history']
@@ -994,9 +1028,13 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
 
     # **重要**: 添加已保存但未启用的流派（保留历史数据）
     # 从visit_data中获取所有已保存的流派
+    # 注意：approach_analyses_html 的 key 可能是 approach_id（如 psychodynamic）
+    # 也可能是 approach_name（如 精神动力学），需要同时排除这两种情况
+    enabled_ids_set = {a['id'] for a in enabled_approaches}
     saved_approaches = visit_data.get('case_data', {}).get('approach_analyses_html', {}).keys()
     for saved_approach in saved_approaches:
-        if saved_approach not in all_approaches:
+        # 跳过：已在 all_approaches（名称匹配）或是已启用流派的 ID
+        if saved_approach not in all_approaches and saved_approach not in enabled_ids_set:
             print(f"    [保留] {saved_approach}: 已禁用的流派，但保留已保存的内容")
             all_approaches.append(saved_approach)
             # 为已保存但未启用的流派设置默认文件名
@@ -1227,17 +1265,63 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
 
             <div class="mb-6">
                 <div id="analysis-content-{approach_name}" class="text-gray-700 leading-relaxed p-4 border rounded min-h-[400px]" contenteditable="false">
-                    {analysis_content if analysis_content else '<span class="text-gray-500">暂无内容，点击编辑按钮开始编写...</span>'}
+                    <span class="text-gray-500">暂无内容，点击编辑按钮开始编写...</span>
                 </div>
+                <script>
+                (function(){{
+                    var el = document.getElementById('analysis-content-{approach_name}');
+                    var html = {json.dumps(analysis_content) if analysis_content else 'null'};
+                    if (el && html) el.innerHTML = html;
+                }})();
+                </script>
             </div>
 
             <!-- 历次感悟区域 -->
             <div class="mt-8 pt-6 border-t-2 border-gray-200">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-xl font-bold text-indigo-900">🧠 历次感悟（{approach_name}视角）</h3>
-                    <button onclick="showAddInsightModal('{approach_name}')" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition">
-                        <i class="fa fa-plus"></i> 添加感悟
-                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="downloadAllInsights('{approach_name}')"
+                                class="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition"
+                                title="下载该流派所有感悟为Word文档">
+                            📥 下载全部感悟
+                        </button>
+                        <button onclick="toggleAIChatPanel('{approach_id}', '{approach_name}')"
+                                id="ai-chat-btn-{approach_id}"
+                                class="px-4 py-2 bg-pink-600 text-white text-sm rounded hover:bg-pink-700 transition"
+                                title="针对本次AI分析，与AI督导进行深入对话">
+                            💬 与AI讨论
+                        </button>
+                        <button onclick="showAddInsightModal('{approach_name}')" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition">
+                            <i class="fa fa-plus"></i> 添加感悟
+                        </button>
+                    </div>
+                </div>
+
+                <!-- AI聊天面板（内嵌式，感悟上方） -->
+                <div id="ai-chat-panel-{approach_id}" style="display:none;margin-bottom:20px;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+                    <div style="padding:12px 16px;background:linear-gradient(135deg,#db2777,#9333ea);color:white;display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-weight:600;">💬 AI督导对话 · {approach_name} 视角</span>
+                        <button onclick="toggleAIChatPanel('{approach_id}', '{approach_name}')" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:13px;">收起 ✕</button>
+                    </div>
+                    <div id="chat-msgs-{approach_id}" style="height:360px;overflow-y:auto;padding:16px;background:#f8fafc;display:flex;flex-direction:column;gap:10px;">
+                        <div style="text-align:center;padding:24px 16px;color:#6b7280;font-size:14px;line-height:1.7;">
+                            <div style="font-size:36px;margin-bottom:10px;">🎓</div>
+                            <p>基于本次 <strong style="color:#9333ea;">{approach_name}</strong> 分析报告</p>
+                            <p>向AI督导提问，探讨分析中的任何观点</p>
+                            <p style="font-size:12px;margin-top:6px;color:#9ca3af;">Enter 发送，Shift+Enter 换行</p>
+                        </div>
+                    </div>
+                    <div style="padding:10px 14px;border-top:1px solid #e5e7eb;background:white;">
+                        <textarea id="chat-input-{approach_id}" rows="2" placeholder="输入问题或想法... (Enter发送，Shift+Enter换行)" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;resize:none;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;" onkeydown="handlePanelKeydown(event,'{approach_id}','{approach_name}')"></textarea>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+                            <button onclick="clearPanel('{approach_id}','{approach_name}')" style="padding:6px 12px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;font-size:12px;color:#6b7280;">🗑 清空记录</button>
+                            <div style="display:flex;gap:8px;">
+                                <button onclick="savePanelNow('{approach_id}','{approach_name}')" style="padding:7px 16px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;cursor:pointer;font-size:13px;color:#16a34a;font-weight:600;">💾 保存感悟</button>
+                                <button id="chat-send-{approach_id}" onclick="sendPanelMessage('{approach_id}','{approach_name}')" style="padding:7px 22px;background:linear-gradient(135deg,#db2777,#9333ea);color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;">发送</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="insights-{approach_name}" class="space-y-4">
@@ -1354,6 +1438,84 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
     </div>
 """
 
+    # ========== AI督导中心（跨流派综合督导）==========
+    supervisor_records_data = visit_data.get('case_data', {}).get('supervisor_records', [])
+    supervisor_records_data.sort(key=lambda x: x.get('created_at', ''), reverse=False)
+    sup_count = len(supervisor_records_data)
+    analyzed_count = sum(
+        1 for v in visit_data.get('case_data', {}).get('approach_analyses_html', {}).values()
+        if v and str(v).strip()
+    )
+
+    html += f"""
+    <div class="bg-white rounded-lg shadow-lg p-8" style="margin-top:24px;" id="supervisor-center">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+            <h2 class="text-2xl font-bold text-gray-800">🎓 AI督导中心</h2>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <span style="background:#ede9fe;color:#7c3aed;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;">{analyzed_count} 个流派已分析</span>
+                <span style="background:#dcfce7;color:#166534;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;">{sup_count} 条督导记录</span>
+                <button onclick="downloadSupervisorRecords()" style="padding:6px 14px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;cursor:pointer;font-size:13px;color:#16a34a;font-weight:600;">📥 下载督导记录</button>
+                <button onclick="toggleSupervisorPanel()" id="supervisor-toggle-btn" style="padding:6px 16px;background:linear-gradient(135deg,#7c3aed,#db2777);color:white;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">💬 开始综合督导</button>
+            </div>
+        </div>
+        <div id="supervisor-records-display" style="margin-bottom:20px;">
+"""
+
+    if supervisor_records_data:
+        for idx, record in enumerate(supervisor_records_data):
+            rec_id = record.get('id', '')
+            content = record.get('content', '')
+            created_at = record.get('created_at', '')
+            created_time = created_at[:16].replace('T', ' ') if created_at else ''
+            html += f"""
+            <div class="bg-purple-50 border-l-4 border-purple-500 rounded mb-4" id="supervisor-rec-{rec_id}">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#f5f3ff;border-radius:6px 6px 0 0;">
+                    <span style="font-weight:600;color:#6d28d9;">🎓 第{idx+1}次督导记录</span>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span style="font-size:12px;color:#9ca3af;">{created_time}</span>
+                        <button onclick="deleteSupervisorRecord('{rec_id}')" style="padding:2px 8px;background:#fee2e2;border:1px solid #fca5a5;border-radius:4px;cursor:pointer;font-size:12px;color:#dc2626;">删除</button>
+                    </div>
+                </div>
+                <div style="padding:16px;">{content}</div>
+            </div>
+"""
+    else:
+        html += """
+            <p style="color:#9ca3af;text-align:center;padding:24px 0;font-size:14px;">
+                暂无督导记录，点击「开始综合督导」与AI展开跨流派对话
+            </p>
+"""
+
+    html += """
+        </div>
+
+        <!-- AI督导聊天面板（初始隐藏） -->
+        <div id="supervisor-chat-panel" style="display:none;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+            <div style="background:linear-gradient(135deg,#7c3aed,#db2777);color:white;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <span style="font-weight:700;font-size:15px;">🎓 AI综合督导对话</span>
+                    <span style="font-size:12px;opacity:0.85;margin-left:8px;">整合所有流派视角 · 跨流派综合点评</span>
+                </div>
+                <button onclick="toggleSupervisorPanel()" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:13px;">收起 ✕</button>
+            </div>
+            <div id="supervisor-msgs" style="height:420px;overflow-y:auto;padding:16px;background:white;"></div>
+            <div style="padding:12px 14px;border-top:1px solid #e5e7eb;background:white;">
+                <textarea id="supervisor-input" rows="2"
+                    placeholder="向AI督导提问... (Enter 发送，Shift+Enter 换行)"
+                    style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;resize:none;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;"
+                    onkeydown="handleSupervisorKeydown(event)"></textarea>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+                    <button onclick="clearSupervisorPanel()" style="padding:6px 12px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;font-size:12px;color:#6b7280;">🗑 清空</button>
+                    <div style="display:flex;gap:8px;">
+                        <button onclick="saveSupervisorNow()" style="padding:7px 16px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;cursor:pointer;font-size:13px;color:#16a34a;font-weight:600;">💾 保存督导记录</button>
+                        <button id="supervisor-send-btn" onclick="sendSupervisorMessage()" style="padding:7px 22px;background:linear-gradient(135deg,#7c3aed,#db2777);color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;">发送</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+"""
+
     html += '</div>\n'
 
     # 添加感悟管理JavaScript（需要visitor_id和visit_id变量）
@@ -1362,6 +1524,7 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
         // ========== 感悟管理功能 ==========
         const VISITOR_ID = '{visitor_id}';
         const VISIT_ID = '{visit_id}';
+        const VISITOR_NAME = '{visitor_name}';
 
         let currentInsightModal = null;
 
@@ -1641,7 +1804,7 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
 
             // 使用html-docx-js转换并下载
             const converted = htmlDocx.asBlob(htmlContent);
-            saveAs(converted, `${{caseId}}_${{approachName}}_感悟${{insightNum}}.docx`);
+            saveAs(converted, `${{VISITOR_NAME}}${{approachName}}感悟${{insightNum}}_${{new Date().toISOString().slice(0,10)}}.docx`);
         }}
 
         // 上传Word文档并导入感悟内容
@@ -2050,6 +2213,490 @@ def generate_visit_detail_page(visitor_id, visit_data, profile_data):
             }});
         }}
     </script>
+"""
+
+    # AI督导聊天面板功能（内嵌式，无需全局抽屉）
+    html += """
+<script>
+// ========== AI督导聊天面板功能 ==========
+const AI_CHAT_API = 'http://localhost:8771/api/chat';
+const chatPanelState = {};  // keyed by approachId
+
+function toggleAIChatPanel(approachId, approachName) {
+    const panel = document.getElementById('ai-chat-panel-' + approachId);
+    if (!panel) { console.warn('chat panel not found: ai-chat-panel-' + approachId); return; }
+    const isOpen = panel.style.display !== 'none';
+    if (isOpen) {
+        // 关闭时：有对话则提示保存
+        const state = chatPanelState[approachId];
+        if (state && state.messages.length > 0) {
+            saveAllAndClose(approachId, approachName);
+        } else {
+            panel.style.display = 'none';
+        }
+    } else {
+        if (!chatPanelState[approachId]) {
+            // 用 approachName 读取分析内容（分析div的ID用的是 approach_name）
+            const analysisEl = document.getElementById('analysis-content-' + approachName);
+            // 读取历次感悟（提供连续上下文）
+            const insightsEl = document.getElementById('insights-' + approachName);
+            chatPanelState[approachId] = {
+                messages: [],
+                analysisText: analysisEl ? (analysisEl.innerText || '') : '',
+                insightsText: insightsEl ? (insightsEl.innerText || '').trim() : '',
+                isStreaming: false,
+                displayName: approachName
+            };
+        }
+        panel.style.display = 'block';
+        setTimeout(() => {
+            panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+            const input = document.getElementById('chat-input-' + approachId);
+            if (input) input.focus();
+        }, 100);
+    }
+}
+
+function handlePanelKeydown(event, approachId, approachName) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendPanelMessage(approachId, approachName);
+    }
+}
+
+function clearPanel(approachId, approachName) {
+    const state = chatPanelState[approachId];
+    const hasMessages = state && state.messages.length > 0;
+    const msg = hasMessages
+        ? '确定清空？本次对话将不会保存为感悟。'
+        : '确定清空本次对话记录？';
+    if (!confirm(msg)) return;
+    if (chatPanelState[approachId]) chatPanelState[approachId].messages = [];
+    const msgsEl = document.getElementById('chat-msgs-' + approachId);
+    if (!msgsEl) return;
+    msgsEl.innerHTML = `
+        <div style="text-align:center;padding:24px 16px;color:#6b7280;font-size:14px;line-height:1.7;">
+            <div style="font-size:36px;margin-bottom:10px;">🎓</div>
+            <p>基于本次 <strong style="color:#9333ea;">${approachName}</strong> 分析报告</p>
+            <p>向AI督导提问，探讨分析中的任何观点</p>
+            <p style="font-size:12px;margin-top:6px;color:#9ca3af;">Enter 发送，Shift+Enter 换行</p>
+        </div>`;
+}
+
+async function sendPanelMessage(approachId, approachName) {
+    const state = chatPanelState[approachId];
+    if (!state || state.isStreaming) return;
+
+    const inputEl = document.getElementById('chat-input-' + approachId);
+    const userMsg = inputEl ? inputEl.value.trim() : '';
+    if (!userMsg) return;
+    inputEl.value = '';
+
+    state.messages.push({role: 'user', content: userMsg});
+
+    const msgsEl = document.getElementById('chat-msgs-' + approachId);
+    const userDiv = document.createElement('div');
+    userDiv.style.cssText = 'display:flex;justify-content:flex-end;margin-bottom:4px;';
+    const safe = userMsg.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\\n/g,'<br>');
+    userDiv.innerHTML = `<div style="max-width:80%;background:linear-gradient(135deg,#db2777,#9333ea);color:white;border-radius:12px;border-bottom-right-radius:4px;padding:10px 14px;font-size:14px;line-height:1.6;">${safe}</div>`;
+    msgsEl.appendChild(userDiv);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+
+    const aiId = 'ai-' + approachId + '-' + Date.now();
+    const aiDiv = document.createElement('div');
+    aiDiv.id = aiId;
+    aiDiv.innerHTML = `
+        <div style="display:flex;align-items:flex-start;gap:8px;">
+            <div style="width:28px;height:28px;background:linear-gradient(135deg,#db2777,#9333ea);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px;">🤖</div>
+            <div id="${aiId}-c" style="max-width:85%;background:white;border:1px solid #e5e7eb;border-radius:12px;border-top-left-radius:4px;padding:10px 12px;font-size:14px;line-height:1.7;color:#374151;">
+                <span style="color:#9ca3af;">●●●</span>
+            </div>
+        </div>`;
+    msgsEl.appendChild(aiDiv);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+
+    state.isStreaming = true;
+    const sendBtn = document.getElementById('chat-send-' + approachId);
+    if (sendBtn) { sendBtn.textContent = '生成中...'; sendBtn.disabled = true; }
+
+    try {
+        const resp = await fetch(AI_CHAT_API, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                approach_name: approachName,
+                messages: state.messages,
+                analysis_text: state.analysisText,
+                insights_text: state.insightsText || ''
+            })
+        });
+
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let aiText = '';
+        const contentEl = document.getElementById(aiId + '-c');
+        contentEl.innerHTML = '';
+
+        while (true) {
+            const {value, done} = await reader.read();
+            if (done) break;
+            for (const line of decoder.decode(value).split('\\n')) {
+                if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                    try {
+                        const d = JSON.parse(line.slice(6));
+                        if (d.text) {
+                            aiText += d.text;
+                            contentEl.innerHTML = aiText
+                                .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                                .replace(/\\n/g,'<br>');
+                            msgsEl.scrollTop = msgsEl.scrollHeight;
+                        }
+                    } catch(e) {}
+                }
+            }
+        }
+
+        state.messages.push({role: 'assistant', content: aiText});
+        // 无独立保存按钮——关闭面板时统一保存所有对话
+
+    } catch (e) {
+        const el = document.getElementById(aiId + '-c');
+        if (el) el.innerHTML = `<span style="color:#dc2626;">请求失败（请确认AI服务器已启动端口8771）</span>`;
+    }
+
+    state.isStreaming = false;
+    if (sendBtn) { sendBtn.textContent = '发送'; sendBtn.disabled = false; }
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+async function savePanelInsight(approachName, userMsg, aiText) {
+    // 格式化为论坛"问+答"帖子
+    const safeQ = (userMsg || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\\n/g,'<br>');
+    const safeA = (aiText || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\\n/g,'<br>');
+    const formatted = `<div style="background:#eef2ff;border-left:3px solid #6366f1;padding:10px 14px;margin-bottom:12px;border-radius:6px 6px 0 0;"><strong style="color:#4f46e5;">💬 我的提问</strong><div style="margin-top:6px;color:#374151;">${safeQ}</div></div><div style="padding:10px 14px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 6px 6px;background:white;"><strong style="color:#9333ea;">🤖 AI督导回复</strong><div style="margin-top:6px;color:#374151;line-height:1.7;">${safeA}</div></div>`;
+    const resp = await fetch('http://localhost:8768/api/add_insight', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            visitor_id: VISITOR_ID,
+            visit_id: VISIT_ID,
+            approach: approachName,
+            content: formatted,
+            source: 'ai_chat'
+        })
+    });
+    return await resp.json();
+}
+
+function downloadAllInsights(approachName) {
+    const insightsDiv = document.getElementById('insights-' + approachName);
+    if (!insightsDiv) { alert('未找到感悟区域'); return; }
+    const contentDivs = insightsDiv.querySelectorAll('[id^="insight-content-"]');
+    if (contentDivs.length === 0) { alert('该流派暂无感悟记录'); return; }
+
+    let allHtml = '';
+    contentDivs.forEach((div, idx) => {
+        allHtml += `<h2 style="font-size:14pt;color:#4f46e5;border-bottom:1px solid #d1d5db;padding-bottom:6px;margin:24px 0 12px;">`
+            + `第${idx + 1}条感悟</h2>`;
+        allHtml += `<div style="font-size:11pt;line-height:1.8;">${div.innerHTML}</div>`;
+        if (idx < contentDivs.length - 1) {
+            allHtml += '<hr style="border:none;border-top:1px dashed #e5e7eb;margin:20px 0;">';
+        }
+    });
+
+    const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="font-family:'Microsoft YaHei',sans-serif;line-height:1.6;padding:30px;color:#374151;">`
+        + `<h1 style="font-size:18pt;color:#1e293b;margin-bottom:4px;">${approachName} — 历次感悟汇总</h1>`
+        + `<p style="color:#6b7280;margin-bottom:28px;font-size:10pt;">共 ${contentDivs.length} 条</p>`
+        + allHtml
+        + `</body></html>`;
+
+    try {
+        const dateStr = new Date().toISOString().slice(0, 10);
+        const blob = htmlDocx.asBlob(htmlContent);
+        saveAs(blob, `${VISITOR_NAME}${approachName}感悟_${dateStr}.docx`);
+    } catch(e) {
+        alert('下载失败: ' + e.message);
+    }
+}
+
+async function savePanelNow(approachId, approachName) {
+    const state = chatPanelState[approachId];
+    if (!state || state.messages.length === 0) {
+        alert('暂无对话记录可保存');
+        return;
+    }
+    if (state.isStreaming) {
+        alert('AI正在生成回复，请等待完成后再保存');
+        return;
+    }
+    const qaPairs = [];
+    const msgs = state.messages;
+    for (let i = 0; i + 1 < msgs.length; i += 2) {
+        if (msgs[i].role === 'user' && msgs[i + 1].role === 'assistant') {
+            qaPairs.push({q: msgs[i].content, a: msgs[i + 1].content});
+        }
+    }
+    if (qaPairs.length === 0) { alert('没有完整的问答记录可保存'); return; }
+
+    let saved = 0;
+    for (const pair of qaPairs) {
+        try {
+            const r = await savePanelInsight(approachName, pair.q, pair.a);
+            if (r.success) saved++;
+        } catch(e) {}
+    }
+
+    if (saved > 0) {
+        state.messages = [];  // 清空已保存的轮次
+        // 更新感悟上下文（为后续对话使用）
+        const insightsEl = document.getElementById('insights-' + approachName);
+        if (insightsEl) state.insightsText = insightsEl.innerText;
+        // 显示成功提示，不关闭面板，不刷新
+        const msgsEl = document.getElementById('chat-msgs-' + approachId);
+        if (msgsEl) {
+            msgsEl.innerHTML = `
+                <div style="text-align:center;padding:28px 16px;color:#374151;font-size:14px;line-height:1.8;">
+                    <div style="font-size:36px;margin-bottom:10px;">✅</div>
+                    <p style="font-weight:600;color:#16a34a;">已保存 ${saved} 条感悟</p>
+                    <p style="color:#6b7280;font-size:12px;margin-top:6px;">关闭面板后按 F5 刷新页面即可在下方查看</p>
+                    <p style="color:#9ca3af;font-size:12px;margin-top:4px;">可继续提问进行新一轮讨论</p>
+                </div>`;
+        }
+    } else {
+        alert('保存失败，请确认接访记录服务器已启动（端口8768）');
+    }
+}
+
+async function saveAllAndClose(approachId, approachName) {
+    const state = chatPanelState[approachId];
+    const panel = document.getElementById('ai-chat-panel-' + approachId);
+
+    // 提取所有完整的Q&A轮次
+    const qaPairs = [];
+    const msgs = state ? state.messages : [];
+    for (let i = 0; i + 1 < msgs.length; i += 2) {
+        if (msgs[i].role === 'user' && msgs[i + 1] && msgs[i + 1].role === 'assistant') {
+            qaPairs.push({q: msgs[i].content, a: msgs[i + 1].content});
+        }
+    }
+
+    if (qaPairs.length === 0) {
+        if (panel) panel.style.display = 'none';
+        return;
+    }
+
+    if (!confirm(`将本次对话（${qaPairs.length} 条问答）保存为感悟？\n\n确认后在历次感悟区查看，不满意的条目可手动删除。`)) {
+        // 用户取消：不保存，直接关闭
+        if (panel) panel.style.display = 'none';
+        return;
+    }
+
+    // 逐条保存
+    let saved = 0;
+    for (const pair of qaPairs) {
+        try {
+            const r = await savePanelInsight(approachName, pair.q, pair.a);
+            if (r.success) saved++;
+        } catch(e) {}
+    }
+
+    if (saved > 0) {
+        // 清空对话历史，关闭面板，刷新页面
+        if (state) state.messages = [];
+        if (panel) panel.style.display = 'none';
+        location.reload();
+    } else {
+        alert('保存失败，请确认接访记录服务器已启动（端口8768）');
+    }
+}
+</script>
+"""
+
+    # ========== AI督导中心 JS ==========
+    html += """
+<script>
+// ========== AI督导中心功能 ==========
+const SUPERVISOR_API = 'http://localhost:8771/api/supervisor_chat';
+const supervisorState = { messages: [], isStreaming: false };
+
+function collectAllAnalyses() {
+    const analyses = {};
+    document.querySelectorAll('[id^="analysis-content-"]').forEach(el => {
+        const name = el.id.replace('analysis-content-', '');
+        const text = (el.innerText || el.textContent || '').trim();
+        if (text && text !== '暂无AI分析' && text.length > 50) analyses[name] = text.slice(0, 1500);
+    });
+    return analyses;
+}
+
+function collectAllInsights() {
+    const parts = [];
+    document.querySelectorAll('[id^="insights-"]').forEach(el => {
+        const name = el.id.replace('insights-', '');
+        const text = (el.innerText || el.textContent || '').trim();
+        if (text && !text.includes('暂无感悟')) parts.push('【' + name + '】\\n' + text);
+    });
+    return parts.join('\\n\\n---\\n\\n');
+}
+
+function toggleSupervisorPanel() {
+    const panel = document.getElementById('supervisor-chat-panel');
+    const btn = document.getElementById('supervisor-toggle-btn');
+    if (!panel) return;
+    if (panel.style.display !== 'none') {
+        if (supervisorState.messages.length > 0) { saveSupervisorAllAndClose(); return; }
+        panel.style.display = 'none';
+        if (btn) btn.textContent = '💬 开始综合督导';
+    } else {
+        if (supervisorState.messages.length === 0) {
+            const msgsDiv = document.getElementById('supervisor-msgs');
+            const cnt = Object.keys(collectAllAnalyses()).length;
+            msgsDiv.innerHTML = '<div style="background:#f5f3ff;border-left:3px solid #7c3aed;padding:12px 16px;border-radius:0 8px 8px 0;margin-bottom:12px;"><strong style="color:#6d28d9;">🎓 AI督导中心已就绪</strong><p style="margin:6px 0 0;color:#6b7280;font-size:13px;">已读取 ' + cnt + ' 个流派分析报告，可直接提问：<br>· "这个案例我最大的不足是什么？"<br>· "各流派对来访者核心问题有哪些共识？"<br>· "下次咨询最应关注什么？"</p></div>';
+        }
+        panel.style.display = 'block';
+        if (btn) btn.textContent = '收起督导面板';
+        setTimeout(() => { panel.scrollIntoView({behavior:'smooth',block:'nearest'}); const inp = document.getElementById('supervisor-input'); if(inp) inp.focus(); }, 100);
+    }
+}
+
+function handleSupervisorKeydown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendSupervisorMessage(); }
+}
+
+async function sendSupervisorMessage() {
+    if (supervisorState.isStreaming) return;
+    const input = document.getElementById('supervisor-input');
+    const sendBtn = document.getElementById('supervisor-send-btn');
+    const userMsg = (input.value || '').trim();
+    if (!userMsg) return;
+    input.value = '';
+    supervisorState.messages.push({role:'user', content:userMsg});
+
+    const msgsDiv = document.getElementById('supervisor-msgs');
+    const userDiv = document.createElement('div');
+    userDiv.style.cssText = 'background:#eff6ff;border-left:3px solid #3b82f6;padding:10px 14px;margin-bottom:8px;border-radius:0 6px 6px 0;';
+    userDiv.innerHTML = '<strong style="color:#1d4ed8;font-size:13px;">👤 你的提问</strong><div style="margin-top:6px;color:#374151;">' + userMsg.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
+    msgsDiv.appendChild(userDiv);
+
+    const aiId = 'sup-ai-' + Date.now();
+    const aiDiv = document.createElement('div');
+    aiDiv.style.cssText = 'background:#faf5ff;border-left:3px solid #7c3aed;padding:10px 14px;margin-bottom:12px;border-radius:0 6px 6px 0;';
+    aiDiv.innerHTML = '<strong style="color:#6d28d9;font-size:13px;">🎓 AI督导</strong><div id="' + aiId + '-c" style="margin-top:6px;color:#374151;line-height:1.7;">思考中...</div>';
+    msgsDiv.appendChild(aiDiv);
+    msgsDiv.scrollTop = msgsDiv.scrollHeight;
+
+    supervisorState.isStreaming = true;
+    if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '思考中...'; }
+
+    let aiText = '';
+    try {
+        const resp = await fetch(SUPERVISOR_API, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({messages: supervisorState.messages, analyses_dict: collectAllAnalyses(), all_insights_text: collectAllInsights()})
+        });
+        const contentEl = document.getElementById(aiId + '-c');
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = '';
+        while (true) {
+            const {done, value} = await reader.read();
+            if (done) break;
+            buf += decoder.decode(value, {stream:true});
+            const lines = buf.split('\\n'); buf = lines.pop();
+            for (const line of lines) {
+                if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                    try { const d = JSON.parse(line.slice(6)); if (d.text) { aiText += d.text; contentEl.innerHTML = aiText.replace(/\\n/g,'<br>'); msgsDiv.scrollTop = msgsDiv.scrollHeight; } } catch(e) {}
+                }
+            }
+        }
+        supervisorState.messages.push({role:'assistant', content:aiText});
+    } catch(e) {
+        document.getElementById(aiId + '-c').textContent = '请求失败（请确认AI服务器已启动端口8771）';
+    } finally {
+        supervisorState.isStreaming = false;
+        if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = '发送'; }
+    }
+}
+
+async function saveSupervisorNow() {
+    if (supervisorState.isStreaming) { alert('请等待AI回复完成后再保存'); return; }
+    const msgs = supervisorState.messages;
+    const pairs = [];
+    for (let i = 0; i + 1 < msgs.length; i += 2) {
+        if (msgs[i].role === 'user' && msgs[i+1] && msgs[i+1].role === 'assistant') pairs.push({q:msgs[i].content, a:msgs[i+1].content});
+    }
+    if (pairs.length === 0) { alert('暂无可保存的对话'); return; }
+
+    let saved = 0;
+    for (const pair of pairs) {
+        const safeQ = pair.q.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        const safeA = pair.a.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\\n/g,'<br>');
+        const content = '<div style="background:#eff6ff;border-left:3px solid #3b82f6;padding:10px 14px;margin-bottom:4px;border-radius:6px 6px 0 0;"><strong style="color:#1d4ed8;">💬 提问</strong><div style="margin-top:6px;">' + safeQ + '</div></div><div style="padding:10px 14px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 6px 6px;background:white;"><strong style="color:#6d28d9;">🎓 AI督导回复</strong><div style="margin-top:6px;line-height:1.7;">' + safeA + '</div></div>';
+        try {
+            const r = await fetch('http://localhost:8768/api/add_supervisor_record', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({visitor_id:VISITOR_ID, visit_id:VISIT_ID, content, approaches_covered:Object.keys(collectAllAnalyses())})
+            });
+            if ((await r.json()).success) saved++;
+        } catch(e) {}
+    }
+    if (saved > 0) {
+        supervisorState.messages = [];
+        const msgsDiv = document.getElementById('supervisor-msgs');
+        msgsDiv.innerHTML += '<div style="background:#dcfce7;border-left:3px solid #22c55e;padding:10px 14px;border-radius:6px;margin-top:8px;color:#166534;">已保存 ' + saved + ' 条督导记录</div>';
+        setTimeout(() => location.reload(), 1000);
+    } else {
+        alert('保存失败，请确认接访记录服务器已启动（端口8768）');
+    }
+}
+
+async function saveSupervisorAllAndClose() {
+    const msgs = supervisorState.messages;
+    const pairs = [];
+    for (let i = 0; i + 1 < msgs.length; i += 2) {
+        if (msgs[i].role === 'user' && msgs[i+1] && msgs[i+1].role === 'assistant') pairs.push({q:msgs[i].content, a:msgs[i+1].content});
+    }
+    const panel = document.getElementById('supervisor-chat-panel');
+    const btn = document.getElementById('supervisor-toggle-btn');
+    if (pairs.length === 0) { if(panel) panel.style.display='none'; if(btn) btn.textContent='💬 开始综合督导'; return; }
+    if (!confirm('将本次督导对话（' + pairs.length + ' 条问答）保存为督导记录？')) {
+        if(panel) panel.style.display='none'; if(btn) btn.textContent='💬 开始综合督导'; return;
+    }
+    await saveSupervisorNow();
+}
+
+function clearSupervisorPanel() {
+    if (!confirm('确定清空当前对话？（已保存的督导记录不受影响）')) return;
+    supervisorState.messages = [];
+    const d = document.getElementById('supervisor-msgs'); if(d) d.innerHTML = '';
+}
+
+async function deleteSupervisorRecord(recordId) {
+    if (!confirm('确定删除这条督导记录？')) return;
+    try {
+        const r = await fetch('http://localhost:8768/api/delete_supervisor_record', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({visitor_id:VISITOR_ID, visit_id:VISIT_ID, record_id:recordId})
+        });
+        if ((await r.json()).success) { const el = document.getElementById('supervisor-rec-' + recordId); if(el) el.remove(); }
+        else alert('删除失败');
+    } catch(e) { alert('删除失败'); }
+}
+
+function downloadSupervisorRecords() {
+    const display = document.getElementById('supervisor-records-display');
+    const recs = display ? display.querySelectorAll('[id^="supervisor-rec-"]') : [];
+    if (recs.length === 0) { alert('暂无督导记录可下载'); return; }
+    let body = '';
+    recs.forEach((rec, i) => {
+        const inner = rec.querySelector('[style*="padding:16px"]');
+        body += '<h2 style="color:#6d28d9;">第' + (i+1) + '次督导记录</h2>' + (inner ? inner.innerHTML : '') + '<hr style="margin:20px 0;">';
+    });
+    const htmlStr = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:Microsoft YaHei,sans-serif;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.6;}</style></head><body><h1 style="color:#7c3aed;">' + VISITOR_NAME + ' — AI督导记录</h1>' + body + '</body></html>';
+    const blob = htmlDocx.asBlob(htmlStr);
+    saveAs(blob, VISITOR_NAME + '督导记录_' + new Date().toISOString().slice(0,10) + '.docx');
+}
+</script>
 """
 
     html += get_html_footer()

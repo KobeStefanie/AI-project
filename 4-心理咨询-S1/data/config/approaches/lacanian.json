@@ -1,0 +1,46 @@
+{
+  "id": "lacanian",
+  "name": "拉康精神分析",
+  "name_short": "拉康",
+  "enabled": true,
+  "color": "#db2777",
+  "icon": "🪞",
+  "description": "拉康精神分析取向，关注语言、欲望结构与主体建构",
+  "fields": {
+    "structural_diagnosis": {
+      "label": "结构诊断",
+      "type": "text",
+      "required": true,
+      "description": "神经症/精神病/性倒错的结构判断与依据"
+    },
+    "desire_and_jouissance": {
+      "label": "欲望与享乐",
+      "type": "text",
+      "required": true,
+      "description": "欲望的对象因a、享乐的位置与症状意义"
+    },
+    "language_and_subject": {
+      "label": "语言与主体",
+      "type": "text",
+      "required": true,
+      "description": "能指链分析、主体的分裂与大他者的结构"
+    }
+  },
+  "techniques": [
+    "语言与能指分析",
+    "结构诊断",
+    "症状解读",
+    "欲望定向",
+    "移情处理",
+    "切断与标点",
+    "解释",
+    "大他者分析"
+  ],
+  "metadata": {
+    "created_at": "2026-08-09",
+    "version": "1.0",
+    "author": "系统生成",
+    "note": "基于Jacques Lacan的精神分析理论"
+  },
+  "sort_order": 7
+}

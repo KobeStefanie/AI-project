@@ -33,7 +33,9 @@ APPROACH_PROMPT_MAP = {
     'psychodynamic': 'psychodynamic_analysis.md',
     'humanistic': 'humanistic_analysis.md',
     'existential': 'existential_analysis.md',
-    'ifs': 'ifs_analysis.md'
+    'ifs': 'ifs_analysis.md',
+    'lacanian': 'lacanian_analysis.md',
+    'jungian': 'jungian_analysis.md',
 }
 
 # 中文字段标签映射
@@ -191,31 +193,29 @@ def _dict_to_html(d: dict, depth: int = 0) -> str:
 
 
 def format_analysis_to_html(analysis_text: str) -> str:
-    """将AI返回的JSON/Markdown分析文本转换为可读的带格式HTML"""
+    """将AI返回的Markdown分析文本转换为带格式HTML"""
     import re
 
-    # 如果是之前转换失败产生的垃圾HTML（<p>包裹的JSON），先提取原始文本
-    if '<p class="text-gray-700' in analysis_text:
-        # 从<p>...</p>里提取所有文本内容，还原为原始文本
+    # 如果是之前生成的正确格式HTML，直接返回
+    if '<div class="mb-5 bg-indigo-50' in analysis_text:
+        return analysis_text
+
+    # 如果是旧的垃圾数据（包含span/p标签但无结构），清除后重新渲染
+    if '<span class=' in analysis_text or '<p class=' in analysis_text:
         text = re.sub(r'<[^>]+>', ' ', analysis_text)
         text = re.sub(r'\s+', ' ', text).strip()
     else:
-        # 已经是格式良好的HTML，直接返回
-        if '<div class=' in analysis_text or '<h3 class=' in analysis_text:
-            return analysis_text
         text = analysis_text
 
     # 清除markdown代码块标记
     text = re.sub(r'```\w*', '', text, flags=re.IGNORECASE)
     text = text.strip()
 
-    # 从文本中提取JSON对象（找第一个{到最后一个}）
+    # 先尝试JSON解析（兼容旧格式）
     json_match = re.search(r'\{[\s\S]*\}', text)
     if json_match:
-        json_str = json_match.group(0)
-        # 尝试解析
         try:
-            data = json.loads(json_str)
+            data = json.loads(json_match.group(0))
             if isinstance(data, dict) and data:
                 html = ''
                 for k, v in data.items():
@@ -228,8 +228,98 @@ def format_analysis_to_html(analysis_text: str) -> str:
         except json.JSONDecodeError:
             pass
 
-    # JSON解析失败：用正则从原始文本提取键值对，直接渲染
-    return _regex_extract_to_html(text)
+    # Markdown转HTML（主路径：AI现在输出Markdown）
+    return _markdown_to_html(text)
+
+
+def _markdown_to_html(text: str) -> str:
+    """将Markdown文本转换为格式化HTML（正确追踪div开关）"""
+    import re
+    lines = text.split('\n')
+    html_parts = []
+    in_list = False
+    section_open = False  # 是否有未关闭的 ## 节
+
+    def close_list():
+        nonlocal in_list
+        if in_list:
+            html_parts.append('</ul>')
+            in_list = False
+
+    def close_section():
+        nonlocal section_open
+        if section_open:
+            html_parts.append('</div></div>')  # 关闭 px-2 div 和 bg-indigo-50 div
+            section_open = False
+
+    for line in lines:
+        stripped = line.rstrip()
+
+        # 文档标题（单#）→ 粗体段落
+        if stripped.startswith('# ') and not stripped.startswith('## '):
+            close_list()
+            title = stripped[2:].strip()
+            html_parts.append(f'<p class="font-bold text-indigo-900 text-base mb-2">{title}</p>')
+            continue
+
+        # ## → 大板块（先关前一节，再开新节）
+        if stripped.startswith('## ') and not stripped.startswith('### '):
+            close_list()
+            close_section()
+            title = stripped[3:].strip()
+            html_parts.append(f'<div class="mb-5 bg-indigo-50 rounded-lg p-4 border border-indigo-100">')
+            html_parts.append(f'<h2 class="text-base font-bold text-indigo-900 mb-3 pb-1 border-b border-indigo-200">📌 {title}</h2>')
+            html_parts.append(f'<div class="px-2">')
+            section_open = True
+            continue
+
+        # ### → 子标题
+        if stripped.startswith('### '):
+            close_list()
+            title = stripped[4:].strip()
+            html_parts.append(f'<h3 class="font-semibold text-indigo-700 text-sm mt-3 mb-1">▸ {title}</h3>')
+            continue
+
+        # --- 分隔线 → 关闭当前节
+        if stripped.startswith('---') or stripped.startswith('==='):
+            close_list()
+            close_section()
+            continue
+
+        # 列表项
+        if stripped.startswith('- ') or stripped.startswith('* '):
+            if not in_list:
+                html_parts.append('<ul class="list-disc pl-5 mb-2 space-y-1">')
+                in_list = True
+            content = stripped[2:].strip()
+            content = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', content)
+            html_parts.append(f'<li class="text-gray-700 text-sm">{content}</li>')
+            continue
+
+        # 空行
+        if not stripped:
+            close_list()
+            html_parts.append('<div class="mb-1"></div>')
+            continue
+
+        # 非列表项时关闭列表
+        close_list()
+
+        # 整行粗体
+        if stripped.startswith('**') and stripped.endswith('**') and len(stripped) > 4:
+            html_parts.append(f'<p class="font-semibold text-gray-800 text-sm mb-1">{stripped[2:-2]}</p>')
+            continue
+
+        # 普通正文（行内粗体/斜体）
+        content = re.sub(r'\*\*(.+?)\*\*', r'<strong class="text-gray-800">\1</strong>', stripped)
+        content = re.sub(r'\*(.+?)\*', r'<em>\1</em>', content)
+        html_parts.append(f'<p class="text-gray-700 text-sm leading-relaxed mb-1">{content}</p>')
+
+    # 收尾：关闭所有未关闭的结构
+    close_list()
+    close_section()
+
+    return '<div class="analysis-wrapper">\n' + '\n'.join(html_parts) + '\n</div>'
 
 
 def _regex_extract_to_html(text: str) -> str:
@@ -252,50 +342,6 @@ def _regex_extract_to_html(text: str) -> str:
         html += f'<span class="text-gray-700">{value}</span></div>'
     html += '</div>'
     return html
-    text = text.strip()
-    try:
-        data = json.loads(text)
-        html = ''
-        for k, v in data.items():
-            label = _kz(k)
-            html += f'<div class="mb-5 bg-indigo-50 rounded-lg p-4 border border-indigo-100">'
-            html += f'<h3 class="text-base font-bold text-indigo-900 mb-3 pb-1 border-b border-indigo-200">📌 {label}</h3>'
-            html += _val_to_html(v, depth=1)
-            html += '</div>'
-        return html or '<p class="text-gray-400">（分析内容为空）</p>'
-    except Exception:
-        # fallback：按行渲染，使用已清理的text（不用原始analysis_text）
-        html = ''
-        in_list = False
-        for line in text.split('\n'):
-            line = line.rstrip()
-            if not line:
-                if in_list:
-                    html += '</ul>'
-                    in_list = False
-                html += '<div class="mb-2"></div>'
-                continue
-            if line.startswith('### '):
-                html += f'<h3 class="font-bold text-indigo-800 text-base mt-4 mb-1">{line[4:]}</h3>'
-            elif line.startswith('## '):
-                html += f'<h2 class="font-bold text-indigo-900 text-lg mt-5 mb-2">{line[3:]}</h2>'
-            elif line.startswith('# '):
-                html += f'<h1 class="font-bold text-indigo-900 text-xl mt-5 mb-3">{line[2:]}</h1>'
-            elif re.match(r'^\*\*(.+)\*\*$', line):
-                html += f'<p class="font-semibold text-gray-800 mb-1">{line[2:-2]}</p>'
-            elif line.startswith('- ') or line.startswith('* '):
-                if not in_list:
-                    html += '<ul class="list-disc pl-5 mb-2">'
-                    in_list = True
-                html += f'<li class="text-gray-700 mb-1">{line[2:]}</li>'
-            else:
-                if in_list:
-                    html += '</ul>'
-                    in_list = False
-                html += f'<p class="text-gray-700 leading-relaxed mb-1">{line}</p>'
-        if in_list:
-            html += '</ul>'
-        return html
 
 
 class AIAnalysisService:
