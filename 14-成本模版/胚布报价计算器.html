@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>胚布报价计算器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            .no-print { display: none; }
+        }
+        .required::after {
+            content: " *";
+            color: #ef4444;
+        }
+        /* 固定成本明细卡片 */
+        .sticky-summary {
+            position: sticky;
+            top: 10px;
+            z-index: 10;
+        }
+        /* 手机端优化 */
+        @media (max-width: 768px) {
+            .sticky-summary {
+                top: 5px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-4 px-3 sm:px-6">
+    <div class="max-w-6xl mx-auto">
+        <!-- 标题 -->
+        <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-4">
+            <h1 class="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 text-center mb-2">
+                胚布报价计算器
+            </h1>
+            <p class="text-gray-600 text-center text-sm">按吨计算 · 工艺占比必须=100% · 自动生成报价</p>
+        </div>
+
+        <!-- 快捷操作 -->
+        <div class="no-print flex flex-wrap gap-2 sm:gap-3 justify-center mb-4">
+            <button onclick="loadExample()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-md hover:shadow-lg">
+                📝 示例
+            </button>
+            <button onclick="saveData()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-md hover:shadow-lg">
+                💾 保存
+            </button>
+            <button onclick="loadData()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-md hover:shadow-lg">
+                📂 读取
+            </button>
+            <button onclick="copyQuote()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-md hover:shadow-lg">
+                📋 复制
+            </button>
+            <button onclick="window.print()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-md hover:shadow-lg">
+                🖨️ 打印
+            </button>
+            <button onclick="resetForm()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow-md hover:shadow-lg">
+                🔄 重置
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <!-- 左侧：输入区域 -->
+            <div class="lg:col-span-2 space-y-4">
+                <!-- 产品名称 -->
+                <div class="bg-white rounded-xl shadow-lg p-4">
+                    <label class="block text-base font-bold text-gray-800 mb-2">
+                        <span class="inline-flex items-center justify-center w-6 h-6 bg-purple-500 text-white rounded-full text-xs mr-2">1</span>
+                        产品名称
+                    </label>
+                    <input type="text" id="productName" placeholder="例如：150D"
+                           class="w-full p-3 text-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                           oninput="calculate()">
+                </div>
+
+                <!-- 原材料配方 -->
+                <div class="bg-white rounded-xl shadow-lg p-4">
+                    <h2 class="text-base font-bold text-gray-800 mb-3">
+                        <span class="inline-flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-full text-xs mr-2">2</span>
+                        原材料配方
+                        <span class="text-red-600 text-xs ml-2">(总和=100%)</span>
+                    </h2>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs sm:text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
+                                    <th class="p-2 text-left rounded-tl-lg">序号</th>
+                                    <th class="p-2 text-left">材料名称</th>
+                                    <th class="p-2 text-left required">工艺占比%</th>
+                                    <th class="p-2 text-left required">单价(元/吨)</th>
+                                    <th class="p-2 text-left bg-blue-600 rounded-tr-lg">成本</th>
+                                </tr>
+                            </thead>
+                            <tbody id="materialsTable" class="divide-y divide-gray-200">
+                                <!-- 动态生成 -->
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-gradient-to-r from-gray-100 to-gray-200 font-bold border-t-2 border-gray-300">
+                                    <td class="p-2" colspan="2">合计</td>
+                                    <td class="p-2">
+                                        <span id="totalRatio" class="text-base">0</span>%
+                                        <span id="ratioWarning" class="ml-1 text-red-600 text-xs hidden">❌</span>
+                                        <span id="ratioOk" class="ml-1 text-green-600 text-xs hidden">✅</span>
+                                    </td>
+                                    <td class="p-2"></td>
+                                    <td class="p-2 bg-blue-100 text-blue-800">
+                                        <span id="totalMaterialCost">0.00</span>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <p class="text-xs text-gray-500 mt-2 bg-yellow-50 p-2 rounded">
+                        💡 示例：50.48% + 24.95% + 24.57% = 100%
+                    </p>
+                </div>
+
+                <!-- 织造成本 -->
+                <div class="bg-white rounded-xl shadow-lg p-4">
+                    <h2 class="text-base font-bold text-gray-800 mb-3">
+                        <span class="inline-flex items-center justify-center w-6 h-6 bg-green-500 text-white rounded-full text-xs mr-2">3</span>
+                        织造成本
+                    </h2>
+
+                    <!-- 锁定警告 -->
+                    <div id="lockedWarning" class="bg-red-50 border-l-4 border-red-500 p-3 mb-3 rounded-r-lg hidden">
+                        <p class="text-red-700 font-bold text-sm flex items-center gap-2">
+                            <span>⚠️</span>
+                            工艺占比总和必须=100%！
+                        </p>
+                        <p class="text-red-600 text-xs mt-1">当前：<span id="lockedRatioValue" class="font-bold">0</span>%</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <!-- 欠重率和欠重金额 -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    欠重率 <span class="text-xs text-gray-500">(百分比)</span>
+                                </label>
+                                <input type="number" id="lossRate" step="0.01" value="0" min="0" max="100"
+                                       class="w-full p-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                       oninput="calculate()" disabled>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    欠重金额 <span class="text-xs text-gray-500">(元/吨)</span>
+                                </label>
+                                <div class="p-2 bg-gray-50 rounded-lg border-2 border-gray-200 text-sm font-bold text-gray-800">
+                                    <span id="detailLoss">0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 织损率和织损金额 -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    织损率 <span class="text-xs text-gray-500">(百分比)</span>
+                                </label>
+                                <input type="number" id="weavingRate" step="0.01" value="0" min="0" max="100"
+                                       class="w-full p-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                       oninput="calculate()" disabled>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    织损金额 <span class="text-xs text-gray-500">(元/吨)</span>
+                                </label>
+                                <div class="p-2 bg-gray-50 rounded-lg border-2 border-gray-200 text-sm font-bold text-gray-800">
+                                    <span id="detailWeaving">0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 织布人工 -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                织布人工 <span class="text-xs text-gray-500">(元/吨)</span>
+                            </label>
+                            <input type="number" id="laborCost" step="1" value="0" min="0"
+                                   class="w-full p-2 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                   oninput="calculate()" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 报价文字 -->
+                <div class="bg-white rounded-xl shadow-lg p-4 lg:hidden">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-base font-bold text-gray-800">
+                            <span class="inline-flex items-center justify-center w-6 h-6 bg-orange-500 text-white rounded-full text-xs mr-2">4</span>
+                            报价文字
+                        </h2>
+                        <button onclick="copyQuote()" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-lg text-xs font-medium">
+                            📋 复制
+                        </button>
+                    </div>
+                    <div id="quoteTextMobile" class="bg-gray-50 p-3 rounded-lg border-2 border-gray-200 whitespace-pre-wrap font-mono text-xs leading-relaxed min-h-[120px]">
+                        请先填写完整信息...
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：成本明细和报价（固定） -->
+            <div class="lg:col-span-1 space-y-4">
+                <!-- 成本明细卡片（固定位置） -->
+                <div class="sticky-summary bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl shadow-xl p-4 border-2 border-green-200">
+                    <h3 class="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
+                        <span>💰</span> 成本汇总
+                    </h3>
+
+                    <div class="space-y-2 text-sm mb-4">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">材料成本：</span>
+                            <span class="font-bold text-gray-800"><span id="detailMaterial">0.00</span> 元</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">欠重金额：</span>
+                            <span class="font-bold text-gray-800"><span id="detailLossSummary">0.00</span> 元</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">织损金额：</span>
+                            <span class="font-bold text-gray-800"><span id="detailWeavingSummary">0.00</span> 元</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">织布人工：</span>
+                            <span class="font-bold text-gray-800"><span id="detailLabor">0.00</span> 元</span>
+                        </div>
+                    </div>
+
+                    <div class="border-t-2 border-green-300 pt-3">
+                        <div class="text-gray-700 font-medium text-sm mb-1">胚布成本总计</div>
+                        <div class="text-3xl sm:text-4xl font-bold text-green-600">
+                            <span id="finalCost">0.00</span>
+                        </div>
+                        <div class="text-xs text-gray-600 mt-1">元/吨</div>
+                    </div>
+                </div>
+
+                <!-- 报价文字（桌面端） -->
+                <div class="hidden lg:block bg-white rounded-xl shadow-lg p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-base font-bold text-gray-800">
+                            <span class="inline-flex items-center justify-center w-6 h-6 bg-orange-500 text-white rounded-full text-xs mr-2">4</span>
+                            报价文字
+                        </h2>
+                        <button onclick="copyQuote()" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-lg text-xs font-medium">
+                            📋 复制
+                        </button>
+                    </div>
+                    <div id="quoteText" class="bg-gray-50 p-3 rounded-lg border-2 border-gray-200 whitespace-pre-wrap font-mono text-xs leading-relaxed min-h-[200px]">
+                        请先填写完整信息...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <div class="no-print text-center text-gray-600 text-xs bg-white rounded-xl shadow-lg p-3 mt-4">
+            <p class="font-medium">💡 使用提示</p>
+            <p class="mt-1">工艺占比必须=100% · 百分比形式（50.48 = 50.48%） · 数据保存在本地</p>
+        </div>
+    </div>
+
+    <script>
+        // 初始化材料表格
+        function initTable() {
+            const tbody = document.getElementById('materialsTable');
+            for (let i = 1; i <= 5; i++) {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-blue-50 transition';
+                tr.innerHTML = `
+                    <td class="p-2 font-medium text-gray-700">${i}</td>
+                    <td class="p-2">
+                        <input type="text" id="name${i}" class="w-full p-1 text-xs sm:text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
+                               placeholder="材料${i}" oninput="calculate()">
+                    </td>
+                    <td class="p-2">
+                        <input type="number" id="ratio${i}" step="0.01" value="0" min="0" max="100"
+                               class="w-full p-1 text-xs sm:text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500" oninput="calculate()">
+                    </td>
+                    <td class="p-2">
+                        <input type="number" id="price${i}" step="1" value="0" min="0"
+                               class="w-full p-1 text-xs sm:text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500" oninput="calculate()">
+                    </td>
+                    <td class="p-2 bg-blue-50 font-bold text-blue-800 text-xs sm:text-sm">
+                        <span id="cost${i}">0.00</span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+
+        // 计算函数
+        function calculate() {
+            let totalRatio = 0;
+            let totalMaterialCost = 0;
+
+            // 计算每种材料成本
+            for (let i = 1; i <= 5; i++) {
+                const ratio = parseFloat(document.getElementById(`ratio${i}`).value) || 0;
+                const price = parseFloat(document.getElementById(`price${i}`).value) || 0;
+                const cost = (ratio / 100) * price;
+
+                document.getElementById(`cost${i}`).textContent = cost.toFixed(2);
+                totalRatio += ratio;
+                totalMaterialCost += cost;
+            }
+
+            document.getElementById('totalRatio').textContent = totalRatio.toFixed(2);
+            document.getElementById('totalMaterialCost').textContent = totalMaterialCost.toFixed(2);
+
+            // 检查工艺占比
+            const isRatioValid = Math.abs(totalRatio - 100) < 0.01;
+            const ratioWarning = document.getElementById('ratioWarning');
+            const ratioOk = document.getElementById('ratioOk');
+            const lockedWarning = document.getElementById('lockedWarning');
+            const lockedRatioValue = document.getElementById('lockedRatioValue');
+
+            if (totalRatio > 0 && !isRatioValid) {
+                ratioWarning.classList.remove('hidden');
+                ratioOk.classList.add('hidden');
+                lockedWarning.classList.remove('hidden');
+                lockedRatioValue.textContent = totalRatio.toFixed(2);
+            } else if (isRatioValid) {
+                ratioWarning.classList.add('hidden');
+                ratioOk.classList.remove('hidden');
+                lockedWarning.classList.add('hidden');
+            } else {
+                ratioWarning.classList.add('hidden');
+                ratioOk.classList.add('hidden');
+                lockedWarning.classList.add('hidden');
+            }
+
+            // 控制输入框状态
+            const lossRateInput = document.getElementById('lossRate');
+            const weavingRateInput = document.getElementById('weavingRate');
+            const laborCostInput = document.getElementById('laborCost');
+
+            if (isRatioValid) {
+                lossRateInput.disabled = false;
+                weavingRateInput.disabled = false;
+                laborCostInput.disabled = false;
+            } else {
+                lossRateInput.disabled = true;
+                weavingRateInput.disabled = true;
+                laborCostInput.disabled = true;
+                lossRateInput.value = 0;
+                weavingRateInput.value = 0;
+                laborCostInput.value = 0;
+            }
+
+            // 计算胚布成本
+            const lossRate = parseFloat(document.getElementById('lossRate').value) || 0;
+            const weavingRate = parseFloat(document.getElementById('weavingRate').value) || 0;
+            const laborCost = parseFloat(document.getElementById('laborCost').value) || 0;
+
+            const lossAmount = totalMaterialCost * (lossRate / 100);
+            const weavingFee = (totalMaterialCost + lossAmount) * (weavingRate / 100);
+            const finalCost = totalMaterialCost + lossAmount + weavingFee + laborCost;
+
+            // 更新显示
+            document.getElementById('detailMaterial').textContent = totalMaterialCost.toFixed(2);
+            document.getElementById('detailLoss').textContent = lossAmount.toFixed(2);
+            document.getElementById('detailLossSummary').textContent = lossAmount.toFixed(2);
+            document.getElementById('detailWeaving').textContent = weavingFee.toFixed(2);
+            document.getElementById('detailWeavingSummary').textContent = weavingFee.toFixed(2);
+            document.getElementById('detailLabor').textContent = laborCost.toFixed(2);
+            document.getElementById('finalCost').textContent = finalCost.toFixed(2);
+
+            // 生成报价文字
+            if (isRatioValid) {
+                generateQuote(totalMaterialCost, weavingFee, finalCost);
+            } else {
+                const msg = '⚠️ 请先确保工艺占比总和=100%';
+                document.getElementById('quoteText').textContent = msg;
+                document.getElementById('quoteTextMobile').textContent = msg;
+            }
+        }
+
+        // 生成报价文字
+        function generateQuote(materialCost, weavingFee, finalCost) {
+            const productName = document.getElementById('productName').value;
+            let quote = '';
+
+            if (productName) {
+                quote += productName + '\n';
+            }
+
+            for (let i = 1; i <= 5; i++) {
+                const name = document.getElementById(`name${i}`).value;
+                const ratio = parseFloat(document.getElementById(`ratio${i}`).value) || 0;
+                const price = parseFloat(document.getElementById(`price${i}`).value) || 0;
+                const cost = parseFloat(document.getElementById(`cost${i}`).textContent) || 0;
+
+                if (name && ratio > 0) {
+                    const kg = (ratio * 10).toFixed(1);
+                    const priceInThousand = (price / 1000).toFixed(2);
+                    quote += `${name}：${kg}KG*${priceInThousand}元=${cost.toFixed(2)}元\n`;
+                }
+            }
+
+            const laborCost = parseFloat(document.getElementById('laborCost').value) || 0;
+            quote += `织费：${laborCost.toFixed(0)}元/吨\n`;
+            quote += `织损：${Math.round(weavingFee)}元\n`;
+            quote += `胚布成本：${Math.round(finalCost)}元`;
+
+            document.getElementById('quoteText').textContent = quote;
+            document.getElementById('quoteTextMobile').textContent = quote;
+        }
+
+        // 检查工艺占比
+        function checkRatioValid() {
+            let totalRatio = 0;
+            for (let i = 1; i <= 5; i++) {
+                totalRatio += parseFloat(document.getElementById(`ratio${i}`).value) || 0;
+            }
+            return Math.abs(totalRatio - 100) < 0.01;
+        }
+
+        // 复制报价
+        function copyQuote() {
+            if (!checkRatioValid()) {
+                alert('❌ 工艺占比总和必须=100%！');
+                return;
+            }
+
+            const text = document.getElementById('quoteText').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ 报价文字已复制！');
+            }).catch(() => {
+                alert('❌ 复制失败，请手动复制');
+            });
+        }
+
+        // 加载示例
+        function loadExample() {
+            document.getElementById('productName').value = '150D';
+            document.getElementById('name1').value = '40S棉纱';
+            document.getElementById('ratio1').value = 50.48;
+            document.getElementById('price1').value = 26000;
+            document.getElementById('name2').value = '75D丝';
+            document.getElementById('ratio2').value = 24.95;
+            document.getElementById('price2').value = 10460;
+            document.getElementById('name3').value = '150D丝';
+            document.getElementById('ratio3').value = 24.57;
+            document.getElementById('price3').value = 10100;
+            document.getElementById('name4').value = '';
+            document.getElementById('ratio4').value = 0;
+            document.getElementById('price4').value = 0;
+            document.getElementById('name5').value = '';
+            document.getElementById('ratio5').value = 0;
+            document.getElementById('price5').value = 0;
+            document.getElementById('lossRate').value = 0;
+            document.getElementById('weavingRate').value = 3.8;
+            document.getElementById('laborCost').value = 1200;
+            calculate();
+            alert('✅ 已加载示例数据！');
+        }
+
+        // 重置
+        function resetForm() {
+            if (confirm('确定重置所有数据？')) {
+                document.getElementById('productName').value = '';
+                for (let i = 1; i <= 5; i++) {
+                    document.getElementById(`name${i}`).value = '';
+                    document.getElementById(`ratio${i}`).value = 0;
+                    document.getElementById(`price${i}`).value = 0;
+                }
+                document.getElementById('lossRate').value = 0;
+                document.getElementById('weavingRate').value = 0;
+                document.getElementById('laborCost').value = 0;
+                calculate();
+            }
+        }
+
+        // 保存数据
+        function saveData() {
+            const data = {
+                productName: document.getElementById('productName').value,
+                materials: [],
+                lossRate: document.getElementById('lossRate').value,
+                weavingRate: document.getElementById('weavingRate').value,
+                laborCost: document.getElementById('laborCost').value
+            };
+
+            for (let i = 1; i <= 5; i++) {
+                data.materials.push({
+                    name: document.getElementById(`name${i}`).value,
+                    ratio: document.getElementById(`ratio${i}`).value,
+                    price: document.getElementById(`price${i}`).value
+                });
+            }
+
+            localStorage.setItem('fabricQuoteData', JSON.stringify(data));
+            alert('✅ 数据已保存！');
+        }
+
+        // 读取数据
+        function loadData() {
+            const saved = localStorage.getItem('fabricQuoteData');
+            if (!saved) {
+                alert('❌ 没有保存的数据');
+                return;
+            }
+
+            const data = JSON.parse(saved);
+            document.getElementById('productName').value = data.productName || '';
+
+            data.materials.forEach((item, index) => {
+                const i = index + 1;
+                document.getElementById(`name${i}`).value = item.name || '';
+                document.getElementById(`ratio${i}`).value = item.ratio || 0;
+                document.getElementById(`price${i}`).value = item.price || 0;
+            });
+
+            document.getElementById('lossRate').value = data.lossRate || 0;
+            document.getElementById('weavingRate').value = data.weavingRate || 0;
+            document.getElementById('laborCost').value = data.laborCost || 0;
+
+            calculate();
+            alert('✅ 数据已读取！');
+        }
+
+        // 初始化
+        window.onload = function() {
+            initTable();
+            calculate();
+
+            const saved = localStorage.getItem('fabricQuoteData');
+            if (saved) {
+                if (confirm('检测到保存的数据，是否读取？')) {
+                    loadData();
+                }
+            }
+        };
+    </script>
+</body>
+</html>

@@ -512,17 +512,20 @@ var syncClient = (function() {
   }
 
   // v2.11.0：协议自适应。autoHost=true 时 protocol 跟随 window.location.protocol；
-  // 否则用手动 protocol（默认 'http:'）。端口默认值按协议挑选。
   // v2.13.2：iOS 跟随页面协议——sync-server HTTPS 6444 已可用，CA 已信任
+  // v2.13.3：autoHost=false 时也跟随页面协议，避免 HTTPS 页面发 HTTP 请求被 Mixed Content 拦截
   function getEffectiveProtocol(cfg) {
     cfg = cfg || getSyncConfig();
-    if (cfg.autoHost !== false) {
-      if (typeof window !== 'undefined' && window.location && window.location.protocol) {
-        return window.location.protocol; // 'http:' 或 'https:'
+    // 始终跟随页面协议（autoHost=true 或 false 都适用）
+    if (typeof window !== 'undefined' && window.location && window.location.protocol) {
+      var pageProto = window.location.protocol; // 'http:' 或 'https:'
+      // 仅当配置里明确指定了协议时才覆盖（用户手动填 http:// 前缀的情况）
+      if (cfg.autoHost === false && (cfg.protocol === 'https:' || cfg.protocol === 'http:')) {
+        return cfg.protocol;
       }
-      return 'http:';
+      return pageProto;
     }
-    return (cfg.protocol === 'https:' || cfg.protocol === 'http:') ? cfg.protocol : 'http:';
+    return 'http:';
   }
 
   function getEffectivePort(cfg) {

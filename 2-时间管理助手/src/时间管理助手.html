@@ -165,6 +165,16 @@
         <span>启用同步（保存后自动推送 + 启动时自动拉取）</span>
       </label>
 
+      <div class="sync-row" id="sync-ip-row">
+        <label style="flex:1">服务器 IP（换网络时直接改这里）
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input type="text" id="sync-manual-ip" placeholder="如 10.10.0.56" inputmode="decimal" autocomplete="off"
+              style="flex:1;padding:6px 8px;border:1px solid #d1d5db;border-radius:4px;font:14px system-ui;">
+            <button type="button" id="btn-sync-apply-ip" class="btn-primary" style="white-space:nowrap;padding:6px 12px;font-size:13px;">保存并连接</button>
+          </div>
+        </label>
+      </div>
+
       <div class="sync-row">
         <label>同步服务器（自动检测）
           <input type="text" id="sync-detected" readonly placeholder="（无法识别浏览器地址）">
@@ -234,6 +244,6 @@
   <script src="qrcode-generator.js?v=1782126789"></script>
   <!-- ExcelJS 用于生成带样式和图表的 Excel 文件 -->
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
-<script src="app.js?v=1782128400"></script>
+<script src="app.js?v=1787624622"></script>
 </body>
 </html>

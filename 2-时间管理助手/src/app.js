@@ -191,7 +191,7 @@ function init() {
 // SW 注册 + 自动更新流：检测到新版本即让其立即激活，并在 controllerchange 时重载一次。
 // 首次安装（页面此前没有 controller）不触发 reload，避免空载场景下的循环刷新。
 // v2.11.2：新增 EXPECTED_CACHE_NAME 自检，若当前 SW 版本落后则强制注销+重载。
-var EXPECTED_CACHE_NAME = 'time-planner-v89';
+var EXPECTED_CACHE_NAME = 'time-planner-v93';
 
 function forceUpdateSW() {
   if (!('serviceWorker' in navigator)) return;
@@ -2280,12 +2280,31 @@ var viewMode = 'desktop';
 var mobileState = { date: null };   // 当前选中的 YYYY-MM-DD 字符串
 
 function detectViewMode() {
-  var override = localStorage.getItem('tm_viewMode');
-  if (override === 'desktop' || override === 'iphone' || override === 'huawei') return override;
+  // URL 参数强制模式：?iphone / ?huawei / ?desktop（优先级最高）
+  var urlParam = (window.location.search || '').toLowerCase();
+  if (urlParam.indexOf('iphone') >= 0) { localStorage.setItem('tm_viewMode', 'iphone'); return 'iphone'; }
+  if (urlParam.indexOf('huawei') >= 0) { localStorage.setItem('tm_viewMode', 'huawei'); return 'huawei'; }
+  if (urlParam.indexOf('desktop') >= 0) { localStorage.setItem('tm_viewMode', 'desktop'); return 'desktop'; }
+
   var ua = navigator.userAgent || '';
+  // 屏幕宽度 < 768px 一律视为手机（含 Safari 桌面UA模式、PWA书签等场景）
+  var isNarrow = window.innerWidth < 768;
+  var isAndroid = /Android|Huawei|HUAWEI|HONOR/i.test(ua);
+
+  // 窄屏设备：直接进手机模式，不信任 localStorage 的 desktop override
+  if (isNarrow) {
+    var stored = localStorage.getItem('tm_viewMode');
+    if (stored === 'huawei' || isAndroid) return 'huawei';
+    return 'iphone';
+  }
+
+  // 宽屏：尊重 localStorage 偏好
+  var override = localStorage.getItem('tm_viewMode');
+  if (override === 'iphone' || override === 'huawei' || override === 'desktop') return override;
+
+  // UA 兜底
   if (/iPhone|iPod/.test(ua)) return 'iphone';
-  if (/Huawei|HUAWEI|HONOR/i.test(ua)) return 'huawei';
-  if (/Android/.test(ua)) return 'huawei';   // 其他 Android 暂归华为版（布局一致）
+  if (isAndroid) return 'huawei';
   return 'desktop';
 }
 
@@ -2853,6 +2872,8 @@ function setupSyncUI() {
   if ($('btn-sync-pull'))  $('btn-sync-pull').onclick  = handleSyncPull;
   if ($('btn-sync-push'))  $('btn-sync-push').onclick  = handleSyncPush;
   if ($('btn-sync-save'))  $('btn-sync-save').onclick  = handleSyncSaveBtn;
+  // v2.13.3：「保存并连接」快捷按钮 — 手机换IP后直接在同步面板填IP即可
+  if ($('btn-sync-apply-ip')) $('btn-sync-apply-ip').onclick = handleApplyIP;
   if ($('btn-sync-close')) $('btn-sync-close').onclick = function() {
     // v2.13.1：关闭面板时清理配对轮询定时器
     var qrArea = $('pair-qr-area');
@@ -2894,7 +2915,16 @@ function setupSyncUI() {
     setTimeout(function() {
       // 先 flush 离线队列（确保本地离线编辑先推上去），再拉取
       syncClient.flushOfflineQueue().then(function() {
-        return syncClient.pullWeek(state.year, state.week);
+        // v2.13.3：先拉上一周配置，确保新周配置继承逻辑能找到源数据
+        var prev = AppCore.getPrevWeek(state.year, state.week);
+        var prevCfgKey = 'tm_' + prev.year + '_w' + String(prev.week).padStart(2,'0') + '_config';
+        var hasPrevConfig = !!localStorage.getItem(prevCfgKey);
+        var prevPull = hasPrevConfig
+          ? Promise.resolve()
+          : syncClient.pullWeek(prev.year, prev.week).catch(function(){});
+        return prevPull.then(function() {
+          return syncClient.pullWeek(state.year, state.week);
+        });
       }).then(function(r) {
         if (r && r.applied) {
           if (typeof console !== 'undefined') console.log('[sync] 启动拉取成功');
@@ -2916,13 +2946,17 @@ function openSyncModal() {
   $('sync-hostname').value = cfg.hostname || '';
   $('sync-port').value = cfg.port || syncClient.DEFAULT_PORT;
   $('sync-lastip').value = cfg.lastIP || '';
+  // v2.13.3：回填「服务器IP」快捷框（优先显示 lastIP，其次 hostname）
+  if ($('sync-manual-ip')) {
+    $('sync-manual-ip').value = cfg.lastIP || cfg.hostname || '';
+  }
   toggleSyncManualInputs();
   refreshDetectedHost();
   updateSyncUrlPreview();
   updateSyncStatusUI();
   $('sync-log').innerHTML = '';
-  $('pair-qr-area').style.display = 'none';  // v2.13.0：关闭面板时隐藏 QR
-  refreshDeviceList();  // v2.13.0：刷新设备列表
+  $('pair-qr-area').style.display = 'none';
+  refreshDeviceList();
   openModal('sync-modal');
 }
 
@@ -3123,6 +3157,72 @@ function logSync(msg, level) {
   el.scrollTop = el.scrollHeight;
 }
 
+// v2.13.3：手机换IP快捷操作 — 直接在同步面板填IP，一键保存+测试+拉取
+function handleApplyIP() {
+  var ipEl = $('sync-manual-ip');
+  if (!ipEl) return;
+  var raw = (ipEl.value || '').trim();
+  if (!raw) { logSync('请先填写服务器 IP 地址', 'error'); return; }
+
+  // 解析 ip 或 ip:port 或 http(s)://ip:port
+  // 默认协议跟随页面（HTTPS页面 → https: + 6444，HTTP页面 → http: + 6372）
+  var pageProto = (window.location.protocol === 'https:') ? 'https:' : 'http:';
+  var proto = pageProto, host = raw, port = (pageProto === 'https:') ? 6444 : 6372;
+  var protoMatch = host.match(/^(https?):\/\//i);
+  if (protoMatch) { proto = protoMatch[1].toLowerCase() + ':'; host = host.replace(/^https?:\/\//i, ''); }
+  var portMatch = host.match(/:(\d+)$/);
+  if (portMatch) { port = parseInt(portMatch[1], 10); host = host.replace(/:\d+$/, ''); }
+
+  // 关掉 autoHost，改用手动 IP
+  var cfg = {
+    enabled: true,
+    autoHost: false,
+    hostname: host,
+    port: port,
+    protocol: proto,
+    lastIP: ''
+  };
+  syncClient.saveSyncConfig(cfg);
+
+  // 同步面板字段也跟着刷新
+  $('sync-enabled').checked = true;
+  if ($('sync-auto-host')) $('sync-auto-host').checked = false;
+  $('sync-hostname').value = host;
+  $('sync-port').value = port;
+  toggleSyncManualInputs();
+  refreshDetectedHost();
+  updateSyncUrlPreview();
+
+  logSync('已保存 → ' + proto + '//' + host + ':' + port + '，测试连接中…', 'info');
+
+  syncClient.testConnection().then(function(r) {
+    logSync('✓ 已连通 → ' + r.base, 'ok');
+    var info = r.info || {};
+    if (info.lanIPs && info.lanIPs[0]) {
+      syncClient.saveSyncConfig({ lastIP: info.lanIPs[0].ip });
+      if ($('sync-lastip')) $('sync-lastip').value = info.lanIPs[0].ip;
+    }
+    updateSyncStatusUI();
+    updateSyncDot(syncClient.getState());
+    // 连通后自动拉取当前周
+    logSync('正在拉取当前周数据…', 'info');
+    return syncClient.flushOfflineQueue().then(function() {
+      return syncClient.pullWeek(state.year, state.week);
+    });
+  }).then(function(r) {
+    if (r && r.applied) {
+      logSync('✓ 数据已同步到本地', 'ok');
+      renderAll();
+    } else {
+      logSync('· 本地已是最新', 'info');
+    }
+  }).catch(function(err) {
+    logSync('✗ 连接失败：' + (err.message || err), 'error');
+    logSync('  请确认电脑服务已启动，IP 填写正确', 'info');
+    updateSyncStatusUI();
+  });
+}
+
 function handleSyncTest() {
   syncClient.saveSyncConfig(readSyncModalConfig());
   logSync('测试连接...', 'info');
@@ -3246,6 +3346,13 @@ function generateChartHTML(weeksData, chartData) {
     return w.year + '-W' + w.week;
   });
 
+  // 表格表头：周号 + 日期区间（两行显示，与 Excel 一致）
+  var tableHeaders = weeksData.map(function(w) {
+    var dateRange = formatDate(w.dates[0]).substring(5) + '-' + formatDate(w.dates[6]).substring(5);
+    return '<div class="th-week">' + w.year + '年第' + w.week + '周</div>'
+         + '<div class="th-date">' + dateRange + '</div>';
+  });
+
   var html = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -3311,6 +3418,18 @@ function generateChartHTML(weeksData, chartData) {
       font-weight: 600;
       color: #475569;
     }
+    .data-table th .th-week {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1.4;
+    }
+    .data-table th .th-date {
+      font-size: 12px;
+      font-weight: 500;
+      color: #64748b;
+      margin-top: 2px;
+    }
     .data-table tbody tr:hover {
       background: #f8fafc;
     }
@@ -3333,7 +3452,7 @@ function generateChartHTML(weeksData, chartData) {
       <thead>
         <tr>
           <th>项目</th>
-          ${weekLabels.map(function(label) { return '<th>' + label + '</th>'; }).join('')}
+          ${tableHeaders.map(function(h) { return '<th>' + h + '</th>'; }).join('')}
         </tr>
       </thead>
       <tbody>

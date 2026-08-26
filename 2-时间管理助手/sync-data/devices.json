@@ -1,20 +1,20 @@
 {
   "devices": [
     {
-      "id": "9f0a67c3-3df9-447d-bfbb-af3a70ecbbb7",
-      "name": "手机",
-      "platform": "android",
-      "token": "tok-1da62b367495c42d31ea84c1810312e7",
-      "boundAt": 1780065910270,
-      "lastSyncAt": 1780065910270
+      "id": "9283ccc2-f5c6-4536-84b9-4359d170a966",
+      "name": "desktop-qrg0jnn",
+      "platform": "windows",
+      "token": "tok-c7ae54e67ed7855c4d410ece3e52440c",
+      "boundAt": 1787076122116,
+      "lastSyncAt": 1787076122116
     },
     {
-      "id": "122e5910-4eda-4b17-9040-fb53108decbc",
+      "id": "75b5bb86-c227-40e6-9db7-25ab14f74790",
       "name": "手机",
       "platform": "ios",
-      "token": "tok-3541d7627e8cd3ac2f7093ce71261d84",
-      "boundAt": 1780315885838,
-      "lastSyncAt": 1780315885838
+      "token": "tok-a2c5cafd9779610443bb68653ab08da6",
+      "boundAt": 1787076134571,
+      "lastSyncAt": 1787076134571
     }
   ]
 }

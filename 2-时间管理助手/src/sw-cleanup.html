@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh">
-<head><meta charset="utf-8"><title>SW 清理</title></head>
-<body style="font:16px system-ui,sans-serif;max-width:500px;margin:40px auto;text-align:center">
-  <h2>Service Worker 清理</h2>
-  <p id="status">正在检测…</p>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SW 清理</title></head>
+<body style="font:18px system-ui,sans-serif;max-width:500px;margin:60px auto;text-align:center;padding:20px">
+  <h2>🔄 更新应用缓存</h2>
+  <p id="status" style="line-height:1.8;white-space:pre-wrap">正在清理旧缓存…</p>
   <script>
     (async function() {
       var el = document.getElementById('status');
@@ -12,28 +12,21 @@
         return;
       }
       var regs = await navigator.serviceWorker.getRegistrations();
-      if (regs.length === 0) {
-        el.textContent = '未找到已注册的 SW，无需清理。现在可回到应用页面刷新。';
-        return;
-      }
-      el.textContent = '找到 ' + regs.length + ' 个 SW，正在注销…';
-      for (var r of regs) {
-        var ok = await r.unregister();
-        el.textContent += '\n' + (ok ? '✓' : '✗') + ' ' + r.scope;
-      }
-      // 清除所有缓存
+      var swCount = regs.length;
+      for (var r of regs) { await r.unregister(); }
+
+      var cacheCount = 0;
       if ('caches' in window) {
         var keys = await caches.keys();
-        for (var k of keys) {
-          await caches.delete(k);
-          el.textContent += '\n已清除缓存: ' + k;
-        }
+        cacheCount = keys.length;
+        for (var k of keys) { await caches.delete(k); }
       }
-      el.textContent += '\n\n✅ 清理完成！';
-      // 3 秒后跳转回主应用
+
+      el.textContent = '✅ 清理完成！\n\n注销 SW：' + swCount + ' 个\n清除缓存：' + cacheCount + ' 个\n\n正在跳转到最新版本…';
       setTimeout(function() {
-        window.location.href = '/时间管理助手.html';
-      }, 2000);
+        // 跳回主页，强制从网络拉最新
+        window.location.replace('/');
+      }, 1500);
     })();
   </script>
 </body>

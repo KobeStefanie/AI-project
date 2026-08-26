@@ -1,4 +1,4 @@
-// time-planner v89
+// time-planner v93
 // 缓存策略（v2.13.2 修复 iOS 同步协议+离线）：
 //   - app-core.js 移除 iOS 强制 HTTP，跟随页面协议（HTTPS→HTTPS 同步，避开 Mixed Content）
 //   - install 阶段逐个缓存核心资源，单文件失败不影响整体
@@ -10,7 +10,7 @@
 //
 // 版本更新：浏览器周期性比对 service-worker.js 自身，
 // 配合 app.js 的 updatefound → SKIP_WAITING → controllerchange → reload 流。
-const CACHE_NAME = 'time-planner-v89';
+const CACHE_NAME = 'time-planner-v93';
 // 注意：中文路径用 encodeURI 处理，避免不同浏览器 URL 编码差异
 // 导致 cache.match 命中失败（iOS Safari 与 Chrome 行为不同）
 const HTML_FILE = './' + encodeURI('时间管理助手.html');
