@@ -28,6 +28,7 @@
         </div>
       </div>
       <div class="toolbar-right">
+        <button id="btn-review-center" class="btn-ghost" title="打开复盘中心">📊 复盘中心</button>
         <button id="btn-week-compare" class="btn-ghost" title="查看多周数据对比">📊 周对比</button>
         <button id="btn-config" class="btn-ghost">⚙ 配置</button>
         <button id="btn-refresh" class="btn-ghost" title="强制刷新页面并更新 Service Worker">🔄 刷新</button>
@@ -237,6 +238,10 @@
         服务端：项目根目录运行 <code>node sync-server.js</code>，或双击 <code>启动服务器.bat</code>。
       </div>
     </div>
+  </div>
+
+  <div id="version-info" style="position: fixed; bottom: 8px; right: 8px; font-size: 11px; color: #95a5a6; z-index: 9999; pointer-events: none; user-select: none;">
+    v98
   </div>
 
   <script src="app-core.js?v=1782126789"></script>

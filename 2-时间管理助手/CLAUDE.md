@@ -148,3 +148,130 @@ node sync-server.js         # 同步服务：HTTP 6372 + HTTPS 6444
 ### iPhone 同步面板秒关
 - Service Worker 无限重载循环 → 用 `sw-cleanup.html` 清理
 - 心跳频繁触发 `renderAll` → 检查数据变化判断逻辑
+
+## Bug 修复工作流（强制执行）
+
+每次修复 Bug 后**必须**按以下流程执行，确保修复记录完整且版本同步正确。
+
+### 1. 同步更新版本号（三处强制同步）
+
+**必须同时修改以下三个文件**，否则会触发 SW 无限刷新循环：
+
+```javascript
+// src/service-worker.js
+- 第 1 行注释：// time-planner vXX
+- CACHE_NAME 常量：const CACHE_NAME = 'time-planner-vXX';
+- install 日志：console.log('[sw] install vXX 开始...');
+
+// src/app.js
+- EXPECTED_CACHE_NAME 常量：var EXPECTED_CACHE_NAME = 'time-planner-vXX';
+
+// src/时间管理助手.html
+- 页面右下角版本号：<div id="version-info">vXX</div>
+```
+
+**版本号规则**：
+- 修复 Bug / 改 SW 代码 → 必须升级版本号（v97 → v98 → v99）
+- 只改 UI 样式不涉及 SW → 可以不升级，但建议升级避免混淆
+
+### 2. 更新 Bug 修复日志
+
+在 `BUG_FIX_LOG.md` 文件**顶部**添加新版本记录，必须包含：
+
+- **版本号和日期**：`## vXX (YYYY-MM-DD)`
+- **Bug 标题**：简短描述问题
+- **症状**：用户看到的现象（截图 / 报错信息）
+- **根本原因**：代码层面的根因分析（不能只写"缓存问题"这种笼统描述）
+- **修复方案**：具体改了什么代码，附带代码片段对比
+- **影响文件**：列出所有修改的文件和行号
+- **验证步骤**：如何复现和验证修复效果（便于回归测试）
+
+### 3. 验证修复效果（必须全部通过）
+
+**强制验证清单**：
+- [ ] 访问 `/sw-version-check.html` 确认新版本已激活
+- [ ] 缓存列表显示正确的资源数量
+- [ ] 执行 Bug 原始复现步骤，确认已修复
+- [ ] Windows 桌面端测试基本功能（填表、保存、统计）
+- [ ] iPhone 测试离线启动（断 Wi-Fi 从主屏幕启动）
+- [ ] iPhone 测试同步功能（推送、拉取）
+- [ ] 检查浏览器控制台无新增报错
+
+**如果任何一项未通过**：不得提交代码，继续调试直到全部通过。
+
+### 4. 提交到 Git
+
+仅提交与本次修复相关的文件（不要混入其他改动）：
+
+```bash
+# 查看当前修改
+git status
+
+# 添加修复相关文件
+git add src/service-worker.js src/app.js src/时间管理助手.html BUG_FIX_LOG.md
+
+# 提交（使用中文简洁描述）
+git commit -m "fix: [Bug简短描述] (vXX)"
+
+# 示例
+git commit -m "fix: iPhone离线无法启动PWA白屏问题 (v98)"
+```
+
+**注意**：
+- 不要提交未暂存的其他文件
+- 提交信息用中文，简洁说明修复了什么
+- 括号中标注版本号便于追溯
+
+### 5. 通知用户测试
+
+修复完成后告知用户：
+
+```markdown
+✅ Bug 已修复（vXX）
+
+**问题**：[用户能理解的简短描述]
+
+**如何验证**：
+1. 访问主页（会自动更新到 vXX）
+2. 等待 3 秒看到右下角 vXX 版本号
+3. [具体验证步骤]
+
+**需要清除旧 SW 吗**：
+- 如果版本号自动升级 → 不需要
+- 如果卡在旧版本 → 访问 /sw-cleanup.html 清理后重试
+```
+
+### 6. 特殊情况处理
+
+**版本号冲突**：
+- 如果 `service-worker.js` 和 `app.js` 版本号不一致 → 3 秒后强制刷新循环
+- 解决：立即修正版本号，用户需清除 SW 重新加载
+
+**SW 注册失败**：
+- 检查 `app.js` 的 `registerServiceWorker()` 是否有 `return;` 跳过注册
+- 检查是否有临时调试代码未删除
+
+**离线无法打开**：
+- 检查 `cache.match` 是否使用 `{ ignoreSearch: true }`（解决查询参数匹配问题）
+- 检查 `manifest.json` 的 `start_url` 是否与缓存的 URL 匹配
+- 检查 `Cache-Control` 响应头是否为 `public, max-age=0`（不能是 `no-store`）
+
+### 7. 禁止行为
+
+**绝对禁止**：
+- ❌ 改了 `service-worker.js` 但忘记升级版本号
+- ❌ 版本号只改一处（三处必须同步）
+- ❌ 不更新 `BUG_FIX_LOG.md` 就提交代码
+- ❌ 未验证就告诉用户"已修复"
+- ❌ 在 `registerServiceWorker()` 中留下调试代码
+- ❌ 提交时混入无关文件的改动
+
+### 8. Bug 修复记录查询
+
+所有历史 Bug 修复记录在 `BUG_FIX_LOG.md` 文件中，包括：
+- 问题症状和复现步骤
+- 根本原因分析
+- 修复方案和代码对比
+- 验证步骤
+
+**遇到类似问题时先查这个文件**，避免重复踩坑。

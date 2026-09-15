@@ -1,6 +1,7 @@
-// time-planner v93
-// 缓存策略（v2.13.2 修复 iOS 同步协议+离线）：
-//   - app-core.js 移除 iOS 强制 HTTP，跟随页面协议（HTTPS→HTTPS 同步，避开 Mixed Content）
+// time-planner v98
+// 缓存策略（v2.13.3 修复离线功能）：
+//   - 移除复盘中心文件缓存（桌面专用，不需离线）
+//   - SW fetch 事件跳过 review-center/engine/ui 请求
 //   - install 阶段逐个缓存核心资源，单文件失败不影响整体
 //   - 同源资源 → cache-first + stale-while-revalidate
 //     · 命中缓存：立即返回 → 离开 LAN 也能秒开
@@ -10,13 +11,14 @@
 //
 // 版本更新：浏览器周期性比对 service-worker.js 自身，
 // 配合 app.js 的 updatefound → SKIP_WAITING → controllerchange → reload 流。
-const CACHE_NAME = 'time-planner-v93';
+const CACHE_NAME = 'time-planner-v98';
 // 注意：中文路径用 encodeURI 处理，避免不同浏览器 URL 编码差异
 // 导致 cache.match 命中失败（iOS Safari 与 Chrome 行为不同）
 const HTML_FILE = './' + encodeURI('时间管理助手.html');
 const ASSETS = [
   './',
   HTML_FILE,
+  './manifest.json',
   './styles.css',
   './app-core.js',
   './app.js',
@@ -53,22 +55,34 @@ function sanitizeForCache(response) {
 
 // -------- install：逐个缓存，单文件失败不致命 --------
 self.addEventListener('install', event => {
+  console.log('[sw] install v98 开始，准备缓存', ASSETS.length, '个文件');
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       const localAssets = ASSETS.filter(u => !u.startsWith('http'));
+      console.log('[sw] 需要缓存的本地文件:', localAssets);
       return Promise.allSettled(
         localAssets.map(url =>
           // 用 fetch + cache.put 替代 cache.add，以便剥离限制性缓存头
           fetch(url, { cache: 'no-cache' }).then(resp => {
+            console.log('[sw] fetch 成功:', url, 'status:', resp.status);
             if (resp && resp.status === 200) {
-              return cache.put(url, sanitizeForCache(resp));
+              return cache.put(url, sanitizeForCache(resp)).then(() => {
+                console.log('[sw] 缓存成功:', url);
+              });
             }
             throw new Error('HTTP ' + resp.status);
           }).catch(err => {
-            console.warn('[sw] install 缓存失败:', url, err.message);
+            console.error('[sw] install 缓存失败:', url, err.message);
           })
         )
-      );
+      ).then(results => {
+        const failed = results.filter(r => r.status === 'rejected');
+        if (failed.length > 0) {
+          console.warn('[sw] install 完成，但有', failed.length, '个文件缓存失败');
+        } else {
+          console.log('[sw] install 完成，所有文件缓存成功');
+        }
+      });
     })
   );
   self.skipWaiting();
@@ -90,7 +104,8 @@ self.addEventListener('message', event => {
 // -------- cache-first + stale-while-revalidate --------
 function cacheFirstSWR(request) {
   return caches.open(CACHE_NAME).then(cache => {
-    return cache.match(request).then(cached => {
+    // ignoreSearch: true 让 /?iphone 也能匹配到缓存的 /
+    return cache.match(request, { ignoreSearch: true }).then(cached => {
       // 后台静默刷新（不阻塞当前请求）
       const networkPromise = fetch(request).then(resp => {
         if (resp && resp.status === 200 && resp.type !== 'opaque') {
@@ -114,11 +129,11 @@ self.addEventListener('fetch', event => {
   let url;
   try { url = new URL(req.url); } catch (e) { return; }
 
-  // PWA 元数据：不走 SW，让 Safari 拿原始网络响应
+  // 复盘中心：完全不走 SW（桌面专用，不需要离线）
   if (url.origin === location.origin) {
-    if (url.pathname === '/manifest.json'
-        || url.pathname === '/icon-192.png'
-        || url.pathname === '/icon.svg') {
+    if (url.pathname.includes('review-center')
+        || url.pathname.includes('review-engine')
+        || url.pathname.includes('review-ui')) {
       return;
     }
   }

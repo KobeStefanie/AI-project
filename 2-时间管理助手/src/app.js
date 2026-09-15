@@ -122,6 +122,7 @@ function init() {
   };
   $('btn-config').onclick = function() { showPage('page-config'); };
   $('btn-week-compare').onclick = function() { openWeekCompareModal(); };
+  $('btn-review-center').onclick = function() { window.open('review-center.html', '_blank'); };
   $('btn-refresh').onclick = function() { forceUpdateSW(); };
   $('btn-freeze').onclick = function() {
     frozen = !frozen;
@@ -191,7 +192,7 @@ function init() {
 // SW 注册 + 自动更新流：检测到新版本即让其立即激活，并在 controllerchange 时重载一次。
 // 首次安装（页面此前没有 controller）不触发 reload，避免空载场景下的循环刷新。
 // v2.11.2：新增 EXPECTED_CACHE_NAME 自检，若当前 SW 版本落后则强制注销+重载。
-var EXPECTED_CACHE_NAME = 'time-planner-v93';
+var EXPECTED_CACHE_NAME = 'time-planner-v98';
 
 function forceUpdateSW() {
   if (!('serviceWorker' in navigator)) return;
