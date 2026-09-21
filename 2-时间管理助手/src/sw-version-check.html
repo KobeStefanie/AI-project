@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SW 版本检查</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 20px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .status {
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+    .ok { background: #d4edda; color: #155724; }
+    .warn { background: #fff3cd; color: #856404; }
+    .err { background: #f8d7da; color: #721c24; }
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      background: #667eea;
+      color: white;
+      margin: 10px 5px 0 0;
+      cursor: pointer;
+    }
+    button:active { opacity: 0.8; }
+    pre {
+      background: #f4f4f4;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 Service Worker 版本检查</h1>
+  <div id="result"></div>
+  <button onclick="location.reload()">🔄 刷新检查</button>
+  <button onclick="goHome()">🏠 回主页</button>
+  <button onclick="goCleanup()">🧹 清理 SW</button>
+
+  <script>
+    const expected = 'time-planner-v97';
+    const result = document.getElementById('result');
+
+    function goHome() {
+      location.href = './时间管理助手.html';
+    }
+
+    function goCleanup() {
+      location.href = './sw-cleanup.html';
+    }
+
+    async function check() {
+      let html = '';
+
+      // 1. 检查是否支持 SW
+      if (!('serviceWorker' in navigator)) {
+        html += '<div class="status err">❌ 浏览器不支持 Service Worker</div>';
+        result.innerHTML = html;
+        return;
+      }
+
+      // 2. 检查注册状态
+      const reg = await navigator.serviceWorker.getRegistration('./');
+      if (!reg) {
+        html += '<div class="status warn">⚠️ Service Worker 未注册</div>';
+        html += '<p>请先访问主页让 SW 注册</p>';
+        result.innerHTML = html;
+        return;
+      }
+
+      // 3. 检查当前激活的 SW
+      const active = reg.active;
+      if (!active) {
+        html += '<div class="status warn">⚠️ 没有激活的 Service Worker</div>';
+        if (reg.installing) html += '<p>正在安装中...</p>';
+        if (reg.waiting) html += '<p>有新版本等待激活，请<strong>关闭所有标签页后重新打开</strong></p>';
+        result.innerHTML = html;
+        return;
+      }
+
+      // 4. 获取缓存列表
+      const cacheNames = await caches.keys();
+      const hasV97 = cacheNames.includes(expected);
+
+      if (hasV97) {
+        html += `<div class="status ok">✅ Service Worker v97 已激活</div>`;
+        html += `<p>缓存名称：<code>${expected}</code></p>`;
+
+        // 检查缓存内容
+        const cache = await caches.open(expected);
+        const keys = await cache.keys();
+        html += `<p>已缓存 ${keys.length} 个资源</p>`;
+        html += '<details><summary>查看缓存列表</summary><pre>';
+        keys.forEach(req => {
+          html += req.url.split('/').pop() + '\n';
+        });
+        html += '</pre></details>';
+      } else {
+        html += `<div class="status err">❌ 缓存版本不匹配</div>`;
+        html += `<p>期望：<code>${expected}</code></p>`;
+        html += `<p>实际：</p><pre>${cacheNames.join('\n')}</pre>`;
+        html += '<p><strong>解决方法：</strong></p>';
+        html += '<ol>';
+        html += '<li>点击下方"清理 SW"按钮</li>';
+        html += '<li>清理完成后点击"回主页"</li>';
+        html += '<li>等待 3 秒后下拉刷新</li>';
+        html += '<li>再次回到本页面检查</li>';
+        html += '</ol>';
+      }
+
+      // 5. 检查是否有等待更新的 SW
+      if (reg.waiting) {
+        html += '<div class="status warn">⚠️ 有新版本等待激活</div>';
+        html += '<p>请<strong>关闭所有标签页后重新打开</strong>，或等待自动刷新</p>';
+      }
+
+      result.innerHTML = html;
+    }
+
+    check();
+  </script>
+</body>
+</html>

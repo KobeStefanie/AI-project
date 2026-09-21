@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>对话训练中 - Phase 4</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        /* 三栏布局 */
+        .three-column-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 1rem;
+            height: calc(100vh - 120px);
+        }
+
+        /* 对话区域自动滚动 */
+        #dialogue-area {
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+
+        /* 督导浮窗 */
+        .supervision-badge {
+            position: relative;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* 响应式：移动端单栏 */
+        @media (max-width: 768px) {
+            .three-column-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 顶部导航 -->
+    <nav class="bg-indigo-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <i class="fa fa-comments text-2xl"></i>
+                <h1 class="text-xl font-bold">对话训练中</h1>
+                <span id="approach-badge" class="bg-white text-indigo-600 px-3 py-1 rounded text-sm font-medium"></span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div id="cost-display" class="bg-indigo-700 px-4 py-2 rounded text-sm">
+                    <i class="fa fa-dollar mr-1"></i>
+                    <span>Token: 0 | 成本: $0.00</span>
+                </div>
+                <button onclick="endSession()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded transition">
+                    <i class="fa fa-stop mr-2"></i>结束训练
+                </button>
+                <a href="index.html" class="bg-white text-indigo-600 px-4 py-2 rounded hover:bg-indigo-50 transition">
+                    <i class="fa fa-arrow-left mr-2"></i>返回
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-4">
+        <div class="three-column-layout">
+            <!-- 左栏：来访者档案 -->
+            <div class="bg-white rounded-lg shadow-lg p-6 overflow-y-auto">
+                <h3 class="text-lg font-bold mb-4 border-b pb-2">
+                    <i class="fa fa-user-circle text-blue-600 mr-2"></i>来访者档案
+                </h3>
+                <div id="persona-info">
+                    <p class="text-center text-gray-400">
+                        <i class="fa fa-spinner fa-spin text-2xl"></i>
+                        <br>加载中...
+                    </p>
+                </div>
+            </div>
+
+            <!-- 中栏：对话区域 -->
+            <div class="bg-white rounded-lg shadow-lg flex flex-col">
+                <!-- 对话历史 -->
+                <div id="dialogue-area" class="flex-1 p-6 overflow-y-auto space-y-4">
+                    <div class="text-center text-gray-400 py-12">
+                        <i class="fa fa-comment-o text-5xl mb-3"></i>
+                        <p>在下方输入框开始对话</p>
+                    </div>
+                </div>
+
+                <!-- 输入区域 -->
+                <div class="border-t p-4 bg-gray-50">
+                    <div class="flex space-x-2">
+                        <textarea
+                            id="user-input"
+                            rows="3"
+                            class="flex-1 border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                            placeholder="请输入你作为咨询师的回应..."
+                            onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendMessage();}"
+                        ></textarea>
+                        <button
+                            id="send-btn"
+                            onclick="sendMessage()"
+                            class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition self-end"
+                        >
+                            <i class="fa fa-send"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">
+                        <i class="fa fa-info-circle mr-1"></i>
+                        Shift+Enter换行，Enter发送
+                    </p>
+                </div>
+            </div>
+
+            <!-- 右栏：督导反馈 -->
+            <div class="bg-white rounded-lg shadow-lg p-6 overflow-y-auto">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h3 class="text-lg font-bold">
+                        <i class="fa fa-graduation-cap text-green-600 mr-2"></i>督导反馈
+                    </h3>
+                    <button onclick="toggleSupervision()" class="text-sm text-gray-600 hover:text-gray-800">
+                        <i id="supervision-toggle-icon" class="fa fa-eye"></i>
+                    </button>
+                </div>
+                <div id="supervision-area">
+                    <p class="text-center text-gray-400 py-12">
+                        <i class="fa fa-clock-o text-3xl mb-2"></i>
+                        <br>对话开始后，督导反馈将实时显示
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let sessionId = null;
+        let sessionData = null;
+        let totalTokens = 0;
+        let totalCost = 0;
+        let supervisionVisible = true;
+        let currentTurnSeq = 0;
+
+        // 初始化
+        async function init() {
+            // 从URL获取session_id
+            const params = new URLSearchParams(window.location.search);
+            sessionId = params.get('session_id');
+
+            if (!sessionId) {
+                alert('缺少session_id参数');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // 加载session数据
+            try {
+                const response = await fetch(`http://localhost:8772/api/get_session?session_id=${sessionId}`);
+                sessionData = await response.json();
+
+                if (sessionData.error) {
+                    alert('加载会话失败：' + sessionData.error);
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                // 显示流派
+                document.getElementById('approach-badge').textContent = sessionData.approach;
+
+                // 显示来访者信息
+                displayPersonaInfo(sessionData.visitor_persona);
+
+                // 如果已有对话历史，显示
+                if (sessionData.dialogue && sessionData.dialogue.length > 0) {
+                    sessionData.dialogue.forEach(turn => {
+                        if (turn.role === 'counselor') {
+                            addCounselorMessage(turn.content);
+                        } else {
+                            addClientMessage(turn.content);
+                        }
+
+                        if (turn.supervision_feedback) {
+                            addSupervisionFeedback(turn.supervision_feedback, turn.seq);
+                        }
+                    });
+                }
+
+                // 更新成本显示
+                updateCostDisplay();
+
+            } catch (error) {
+                alert('加载会话失败：' + error.message);
+                window.location.href = 'index.html';
+            }
+        }
+
+        // 显示来访者信息
+        function displayPersonaInfo(persona) {
+            const html = `
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-sm text-gray-500">姓名</p>
+                        <p class="font-bold">${persona.name}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">基本信息</p>
+                        <p>${persona.age}岁 | ${persona.gender}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">情绪状态</p>
+                        <p class="text-red-600">${persona.emotional_state}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">核心问题</p>
+                        <ul class="list-disc list-inside text-sm">
+                            ${persona.core_issues.map(issue => `<li>${issue}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">背景概述</p>
+                        <p class="text-sm text-gray-700">${persona.background_summary}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">防御机制</p>
+                        <p class="text-sm">${persona.defense_mechanisms ? persona.defense_mechanisms.join('、') : '未知'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">典型语句</p>
+                        <div class="text-xs text-gray-600 space-y-1 mt-1">
+                            ${persona.key_phrases.map(phrase => `<div class="bg-gray-100 p-2 rounded">"${phrase}"</div>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('persona-info').innerHTML = html;
+        }
+
+        // 发送消息
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // 禁用输入
+            input.disabled = true;
+            document.getElementById('send-btn').disabled = true;
+
+            // 显示咨询师消息
+            addCounselorMessage(message);
+            input.value = '';
+
+            // 调用API（SSE流式）
+            try {
+                const response = await fetch('http://localhost:8772/api/chat_stream', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        user_msg: message
+                    })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let clientMessage = '';
+                let clientMessageDiv = null;
+
+                while (true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') break;
+
+                            try {
+                                const json = JSON.parse(data);
+
+                                if (json.text) {
+                                    clientMessage += json.text;
+
+                                    // 实时更新来访者消息
+                                    if (!clientMessageDiv) {
+                                        clientMessageDiv = addClientMessage('');
+                                    }
+                                    clientMessageDiv.querySelector('.message-content').textContent = clientMessage;
+                                    scrollToBottom();
+                                }
+
+                                if (json.tokens) {
+                                    totalTokens += json.tokens.input + json.tokens.output;
+                                    totalCost += (json.tokens.input / 1000000 * 15) + (json.tokens.output / 1000000 * 75);
+                                    updateCostDisplay();
+                                }
+                            } catch (e) {
+                                // 忽略解析错误
+                            }
+                        }
+                    }
+                }
+
+                // 对话完成后，异步获取督导反馈
+                currentTurnSeq += 2; // 咨询师+来访者=2轮
+                setTimeout(() => fetchSupervision(currentTurnSeq - 2), 500);
+
+            } catch (error) {
+                alert('发送失败：' + error.message);
+            } finally {
+                // 恢复输入
+                input.disabled = false;
+                document.getElementById('send-btn').disabled = false;
+                input.focus();
+            }
+        }
+
+        // 获取督导反馈
+        async function fetchSupervision(turnSeq) {
+            try {
+                const response = await fetch('http://localhost:8772/api/supervise_turn', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        turn_seq: turnSeq
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.supervision) {
+                    addSupervisionFeedback(data.supervision, currentTurnSeq - 2);
+                }
+
+                if (data.tokens) {
+                    totalTokens += data.tokens.input + data.tokens.output;
+                    totalCost += (data.tokens.input / 1000000 * 15) + (data.tokens.output / 1000000 * 75);
+                    updateCostDisplay();
+                }
+            } catch (error) {
+                console.error('督导反馈获取失败:', error);
+            }
+        }
+
+        // 添加咨询师消息
+        function addCounselorMessage(content) {
+            const div = document.createElement('div');
+            div.className = 'flex justify-end';
+            div.innerHTML = `
+                <div class="bg-indigo-100 rounded-lg p-3 max-w-[70%]">
+                    <p class="text-xs text-gray-600 mb-1"><i class="fa fa-user-md"></i> 咨询师</p>
+                    <p class="message-content">${content}</p>
+                </div>
+            `;
+            document.getElementById('dialogue-area').appendChild(div);
+            scrollToBottom();
+            return div;
+        }
+
+        // 添加来访者消息
+        function addClientMessage(content) {
+            const div = document.createElement('div');
+            div.className = 'flex justify-start';
+            div.innerHTML = `
+                <div class="bg-gray-100 rounded-lg p-3 max-w-[70%]">
+                    <p class="text-xs text-gray-600 mb-1"><i class="fa fa-user"></i> 来访者</p>
+                    <p class="message-content">${content}</p>
+                </div>
+            `;
+            document.getElementById('dialogue-area').appendChild(div);
+            scrollToBottom();
+            return div;
+        }
+
+        // 添加督导反馈
+        function addSupervisionFeedback(feedback, turnSeq) {
+            const scoreColor = feedback.quality_score >= 7 ? 'green' : (feedback.quality_score >= 5 ? 'yellow' : 'red');
+
+            // 检查是否是"未识别"或失败的情况
+            const isUnidentified = !feedback.technique_used || feedback.technique_used === '未识别' || feedback.technique_used === '';
+
+            const div = document.createElement('div');
+            div.className = 'supervision-badge border-l-4 border-blue-500 bg-blue-50 p-4 rounded mb-3';
+            div.setAttribute('data-turn-seq', turnSeq); // 保存turn_seq用于重新识别
+            div.innerHTML = `
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <span class="text-xs text-gray-500 mr-2">第${Math.floor((turnSeq-1)/2) + 1}轮</span>
+                        <span class="text-sm font-bold text-blue-700">${feedback.technique_used || '未识别'}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-${scoreColor}-100 text-${scoreColor}-800 text-xs px-2 py-1 rounded">${feedback.quality_score}/10</span>
+                        ${isUnidentified ? `<button onclick="retrySupervision(${turnSeq})" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-2 py-1 rounded transition">
+                            <i class="fa fa-refresh"></i> 重新识别
+                        </button>` : ''}
+                    </div>
+                </div>
+                <p class="text-sm text-gray-700 mb-2">${feedback.comment || '督导反馈解析失败'}</p>
+                ${feedback.better_example ? `<div class="text-xs text-gray-600 bg-white p-2 rounded"><strong>更好的说法：</strong><br>"${feedback.better_example}"</div>` : ''}
+            `;
+
+            const supervisionArea = document.getElementById('supervision-area');
+            if (supervisionArea.querySelector('.text-center')) {
+                supervisionArea.innerHTML = '';
+            }
+            supervisionArea.appendChild(div);
+        }
+
+        // 重新获取督导反馈
+        async function retrySupervision(turnSeq) {
+            const button = event.target.closest('button');
+            const originalHtml = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 识别中...';
+
+            try {
+                const response = await fetch('http://localhost:8772/api/supervise_turn', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        turn_seq: turnSeq
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.supervision) {
+                    // 找到对应的督导反馈div并替换
+                    const supervisionBadges = document.querySelectorAll('.supervision-badge');
+                    supervisionBadges.forEach(badge => {
+                        if (badge.getAttribute('data-turn-seq') == turnSeq) {
+                            badge.remove();
+                        }
+                    });
+
+                    // 添加新的督导反馈
+                    addSupervisionFeedback(data.supervision, turnSeq);
+
+                    // 更新成本
+                    if (data.tokens) {
+                        totalTokens += data.tokens.input + data.tokens.output;
+                        totalCost += (data.tokens.input / 1000000 * 15) + (data.tokens.output / 1000000 * 75);
+                        updateCostDisplay();
+                    }
+                } else {
+                    alert('重新识别失败：' + (data.error || '未知错误'));
+                    button.disabled = false;
+                    button.innerHTML = originalHtml;
+                }
+            } catch (error) {
+                alert('重新识别失败：' + error.message);
+                button.disabled = false;
+                button.innerHTML = originalHtml;
+            }
+        }
+
+        // 更新成本显示
+        function updateCostDisplay() {
+            const display = document.getElementById('cost-display');
+            display.innerHTML = `
+                <i class="fa fa-dollar mr-1"></i>
+                <span>Token: ${totalTokens.toLocaleString()} | 成本: $${totalCost.toFixed(3)}</span>
+            `;
+        }
+
+        // 滚动到底部
+        function scrollToBottom() {
+            const area = document.getElementById('dialogue-area');
+            area.scrollTop = area.scrollHeight;
+        }
+
+        // 切换督导显示
+        function toggleSupervision() {
+            supervisionVisible = !supervisionVisible;
+            const area = document.getElementById('supervision-area');
+            const icon = document.getElementById('supervision-toggle-icon');
+
+            if (supervisionVisible) {
+                area.style.display = 'block';
+                icon.className = 'fa fa-eye';
+            } else {
+                area.style.display = 'none';
+                icon.className = 'fa fa-eye-slash';
+            }
+        }
+
+        // 结束训练
+        async function endSession() {
+            // 弹出选择对话框
+            const choice = confirm('是否保存本次训练记录？\n\n点击"确定"保存并导出Excel\n点击"取消"不保存直接退出');
+
+            if (!choice) {
+                // 用户选择不保存
+                if (confirm('确定不保存吗？本次对话将被丢弃。')) {
+                    window.location.href = 'index.html';
+                }
+                return;
+            }
+
+            // 用户选择保存，导出Excel
+            try {
+                // 重新加载完整session数据
+                const response = await fetch(`http://localhost:8772/api/get_session?session_id=${sessionId}`);
+                const fullSession = await response.json();
+
+                if (fullSession.error) {
+                    alert('获取会话数据失败：' + fullSession.error);
+                    return;
+                }
+
+                // 生成Excel
+                exportToExcel(fullSession);
+
+                // 结束会话并生成报告
+                const endResponse = await fetch('http://localhost:8772/api/end_session', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({session_id: sessionId})
+                });
+
+                const data = await endResponse.json();
+
+                if (data.final_report) {
+                    alert(`训练已保存并导出！\n总分: ${data.final_report.overall_score}/100\n总轮次: ${data.final_report.total_turns}\n\nExcel文件已下载`);
+                    window.location.href = 'index.html';
+                } else {
+                    alert('生成报告失败：' + data.error);
+                }
+            } catch (error) {
+                alert('结束失败：' + error.message);
+            }
+        }
+
+        // 导出为Excel
+        function exportToExcel(session) {
+            const persona = session.visitor_persona;
+            const dialogue = session.dialogue;
+
+            // ========== Sheet 1: 来访者背景资料 ==========
+            const backgroundData = [];
+            backgroundData.push(['来访者背景资料']);
+            backgroundData.push([]);
+            backgroundData.push(['基本信息']);
+            backgroundData.push(['姓名', persona.name]);
+            backgroundData.push(['年龄', `${persona.age}岁`]);
+            backgroundData.push(['性别', persona.gender]);
+            backgroundData.push([]);
+            backgroundData.push(['情绪状态']);
+            backgroundData.push([persona.emotional_state]);
+            backgroundData.push([]);
+            backgroundData.push(['核心问题']);
+            persona.core_issues.forEach(issue => backgroundData.push([issue]));
+            backgroundData.push([]);
+            backgroundData.push(['背景概述']);
+            backgroundData.push([persona.background_summary]);
+            backgroundData.push([]);
+            backgroundData.push(['防御机制']);
+            backgroundData.push([persona.defense_mechanisms ? persona.defense_mechanisms.join('、') : '未知']);
+            backgroundData.push([]);
+            backgroundData.push(['典型语句']);
+            persona.key_phrases.forEach(phrase => backgroundData.push([phrase]));
+            backgroundData.push([]);
+            backgroundData.push(['期待']);
+            backgroundData.push(['显性期待', persona.expectations.explicit || '未知']);
+            backgroundData.push(['隐性期待', persona.expectations.implicit || '未知']);
+
+            const wsBackground = XLSX.utils.aoa_to_sheet(backgroundData);
+            wsBackground['!cols'] = [{wch: 15}, {wch: 80}];
+
+            // ========== Sheet 2: 咨询过程 ==========
+            const processData = [];
+
+            // 表头
+            processData.push([
+                '序号',
+                '来访者的主诉\n（说什么）',
+                '来访者的情绪\n（怎么说）',
+                '来访者的动机\n（想要什么）',
+                '心理咨询师回应\n（说什么）',
+                '心理咨询师情绪\n（怎么说）',
+                '心理咨询师动机\n（想干嘛）',
+                '督导建议',
+                '理论依据',
+                '咨询结构'
+            ]);
+
+            // 遍历对话
+            let roundNum = 0;
+            for (let i = 0; i < dialogue.length; i += 2) {
+                roundNum++;
+                const counselorTurn = dialogue[i];
+                const clientTurn = dialogue[i + 1];
+
+                if (!clientTurn) continue; // 跳过没有来访者回应的轮次
+
+                const sup = counselorTurn.supervision_feedback;
+
+                processData.push([
+                    roundNum,
+                    clientTurn.content || '',  // 来访者的主诉
+                    sup ? (sup.client_emotion || '') : '',  // 来访者的情绪
+                    sup ? (sup.client_motivation || '') : '',  // 来访者的动机
+                    counselorTurn.content || '',  // 咨询师回应
+                    sup ? (sup.counselor_emotion || '') : '',  // 咨询师情绪
+                    sup ? (sup.counselor_motivation || '') : '',  // 咨询师动机
+                    sup ? `【技术】${sup.technique_used}\n【评分】${sup.quality_score}/10\n【反馈】${sup.comment}${sup.better_example ? '\n【更好的说法】' + sup.better_example : ''}` : '',
+                    sup ? (sup.theoretical_basis || `流派：${session.approach}`) : '',
+                    ''  // 咨询结构（预留给用户手动补充）
+                ]);
+            }
+
+            const wsProcess = XLSX.utils.aoa_to_sheet(processData);
+
+            // 设置列宽
+            wsProcess['!cols'] = [
+                {wch: 6},   // 序号
+                {wch: 40},  // 来访者主诉
+                {wch: 15},  // 来访者情绪
+                {wch: 15},  // 来访者动机
+                {wch: 40},  // 咨询师回应
+                {wch: 15},  // 咨询师情绪
+                {wch: 15},  // 咨询师动机
+                {wch: 35},  // 督导建议
+                {wch: 20},  // 理论依据
+                {wch: 15}   // 咨询结构
+            ];
+
+            // 设置行高（表头行）
+            if (!wsProcess['!rows']) wsProcess['!rows'] = [];
+            wsProcess['!rows'][0] = {hpt: 40}; // 表头高度
+
+            // 创建工作簿
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, wsBackground, '来访者背景资料');
+            XLSX.utils.book_append_sheet(wb, wsProcess, '咨询过程');
+
+            // 下载文件
+            const filename = `对话训练_${session.visitor_persona.name}_${session.approach}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            XLSX.writeFile(wb, filename);
+        }
+
+        // 页面加载时初始化
+        window.onload = init;
+    </script>
+</body>
+</html>

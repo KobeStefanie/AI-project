@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>复盘中心 - 时间管理助手</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 240px 1fr 320px;
+      gap: 20px;
+      align-items: start;
+    }
+    .sidebar {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    .sidebar h2 {
+      font-size: 18px;
+      color: #2c3e50;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sidebar ul {
+      list-style: none;
+      font-size: 14px;
+      line-height: 1.8;
+      color: #34495e;
+    }
+    .sidebar ul li {
+      padding: 4px 0;
+    }
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #5568d3;
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: #95a5a6;
+      color: white;
+      font-size: 12px;
+      padding: 6px 12px;
+    }
+    .btn-secondary:hover {
+      background: #7f8c8d;
+    }
+    .btn-success {
+      background: #27ae60;
+      color: white;
+    }
+    .btn-success:hover {
+      background: #229954;
+    }
+    .btn:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .main-content {
+      background: white;
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      min-height: 600px;
+    }
+    .stage-selector {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+      border-bottom: 2px solid #ecf0f1;
+      padding-bottom: 16px;
+    }
+    .stage-btn {
+      flex: 1;
+      padding: 12px;
+      background: #f8f9fa;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 500;
+      color: #7f8c8d;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .stage-btn.active {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+    .stage-btn.completed {
+      background: #d4edda;
+      color: #155724;
+      border-color: #c3e6cb;
+    }
+    .stage-btn:not(.active):hover {
+      background: #e9ecef;
+    }
+    .stage-content {
+      display: none;
+    }
+    .stage-content.active {
+      display: block;
+    }
+
+    /* 阶段1：数据预览 */
+    .week-selector {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .week-selector label {
+      font-weight: 500;
+      color: #2c3e50;
+    }
+    .week-selector select {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    #date-range-display {
+      margin-top: 12px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      color: #7f8c8d;
+      font-size: 14px;
+    }
+    .data-preview {
+      margin-top: 24px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .stat-card .label {
+      font-size: 13px;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .week-details {
+      margin-top: 24px;
+    }
+    .week-details h3 {
+      font-size: 16px;
+      color: #2c3e50;
+      margin-bottom: 12px;
+    }
+    .week-row {
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .week-row strong {
+      color: #2c3e50;
+    }
+
+    /* 阶段2：对话 */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 600px;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    .message {
+      margin-bottom: 12px;
+      padding: 10px 14px;
+      border-radius: 18px;
+      max-width: 70%;
+      line-height: 1.5;
+      font-size: 15px;
+      word-wrap: break-word;
+      width: fit-content;
+    }
+    .message.ai {
+      background: #f0f0f0;
+      color: #2c3e50;
+      border-radius: 18px 18px 18px 4px;
+      align-self: flex-start;
+    }
+    .message.user {
+      background: #667eea;
+      color: white;
+      border-radius: 18px 18px 4px 18px;
+      align-self: flex-end;
+    }
+    .message.system {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+      text-align: center;
+      margin: 0 auto;
+      font-size: 14px;
+    }
+    .chat-input-area {
+      display: flex;
+      gap: 12px;
+    }
+    .chat-input-area textarea {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 60px;
+    }
+    .chat-input-area button {
+      align-self: flex-end;
+    }
+
+    /* 阶段3：报告 */
+    .report-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .report-markdown {
+      line-height: 1.8;
+      font-size: 15px;
+      color: #2c3e50;
+    }
+    .report-markdown h1 {
+      font-size: 24px;
+      margin-bottom: 16px;
+      color: #2c3e50;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 12px;
+    }
+    .report-markdown h2 {
+      font-size: 18px;
+      margin: 32px 0 16px;
+      color: #34495e;
+    }
+    .report-markdown p {
+      margin-bottom: 12px;
+    }
+    .report-markdown blockquote {
+      border-left: 4px solid #667eea;
+      padding-left: 16px;
+      margin: 16px 0;
+      color: #7f8c8d;
+      font-style: italic;
+    }
+    .report-markdown strong {
+      color: #e74c3c;
+      font-weight: 600;
+    }
+    .report-markdown ul {
+      padding-left: 24px;
+      margin-bottom: 16px;
+    }
+    .report-markdown code {
+      background: #f8f9fa;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      color: #e74c3c;
+    }
+    details {
+      margin-top: 24px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 500;
+      color: #667eea;
+      user-select: none;
+    }
+    summary:hover {
+      color: #5568d3;
+    }
+    .data-table {
+      width: 100%;
+      margin-top: 12px;
+      font-size: 14px;
+      border-collapse: collapse;
+    }
+    .data-table th,
+    .data-table td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .data-table th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    /* 模态框 */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.show {
+      display: flex;
+    }
+    .modal-content {
+      background: white;
+      padding: 32px;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal-content h3 {
+      margin-bottom: 20px;
+      color: #2c3e50;
+    }
+    .goal-edit-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    .goal-edit-item input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      justify-content: flex-end;
+    }
+    .history-item {
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+    .history-item-header {
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 6px;
+    }
+    .history-item-content {
+      color: #7f8c8d;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    .history-item-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .ai-status {
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    .ai-status.ready {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .ai-status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    /* 打印样式 */
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+        margin: 0;
+      }
+      .container {
+        display: block;
+        max-width: 100%;
+      }
+      .sidebar, .stage-selector, .no-print, #data-panel {
+        display: none !important;
+      }
+      .main-content {
+        padding: 20px;
+        box-shadow: none;
+      }
+      .report-container {
+        max-width: 100%;
+      }
+      .report-markdown h1 {
+        page-break-before: auto;
+        font-size: 22px;
+      }
+      .report-markdown h2 {
+        page-break-after: avoid;
+        font-size: 18px;
+      }
+      .report-markdown p, .report-markdown ul {
+        page-break-inside: avoid;
+      }
+      details {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 左侧边栏：目标与历史 -->
+    <div class="sidebar">
+      <h2>
+        🎯 长远目标
+        <button class="btn btn-secondary" onclick="editGoals()">编辑</button>
+      </h2>
+      <ul id="goals-list">
+        <li style="color: #95a5a6;">加载中...</li>
+      </ul>
+
+      <h2 style="margin-top: 32px;">📚 历史复盘</h2>
+      <div id="history-list">
+        <p style="color: #95a5a6; font-size: 13px;">加载中...</p>
+      </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+      <h1 style="margin-bottom: 24px; color: #2c3e50; font-size: 28px;">📊 AI 复盘中心</h1>
+
+      <!-- AI 状态提示 -->
+      <div id="ai-status-banner" style="display: none;"></div>
+
+      <!-- 阶段选择器 -->
+      <div class="stage-selector">
+        <div class="stage-btn active" data-stage="1">1. 数据预览</div>
+        <div class="stage-btn" data-stage="2">2. 自由对话</div>
+        <div class="stage-btn" data-stage="3">3. 生成报告</div>
+      </div>
+
+      <!-- 阶段1：数据预览 -->
+      <div id="stage-1" class="stage-content active">
+        <div class="week-selector">
+          <label>年份：</label>
+          <select id="year-select">
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+          </select>
+          <label>起始周：</label>
+          <input type="number" id="start-week-select" min="1" max="53" placeholder="输入周数" style="width: 100px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" />
+          <label>结束周：</label>
+          <input type="number" id="end-week-select" min="1" max="53" placeholder="输入周数" style="width: 100px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" />
+        </div>
+        <div id="date-range-display" style="display: none;"></div>
+
+        <div style="text-align: center; margin-top: 32px;">
+          <button class="btn btn-primary" onclick="previewData()" style="padding: 14px 32px; font-size: 16px;">
+            🔍 加载数据
+          </button>
+          <button class="btn btn-success" onclick="startChat()" id="start-chat-btn" style="padding: 14px 32px; font-size: 16px; margin-left: 12px; display: none;">
+            ✅ 开始对话
+          </button>
+        </div>
+      </div>
+
+      <!-- 阶段2：对话 -->
+      <div id="stage-2" class="stage-content">
+        <div class="chat-container">
+          <div class="chat-messages" id="chat-messages"></div>
+          <div class="chat-input-area">
+            <textarea id="user-input" placeholder="在这里输入你的回复..."></textarea>
+            <button class="btn btn-primary" onclick="sendMessage()" id="send-btn">发送</button>
+          </div>
+          <div style="text-align: center; margin-top: 16px;">
+            <button class="btn btn-success" onclick="finishChatAndGenerateReport()" id="generate-report-btn">
+              💡 对话结束，生成报告
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 阶段3：报告 -->
+      <div id="stage-3" class="stage-content">
+        <div class="report-container">
+          <div class="report-markdown" id="report-content"></div>
+          <div style="text-align: center; margin-top: 32px; display: flex; gap: 16px; justify-content: center;" class="no-print">
+            <button class="btn btn-secondary" onclick="backToStart()">🔄 重新复盘</button>
+            <button class="btn btn-primary" onclick="saveCurrentReview()">💾 保存复盘</button>
+            <button class="btn btn-success" onclick="exportReportToPDF()">📄 导出 PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧数据面板：常驻显示 -->
+    <div class="sidebar" id="data-panel" style="display: none;">
+      <h2>📊 数据总览</h2>
+      <div id="data-panel-stats" style="font-size: 13px; line-height: 1.8;"></div>
+
+      <h2 style="margin-top: 24px;">📅 逐周明细</h2>
+      <div id="data-panel-weeks" style="font-size: 12px; line-height: 1.6; max-height: 500px; overflow-y: auto;"></div>
+
+      <div style="margin-top: 24px; text-align: center;">
+        <button class="btn btn-primary" onclick="reviewUI.openWeekCompareModal()" style="width: 100%;">
+          📊 周期对比
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 目标编辑模态框 -->
+  <div id="goal-edit-modal" class="modal">
+    <div class="modal-content">
+      <h3>编辑长远目标</h3>
+      <div id="goal-edit-list"></div>
+      <div style="margin-top: 16px;">
+        <button class="btn btn-secondary" onclick="addGoalInput()">+ 添加目标</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeGoalModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveGoals()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 周期对比模态框 -->
+  <div id="week-compare-modal" class="modal">
+    <div class="modal-content" style="max-width: 90vw; max-height: 90vh; overflow: auto;">
+      <h3>📊 周期数据对比</h3>
+      <div id="week-compare-content" style="margin-top: 20px;"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="reviewUI.closeWeekCompareModal()">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app-core.js"></script>
+  <script src="review-engine.js"></script>
+  <script src="review-ui.js"></script>
+</body>
+</html>

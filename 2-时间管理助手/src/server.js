@@ -41,6 +41,139 @@ const MIME = {
 // 走 HTTP 6371 也能拿（避开未信任 HTTPS 警告，iPhone 首次下载用）。
 const CERT_DOWNLOAD_ALIASES = ['/cert.crt', '/cert.pem', '/ca.crt', '/ca.pem'];
 
+// ===== AI 复盘代理（v2.14.0）=====
+// 浏览器不直接持有 API key：前端 POST /api/chat，由本机服务器转发到模型 API。
+// 配置读自项目根 ai-config.json（已 gitignore），也支持环境变量覆盖。
+const AI_CONFIG_PATH = path.resolve(__dirname, '..', 'ai-config.json');
+
+function loadAiConfig() {
+  let cfg = {};
+  try {
+    if (fs.existsSync(AI_CONFIG_PATH)) {
+      cfg = JSON.parse(fs.readFileSync(AI_CONFIG_PATH, 'utf8'));
+    }
+  } catch (e) {
+    console.error('[AI] ai-config.json 解析失败:', e.message);
+  }
+  // 环境变量优先级更高，方便临时切换
+  const baseUrl = (process.env.ANTHROPIC_BASE_URL || cfg.baseUrl || '').replace(/\/+$/, '');
+  const apiKey  = process.env.ANTHROPIC_AUTH_TOKEN || process.env.ANTHROPIC_API_KEY || cfg.apiKey || '';
+  const model   = cfg.model || process.env.ANTHROPIC_MODEL || 'claude-opus-5';
+  const maxTokens = cfg.maxTokens || 8000;
+  return { baseUrl, apiKey, model, maxTokens };
+}
+
+// 上游模型 API 调用，返回纯文本
+function callModel(messages, system, maxTokens) {
+  return new Promise((resolve, reject) => {
+    const cfg = loadAiConfig();
+    if (!cfg.baseUrl || !cfg.apiKey) {
+      reject(new Error('AI 未配置：请在项目根目录的 ai-config.json 中填写 baseUrl 与 apiKey'));
+      return;
+    }
+
+    const payload = JSON.stringify({
+      model: cfg.model,
+      max_tokens: maxTokens || cfg.maxTokens,
+      system: system || undefined,
+      messages: messages
+    });
+
+    let target;
+    try { target = new URL(cfg.baseUrl + '/v1/messages'); }
+    catch (e) { reject(new Error('baseUrl 不是合法地址: ' + cfg.baseUrl)); return; }
+
+    const transport = target.protocol === 'http:' ? http : https;
+    const bodyBuf = Buffer.from(payload, 'utf8');
+
+    const upstream = transport.request({
+      hostname: target.hostname,
+      port: target.port || (target.protocol === 'http:' ? 80 : 443),
+      path: target.pathname + target.search,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': bodyBuf.length,
+        'Authorization': 'Bearer ' + cfg.apiKey,
+        'x-api-key': cfg.apiKey,
+        'anthropic-version': '2023-06-01'
+      }
+    }, (up) => {
+      const chunks = [];
+      up.on('data', c => chunks.push(c));
+      up.on('end', () => {
+        const raw = Buffer.concat(chunks).toString('utf8');
+        let parsed;
+        try { parsed = JSON.parse(raw); }
+        catch (e) { reject(new Error('上游返回非 JSON（HTTP ' + up.statusCode + '）: ' + raw.slice(0, 300))); return; }
+
+        if (parsed.error) {
+          reject(new Error('模型接口报错: ' + (parsed.error.message || JSON.stringify(parsed.error))));
+          return;
+        }
+        const text = Array.isArray(parsed.content)
+          ? parsed.content.filter(b => b.type === 'text').map(b => b.text).join('')
+          : '';
+        if (!text) { reject(new Error('模型返回空内容: ' + raw.slice(0, 300))); return; }
+        resolve(text);
+      });
+    });
+
+    upstream.on('error', err => reject(new Error('连接模型接口失败: ' + err.message)));
+    upstream.setTimeout(180000, () => {
+      upstream.destroy();
+      reject(new Error('模型接口超时（180 秒）'));
+    });
+    upstream.end(bodyBuf);
+  });
+}
+
+function handleAiChat(req, res) {
+  const chunks = [];
+  let size = 0;
+  req.on('data', chunk => {
+    size += chunk.length;
+    if (size > 5 * 1024 * 1024) { req.destroy(); return; }
+    chunks.push(chunk);
+  });
+  req.on('end', async () => {
+    const reply = (status, obj) => {
+      res.writeHead(status, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store'
+      });
+      res.end(JSON.stringify(obj));
+    };
+    try {
+      const body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+      if (!Array.isArray(body.messages) || body.messages.length === 0) {
+        return reply(400, { error: '缺少 messages' });
+      }
+      const text = await callModel(body.messages, body.system, body.maxTokens);
+      console.log('200 /api/chat → ' + text.length + ' 字');
+      reply(200, { text });
+    } catch (e) {
+      console.error('[AI] /api/chat 失败:', e.message);
+      reply(502, { error: e.message });
+    }
+  });
+}
+
+// 供前端探测 AI 是否可用（不泄露 key）
+function handleAiStatus(req, res) {
+  const cfg = loadAiConfig();
+  res.writeHead(200, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'no-store'
+  });
+  res.end(JSON.stringify({
+    ready: Boolean(cfg.baseUrl && cfg.apiKey),
+    model: cfg.model,
+    baseUrl: cfg.baseUrl
+  }));
+}
+
+
 function handleExportExcel(req, res) {
   let body = '';
   req.on('data', chunk => {
@@ -134,6 +267,14 @@ function requestHandler(req, res) {
   try { pathname = decodeURIComponent(url.parse(req.url).pathname); }
   catch (e) { res.writeHead(400); res.end('Bad URL'); return; }
 
+  // AI 复盘代理（v2.14.0）
+  if (pathname === '/api/chat' && req.method === 'POST') {
+    return handleAiChat(req, res);
+  }
+  if (pathname === '/api/ai-status' && req.method === 'GET') {
+    return handleAiStatus(req, res);
+  }
+
   // 导出Excel到指定目录
   if (pathname === '/export-excel' && req.method === 'POST') {
     return handleExportExcel(req, res);
@@ -145,6 +286,13 @@ function requestHandler(req, res) {
   }
 
   if (pathname === '/' || pathname === '') pathname = '/时间管理助手.html';
+
+  // 安全：绝不通过静态路由吐出 AI 凭证文件
+  if (/ai-config\.json$/i.test(pathname)) {
+    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Forbidden');
+    return;
+  }
 
   // 特殊处理：允许访问 sync-data 目录（用于周数据对比功能）
   let filePath;

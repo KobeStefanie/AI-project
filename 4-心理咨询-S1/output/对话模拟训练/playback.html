@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>训练回放 - 对话模拟训练</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        .playback-control {
+            transition: all 0.3s ease;
+        }
+        .dialogue-turn {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+        .dialogue-turn.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 顶部导航 -->
+    <nav class="bg-indigo-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <i class="fa fa-play-circle text-2xl"></i>
+                <h1 class="text-xl font-bold">训练回放</h1>
+            </div>
+            <div class="flex space-x-3">
+                <a href="records.html" class="bg-white text-indigo-600 px-4 py-2 rounded hover:bg-indigo-50 transition">
+                    <i class="fa fa-list mr-2"></i>返回列表
+                </a>
+                <a href="../index.html" class="bg-indigo-700 text-white px-4 py-2 rounded hover:bg-indigo-800 transition">
+                    <i class="fa fa-home mr-2"></i>返回主页
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- 加载提示 -->
+        <div id="loading" class="text-center py-12">
+            <i class="fa fa-circle-o-notch fa-spin text-5xl text-indigo-600 mb-4"></i>
+            <p class="text-gray-600">正在加载训练记录...</p>
+        </div>
+
+        <!-- 主内容区域（三栏布局） -->
+        <div id="main-content" class="hidden">
+            <!-- 训练信息头部 -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="grid md:grid-cols-5 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">训练日期</p>
+                        <p id="info-date" class="font-semibold text-gray-900">-</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">来访者/人设</p>
+                        <p id="info-visitor" class="font-semibold text-gray-900">-</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">流派</p>
+                        <p id="info-approach" class="font-semibold text-indigo-600">-</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">总轮数/平均分</p>
+                        <p id="info-stats" class="font-semibold text-gray-900">-</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">时长/成本</p>
+                        <p id="info-cost" class="font-semibold text-gray-900">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 三栏布局 -->
+            <div class="grid md:grid-cols-12 gap-6">
+                <!-- 左栏：人设信息（固定，复用session界面样式） -->
+                <div class="md:col-span-3">
+                    <div class="bg-white rounded-lg shadow-lg p-6 sticky top-4">
+                        <h3 class="text-lg font-bold mb-4 text-gray-800">
+                            <i class="fa fa-user-circle mr-2 text-indigo-600"></i>来访者档案
+                        </h3>
+                        <div id="persona-info" class="space-y-3 text-sm">
+                            <!-- 动态加载 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 中栏：对话回放 -->
+                <div class="md:col-span-6">
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h3 class="text-lg font-bold mb-4 text-gray-800">
+                            <i class="fa fa-comments mr-2 text-green-600"></i>对话回放
+                        </h3>
+
+                        <!-- 播放控制（固定在顶部） -->
+                        <div class="border-b pb-4 mb-4 bg-white sticky top-0 z-10">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center space-x-4">
+                                    <button id="btn-play" onclick="togglePlay()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+                                        <i id="icon-play" class="fa fa-play mr-2"></i>
+                                        <span id="text-play">播放</span>
+                                    </button>
+                                    <button onclick="resetPlayback()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">
+                                        <i class="fa fa-refresh mr-2"></i>重新播放
+                                    </button>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <label class="text-sm text-gray-600">速度:</label>
+                                    <select id="playback-speed" class="border border-gray-300 rounded px-2 py-1 text-sm" onchange="changeSpeed()">
+                                        <option value="500">0.5x</option>
+                                        <option value="1000" selected>1x</option>
+                                        <option value="1500">1.5x</option>
+                                        <option value="2000">2x</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between mb-2 text-sm text-gray-600">
+                                    <span>进度: <span id="current-turn">0</span> / <span id="total-turns">0</span></span>
+                                    <span id="progress-percent">0%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="progress-bar" class="bg-indigo-600 h-2 rounded-full transition-all" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 对话内容区域（可滚动） -->
+                        <div id="dialogue-container" class="space-y-4" style="max-height: 500px; overflow-y: auto;">
+                            <!-- 动态加载 -->
+                        </div>
+                    </div>
+
+                    <!-- 导出按钮 -->
+                    <div class="mt-4 text-center">
+                        <button onclick="exportExcel()" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
+                            <i class="fa fa-download mr-2"></i>导出Excel报告
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 右栏：督导反馈（跟随当前轮次） -->
+                <div class="md:col-span-3">
+                    <div class="bg-white rounded-lg shadow-lg p-6 sticky top-4">
+                        <h3 class="text-lg font-bold mb-4 text-gray-800">
+                            <i class="fa fa-lightbulb-o mr-2 text-yellow-600"></i>督导反馈
+                        </h3>
+                        <div id="supervision-container" class="text-sm">
+                            <p class="text-gray-500 text-center py-8">播放后显示督导反馈</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessionData = null;
+        let currentTurnIndex = 0;
+        let isPlaying = false;
+        let playbackInterval = null;
+        let playbackSpeed = 1000; // 默认1秒一轮
+
+        // 页面加载
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionId = urlParams.get('session_id');
+
+            if (!sessionId) {
+                alert('缺少session_id参数');
+                window.location.href = 'records.html';
+                return;
+            }
+
+            loadSession(sessionId);
+        };
+
+        // 加载会话数据
+        async function loadSession(sessionId) {
+            try {
+                const response = await fetch(`http://localhost:8772/api/session_detail/${sessionId}`);
+                if (!response.ok) {
+                    throw new Error('加载失败');
+                }
+
+                sessionData = await response.json();
+
+                // 隐藏加载提示，显示主内容
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+
+                // 渲染页面
+                renderHeader();
+                renderPersonaInfo();
+                renderDialogue();
+
+            } catch (error) {
+                console.error('加载会话失败:', error);
+                alert('加载训练记录失败，请返回列表页重试');
+            }
+        }
+
+        // 渲染头部信息
+        function renderHeader() {
+            const date = new Date(sessionData.created_at);
+            const dateStr = date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const duration = Math.floor(sessionData.duration_seconds / 60) + '分' + (sessionData.duration_seconds % 60) + '秒';
+            const cost = '$' + sessionData.cost_info.estimated_cost_usd.toFixed(2);
+
+            document.getElementById('info-date').textContent = dateStr;
+            document.getElementById('info-visitor').textContent = sessionData.visitor_persona.name;
+            document.getElementById('info-approach').textContent = sessionData.approach;
+            document.getElementById('info-stats').textContent = sessionData.final_report.total_turns + '轮 / ' + sessionData.final_report.overall_score.toFixed(1) + '分';
+            document.getElementById('info-cost').textContent = duration + ' / ' + cost;
+
+            document.getElementById('total-turns').textContent = sessionData.dialogue.length;
+        }
+
+        // 渲染人设信息
+        function renderPersonaInfo() {
+            const persona = sessionData.visitor_persona;
+            const html = `
+                <div class="mb-3">
+                    <p class="text-xs text-gray-500 mb-1">姓名</p>
+                    <p class="font-semibold text-gray-900">${persona.name}</p>
+                </div>
+                <div class="mb-3">
+                    <p class="text-xs text-gray-500 mb-1">年龄/性别</p>
+                    <p class="text-gray-700">${persona.age}岁 / ${persona.gender}</p>
+                </div>
+                <div class="mb-3">
+                    <p class="text-xs text-gray-500 mb-1">情绪状态</p>
+                    <p class="text-gray-700">${persona.emotional_state}</p>
+                </div>
+                <div class="mb-3">
+                    <p class="text-xs text-gray-500 mb-1">背景概要</p>
+                    <p class="text-gray-700 text-xs leading-relaxed">${persona.background_summary}</p>
+                </div>
+                <div class="mb-3">
+                    <p class="text-xs text-gray-500 mb-1">核心议题</p>
+                    <ul class="text-xs text-gray-700 list-disc list-inside space-y-1">
+                        ${persona.core_issues.map(issue => `<li>${issue}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+            document.getElementById('persona-info').innerHTML = html;
+        }
+
+        // 渲染对话（初始隐藏所有轮次）
+        function renderDialogue() {
+            const container = document.getElementById('dialogue-container');
+            container.innerHTML = '';
+
+            sessionData.dialogue.forEach((turn, index) => {
+                const isClient = turn.role === 'client';
+                const div = document.createElement('div');
+                div.className = `dialogue-turn p-4 rounded-lg ${isClient ? 'bg-blue-50 border-l-4 border-blue-500' : 'bg-green-50 border-l-4 border-green-500'}`;
+                div.dataset.index = index;
+
+                div.innerHTML = `
+                    <div class="flex items-start justify-between mb-2">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa ${isClient ? 'fa-user text-blue-600' : 'fa-user-md text-green-600'}"></i>
+                            <span class="font-semibold text-sm">${isClient ? '来访者' : '咨询师'}</span>
+                            <span class="text-xs text-gray-500">第${turn.seq}轮</span>
+                        </div>
+                        <span class="text-xs text-gray-500">${new Date(turn.timestamp).toLocaleTimeString('zh-CN')}</span>
+                    </div>
+                    <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">${turn.content}</p>
+                `;
+
+                container.appendChild(div);
+            });
+        }
+
+        // 切换播放/暂停
+        function togglePlay() {
+            if (isPlaying) {
+                pausePlayback();
+            } else {
+                startPlayback();
+            }
+        }
+
+        // 开始播放
+        function startPlayback() {
+            isPlaying = true;
+            document.getElementById('text-play').textContent = '暂停';
+            document.getElementById('icon-play').className = 'fa fa-pause mr-2';
+
+            playbackInterval = setInterval(() => {
+                if (currentTurnIndex < sessionData.dialogue.length) {
+                    showTurn(currentTurnIndex);
+                    currentTurnIndex++;
+                } else {
+                    pausePlayback();
+                }
+            }, playbackSpeed);
+        }
+
+        // 暂停播放
+        function pausePlayback() {
+            isPlaying = false;
+            document.getElementById('text-play').textContent = '播放';
+            document.getElementById('icon-play').className = 'fa fa-play mr-2';
+
+            if (playbackInterval) {
+                clearInterval(playbackInterval);
+                playbackInterval = null;
+            }
+        }
+
+        // 显示指定轮次
+        function showTurn(index) {
+            const turns = document.querySelectorAll('.dialogue-turn');
+            if (index < turns.length) {
+                const turn = turns[index];
+                turn.classList.add('active');
+
+                // 滚动到当前轮次
+                turn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                // 更新进度
+                updateProgress(index + 1);
+
+                // 显示督导反馈（如果有）
+                const turnData = sessionData.dialogue[index];
+                if (turnData.supervision_feedback) {
+                    showSupervision(turnData.supervision_feedback, turnData.seq);
+                }
+            }
+        }
+
+        // 显示督导反馈
+        function showSupervision(feedback, seq) {
+            const container = document.getElementById('supervision-container');
+
+            // 判断分数颜色
+            const scoreColor = feedback.quality_score >= 7 ? 'text-green-600' :
+                              feedback.quality_score >= 5 ? 'text-yellow-600' : 'text-red-600';
+
+            const html = `
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-3 mb-3">
+                    <p class="text-xs text-yellow-700 font-semibold mb-1">第${seq}轮督导</p>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">技术使用</p>
+                        <p class="font-semibold text-gray-900 text-sm">${feedback.technique_used}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">评分</p>
+                        <p class="font-bold text-2xl ${scoreColor}">${feedback.quality_score}/10</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">评价</p>
+                        <p class="text-gray-700 text-xs leading-relaxed">${feedback.comment}</p>
+                    </div>
+                    ${feedback.better_example ? `
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">更好的说法</p>
+                        <p class="text-green-700 text-xs leading-relaxed bg-green-50 p-2 rounded">${feedback.better_example}</p>
+                    </div>
+                    ` : ''}
+                    ${feedback.client_emotion ? `
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">来访者情绪</p>
+                        <p class="text-gray-700 text-xs leading-relaxed">${feedback.client_emotion}</p>
+                    </div>
+                    ` : ''}
+                    ${feedback.theoretical_basis ? `
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">理论依据</p>
+                        <p class="text-gray-700 text-xs leading-relaxed">${feedback.theoretical_basis}</p>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // 更新进度
+        function updateProgress(current) {
+            const total = sessionData.dialogue.length;
+            const percent = Math.round((current / total) * 100);
+
+            document.getElementById('current-turn').textContent = current;
+            document.getElementById('progress-percent').textContent = percent + '%';
+            document.getElementById('progress-bar').style.width = percent + '%';
+        }
+
+        // 重新播放
+        function resetPlayback() {
+            pausePlayback();
+            currentTurnIndex = 0;
+            updateProgress(0);
+
+            // 隐藏所有轮次
+            const turns = document.querySelectorAll('.dialogue-turn');
+            turns.forEach(turn => turn.classList.remove('active'));
+
+            // 清空督导
+            document.getElementById('supervision-container').innerHTML = '<p class="text-gray-500 text-center py-8">播放后显示督导反馈</p>';
+
+            // 滚动到顶部
+            document.getElementById('dialogue-container').scrollTop = 0;
+        }
+
+        // 改变播放速度
+        function changeSpeed() {
+            playbackSpeed = parseInt(document.getElementById('playback-speed').value);
+
+            // 如果正在播放，重新启动interval
+            if (isPlaying) {
+                pausePlayback();
+                startPlayback();
+            }
+        }
+
+        // 导出Excel
+        function exportExcel() {
+            const sessionId = sessionData.session_id;
+            window.open(`http://localhost:8772/api/export_excel/${sessionId}`, '_blank');
+        }
+    </script>
+</body>
+</html>

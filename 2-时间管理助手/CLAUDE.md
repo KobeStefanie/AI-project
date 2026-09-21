@@ -149,6 +149,110 @@ node sync-server.js         # 同步服务：HTTP 6372 + HTTPS 6444
 - Service Worker 无限重载循环 → 用 `sw-cleanup.html` 清理
 - 心跳频繁触发 `renderAll` → 检查数据变化判断逻辑
 
+## 复盘中心开发红线（🚨 不可违反）
+
+复盘中心是**桌面专用**功能，**严禁影响手机端**主应用的任何功能。这是项目的核心约束，违反即为失败。
+
+### 红线 1：平台隔离 - 绝对红线
+
+- ✅ **仅桌面端可用**：复盘中心只能在 Windows/Mac 浏览器访问
+- ❌ **严禁影响手机端**：任何改动不得影响 iPhone/安卓的时间管理助手功能
+- ⚠️ **验证机制**：每次改动后必须在手机端测试基本功能（填表、保存、同步、离线启动）
+
+### 红线 2：架构隔离 - 完全独立
+
+```
+复盘中心（review-center.html）
+  - 独立 HTML 页面
+  - 独立 JS 文件（review-engine.js, review-ui.js）
+  - 独立路由（/review-center）
+  - 只读数据，不写入 LocalStorage
+  
+时间管理助手（时间管理助手.html）
+  - 主应用，读写 LocalStorage
+  - 手机端 + 桌面端
+  - Service Worker 缓存
+```
+
+### 红线 3：数据关系 - 只读访问
+
+- 复盘中心 **只读** LocalStorage 中的时间管理数据（`tm_YYYY_wNN_*` 系列 key）
+- 复盘中心 **不修改** 任何主应用使用的 key
+- 复盘中心可以有自己的存储 key（如 `tm_longterm_goals`, `tm_review_*`），但与主应用完全隔离
+
+### 红线 4：Service Worker 隔离 - 已实现
+
+```javascript
+// service-worker.js lines 132-138 已有的隔离代码
+if (url.origin === location.origin) {
+  if (url.pathname.includes('review-center')
+      || url.pathname.includes('review-engine')
+      || url.pathname.includes('review-ui')) {
+    return; // 复盘中心完全不走 SW，不缓存，不离线
+  }
+}
+```
+
+- 复盘中心文件不会被 Service Worker 缓存
+- 复盘中心离线不可用（桌面端必然在线，无需离线支持）
+- 手机端即使误访问复盘中心也不会影响 SW 缓存
+
+### 红线 5：手机端入口隔离
+
+```css
+/* styles.css - 手机端隐藏复盘中心按钮 */
+@media (max-width: 768px) {
+  #btn-review-center { display: none !important; }
+  #btn-week-compare { display: none !important; }
+}
+```
+
+- 主应用只在**桌面端**工具栏显示"📊 复盘中心"按钮
+- 手机端通过 CSS 媒体查询完全隐藏该按钮
+- 即使手机端直接访问 URL，也只是复盘中心自己打不开，不会影响主应用
+
+### 开发流程约束（强制执行）
+
+**每次修改复盘中心代码后，必须执行以下步骤**：
+
+1. **修改前检查红线清单**：
+   - [ ] 修改是否只涉及 `review-center.html` / `review-engine.js` / `review-ui.js`？
+   - [ ] 是否保证不修改 `app.js` / `app-core.js`？
+   - [ ] 是否保证不写入 `tm_YYYY_wNN_*` 系列 LocalStorage key？
+   - [ ] 是否保证 Service Worker 不缓存复盘中心文件？
+   - [ ] 手机端是否看不到复盘中心入口？
+
+2. **桌面端测试**：复盘中心功能正常
+
+3. **手机端测试（强制执行，缺一不可）**：
+   - [ ] 填表正常
+   - [ ] 保存正常
+   - [ ] 同步正常
+   - [ ] 离线启动正常
+   - [ ] 无新增报错
+
+4. **如果手机端任何一项异常** → **立即回退代码**
+
+### 禁止行为（违反即失败）
+
+- ❌ 在 `app.js` / `app-core.js` 中添加复盘中心相关代码
+- ❌ 在 `时间管理助手.html` 中引用 `review-*.js` 文件
+- ❌ 修改 `tm_YYYY_wNN_*` 开头的 LocalStorage key 结构
+- ❌ 让 Service Worker 缓存复盘中心文件
+- ❌ 在手机端显示复盘中心入口按钮
+- ❌ 修改复盘中心代码后不测试手机端主应用
+
+### 验收标准
+
+复盘中心开发成功的标志：
+- ✅ 桌面端复盘中心功能正常
+- ✅ 手机端主应用功能完全不受影响
+- ✅ 手机端看不到复盘中心入口
+- ✅ Service Worker 缓存中没有复盘中心文件
+- ✅ 复盘中心只读数据，不写入主应用的 LocalStorage key
+
+---
+
 ## Bug 修复工作流（强制执行）
 
 每次修复 Bug 后**必须**按以下流程执行，确保修复记录完整且版本同步正确。

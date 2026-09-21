@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>检查同步配置</title>
+  <style>
+    body { font-family: monospace; padding: 20px; }
+    pre { background: #f0f0f0; padding: 15px; border-radius: 4px; }
+    .section { margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <h1>LocalStorage 同步配置检查</h1>
+  
+  <div class="section">
+    <h3>tm_sync_config</h3>
+    <pre id="syncConfig"></pre>
+  </div>
+  
+  <div class="section">
+    <h3>tm_device_id</h3>
+    <pre id="deviceId"></pre>
+  </div>
+  
+  <div class="section">
+    <h3>tm_device_token</h3>
+    <pre id="deviceToken"></pre>
+  </div>
+  
+  <div class="section">
+    <h3>所有 tm_ 开头的 keys</h3>
+    <pre id="allKeys"></pre>
+  </div>
+  
+  <script>
+    function display() {
+      const syncConfig = localStorage.getItem('tm_sync_config');
+      document.getElementById('syncConfig').textContent = syncConfig 
+        ? JSON.stringify(JSON.parse(syncConfig), null, 2) 
+        : '(不存在)';
+      
+      const deviceId = localStorage.getItem('tm_device_id');
+      document.getElementById('deviceId').textContent = deviceId || '(不存在)';
+      
+      const deviceToken = localStorage.getItem('tm_device_token');
+      document.getElementById('deviceToken').textContent = deviceToken || '(不存在)';
+      
+      const allKeys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('tm_')) {
+          allKeys.push(key);
+        }
+      }
+      document.getElementById('allKeys').textContent = allKeys.join('\n') || '(无)';
+    }
+    
+    window.addEventListener('load', display);
+  </script>
+</body>
+</html>

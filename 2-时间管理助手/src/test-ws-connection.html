@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket 连接测试</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 { color: #333; }
+    .section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .log-item {
+      padding: 8px 12px;
+      margin: 4px 0;
+      border-radius: 4px;
+      font-family: 'Consolas', monospace;
+      font-size: 13px;
+    }
+    .log-info { background: #e3f2fd; color: #1976d2; }
+    .log-success { background: #e8f5e9; color: #388e3c; }
+    .log-error { background: #ffebee; color: #d32f2f; }
+    .log-warn { background: #fff3e0; color: #f57c00; }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-primary { background: #2196f3; color: white; }
+    .btn-danger { background: #f44336; color: white; }
+    .btn-secondary { background: #757575; color: white; }
+    button:hover { opacity: 0.9; }
+    input[type="text"] {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 400px;
+      font-size: 14px;
+    }
+    .status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .status-disconnected { background: #f44336; color: white; }
+    .status-connecting { background: #ff9800; color: white; }
+    .status-connected { background: #4caf50; color: white; }
+  </style>
+</head>
+<body>
+  <h1>🔌 WebSocket 连接诊断工具</h1>
+
+  <div class="section">
+    <h3>连接配置</h3>
+    <p>
+      <label>WebSocket URL: </label><br>
+      <input type="text" id="wsUrl" value="ws://127.0.0.1:6372/events">
+    </p>
+    <p>
+      <label>状态: </label>
+      <span id="statusBadge" class="status status-disconnected">未连接</span>
+    </p>
+    <button class="btn-primary" onclick="connectWS()">连接</button>
+    <button class="btn-danger" onclick="disconnectWS()">断开</button>
+    <button class="btn-secondary" onclick="clearLog()">清空日志</button>
+  </div>
+
+  <div class="section">
+    <h3>连接日志</h3>
+    <div id="logContainer"></div>
+  </div>
+
+  <script>
+    let ws = null;
+    let reconnectTimer = null;
+
+    function log(msg, type = 'info') {
+      const div = document.createElement('div');
+      div.className = 'log-item log-' + type;
+      const timestamp = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+      div.textContent = `[${timestamp}] ${msg}`;
+      document.getElementById('logContainer').appendChild(div);
+      // 自动滚动到底部
+      div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+
+    function updateStatus(status) {
+      const badge = document.getElementById('statusBadge');
+      badge.className = 'status status-' + status;
+      const statusText = {
+        'disconnected': '未连接',
+        'connecting': '连接中...',
+        'connected': '已连接'
+      };
+      badge.textContent = statusText[status] || status;
+    }
+
+    function clearLog() {
+      document.getElementById('logContainer').innerHTML = '';
+      log('日志已清空');
+    }
+
+    function disconnectWS() {
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+        log('取消重连定时器', 'info');
+      }
+      if (ws) {
+        log('主动断开连接', 'info');
+        ws.close(1000);
+        ws = null;
+      }
+      updateStatus('disconnected');
+    }
+
+    function connectWS() {
+      const url = document.getElementById('wsUrl').value.trim();
+      if (!url) {
+        log('❌ URL 不能为空', 'error');
+        return;
+      }
+
+      disconnectWS(); // 先断开旧连接
+
+      log(`🔗 尝试连接: ${url}`, 'info');
+      updateStatus('connecting');
+
+      try {
+        ws = new WebSocket(url);
+
+        ws.onopen = function() {
+          log('✅ WebSocket 已连接！', 'success');
+          log(`   readyState = ${ws.readyState} (OPEN)`, 'info');
+          updateStatus('connected');
+        };
+
+        ws.onmessage = function(ev) {
+          log(`📩 收到消息: ${ev.data}`, 'success');
+          try {
+            const msg = JSON.parse(ev.data);
+            log(`   解析结果: ${JSON.stringify(msg)}`, 'info');
+          } catch (e) {
+            // 不是 JSON
+          }
+        };
+
+        ws.onerror = function(err) {
+          log('❌ WebSocket 错误', 'error');
+          console.error('WebSocket error:', err);
+        };
+
+        ws.onclose = function(ev) {
+          log(`❌ WebSocket 已断开 (code=${ev.code}, reason=${ev.reason || '无'})`, 'error');
+          updateStatus('disconnected');
+          ws = null;
+
+          // 自动重连（5 秒后）
+          log('⏱️ 5 秒后自动重连...', 'warn');
+          reconnectTimer = setTimeout(connectWS, 5000);
+        };
+
+      } catch (e) {
+        log(`❌ 连接失败: ${e.message}`, 'error');
+        console.error(e);
+        updateStatus('disconnected');
+      }
+    }
+
+    // 页面加载完成后自动测试
+    window.addEventListener('load', function() {
+      log('🚀 测试工具已加载');
+      log('📍 当前页面协议: ' + window.location.protocol);
+      log('📍 当前页面主机: ' + window.location.hostname + ':' + window.location.port);
+      log('2 秒后自动尝试连接...', 'info');
+      setTimeout(connectWS, 2000);
+    });
+
+    // 页面关闭时断开连接
+    window.addEventListener('beforeunload', function() {
+      disconnectWS();
+    });
+  </script>
+</body>
+</html>

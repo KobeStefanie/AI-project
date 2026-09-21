@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 def is_skill_content(text):
-    """判断是否是技能描述内容"""
+    """判断是否是技能描述内容或系统摘要"""
     if not text:
         return True
 
@@ -20,8 +20,6 @@ def is_skill_content(text):
         'Blockchain/crypto',
         'npm install',
         'pip install',
-        '```python',
-        '```bash',
         'Base directory for this skill',
         'Path: userSettings:',
         'When to Use This Skill',
@@ -30,10 +28,40 @@ def is_skill_content(text):
         '## Overview',
         'MySQL Development Assistant',
         'PostgreSQL Development',
+        'Claude Code, Anthropic',
+        'gitStatus:',
+        'Current branch:',
+        'Recent commits:',
+        'claudeMd',
+        'Codebase and user instructions',
+        # 系统摘要特征（英文）
+        'This session is being continued',
+        'Summary:',
+        'Primary Request and Intent:',
+        'Key Technical Concepts:',
+        'Files and Code Sections:',
+        'Errors and Fixes:',
+        'Problem Solving:',
+        'All User Messages:',
+        'Pending Tasks:',
+        'Current Work:',
+        'Optional Next Step:',
+        'If you need specific details from before compaction',
+        'read the full transcript at:',
+        'Continue the conversation from where it left off',
+        'Resume directly',
+        'do not acknowledge the summary',
     ]
 
     for marker in skill_markers:
         if marker in text:
+            return True
+
+    # 纯英文段落（超过80%是英文字母）
+    if len(text) > 100:
+        english_chars = sum(1 for c in text if c.isascii() and c.isalpha())
+        total_chars = sum(1 for c in text if c.isalpha())
+        if total_chars > 0 and english_chars / total_chars > 0.8:
             return True
 
     # 过短的内容
@@ -52,6 +80,9 @@ def clean_content(text):
     text = re.sub(r'<thinking>.*?</thinking>', '', text, flags=re.DOTALL)
     text = re.sub(r'<ide_opened_file>.*?</ide_opened_file>', '', text, flags=re.DOTALL)
     text = re.sub(r'<system-reminder>.*?</system-reminder>', '', text, flags=re.DOTALL)
+    text = re.sub(r'<local-command-caveat>.*?</local-command-caveat>', '', text, flags=re.DOTALL)
+    text = re.sub(r'<command-.*?>.*?</command-.*?>', '', text, flags=re.DOTALL)
+    text = re.sub(r'<local-command-stdout>.*?</local-command-stdout>', '', text, flags=re.DOTALL)
 
     # 移除 Token usage 提示
     text = re.sub(r'Token usage:.*', '', text)
@@ -63,7 +94,7 @@ def clean_content(text):
 
 def extract_conversation():
     """提取纯净对话"""
-    jsonl_file = Path("C:/Users/Administrator/.claude/projects/d--AI----12-----/53b045f0-3df9-492b-9abd-9d6562dd3e32.jsonl")
+    jsonl_file = Path("C:/Users/Administrator/.claude/projects/d--AI----12-----/0a05ff18-3a38-48eb-b32f-40cba9024ade.jsonl")
 
     if not jsonl_file.exists():
         print(f"找不到文件: {jsonl_file}")
@@ -109,10 +140,10 @@ def extract_conversation():
 
     # 生成Markdown
     output = []
-    output.append("# 织造部成本核算讨论记录")
+    output.append("# 标准成本法在混乱现场的实际应用 - 对话记录")
     output.append("")
-    output.append("**日期**：2026年8月24日")
-    output.append("**主题**：织造部成本核算体系建立")
+    output.append("**日期**：2026年8月27日-29日")
+    output.append("**主题**：标准成本法在领料混乱、纱线挂筒场景下的实际应用")
     output.append("")
     output.append("---")
     output.append("")
@@ -128,7 +159,9 @@ def extract_conversation():
         output.append("")
 
     # 保存
-    output_file = Path("D:/AI-项目/12-成本控制/织造部成本核算讨论记录-20260824-纯净版.md")
+    output_dir = Path("D:/AI-项目/12-成本控制/织造部成本核算/01-学习资料")
+    output_file = output_dir / "对话记录-标准成本法实际应用-20260827.md"
+
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write('\n'.join(output))
 

@@ -381,6 +381,9 @@ body[data-view-mode="huawei"] .kbd-hint { display: none; }
   .left-panel { display: none; }
   .review-panel { display: none; }
   .main-table { min-width: 800px; }
+  /* 复盘中心：桌面专用，手机端隐藏按钮 */
+  #btn-review-center { display: none !important; }
+  #btn-week-compare { display: none !important; }
 }
 
 /* ===== 移动端视图模式：隐藏桌面页面 ===== */

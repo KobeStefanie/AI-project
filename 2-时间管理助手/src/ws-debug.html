@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>WebSocket 调试工具</title>
+  <style>
+    body { font-family: monospace; padding: 20px; }
+    .log { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; }
+    .success { color: green; }
+    .error { color: red; }
+    button { padding: 8px 16px; margin: 5px; }
+  </style>
+</head>
+<body>
+  <h1>WebSocket 连接诊断</h1>
+
+  <div>
+    <label>WebSocket URL: <input type="text" id="wsUrl" value="ws://127.0.0.1:6372/events" style="width: 400px;"></label>
+    <button onclick="testConnect()">连接测试</button>
+    <button onclick="clearLog()">清空日志</button>
+  </div>
+
+  <div id="log"></div>
+
+  <script>
+    let ws = null;
+
+    function log(msg, className) {
+      const div = document.createElement('div');
+      div.className = 'log ' + (className || '');
+      div.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
+      document.getElementById('log').appendChild(div);
+    }
+
+    function clearLog() {
+      document.getElementById('log').innerHTML = '';
+    }
+
+    function testConnect() {
+      const url = document.getElementById('wsUrl').value;
+
+      if (ws) {
+        log('关闭旧连接...');
+        ws.close();
+        ws = null;
+      }
+
+      log('尝试连接: ' + url);
+
+      try {
+        ws = new WebSocket(url);
+
+        ws.onopen = function() {
+          log('✓ WebSocket 已连接', 'success');
+          log('readyState: ' + ws.readyState + ' (OPEN)');
+        };
+
+        ws.onmessage = function(ev) {
+          log('收到消息: ' + ev.data, 'success');
+        };
+
+        ws.onerror = function(err) {
+          log('✗ WebSocket 错误', 'error');
+          console.error('WebSocket error:', err);
+        };
+
+        ws.onclose = function(ev) {
+          log('✗ WebSocket 已断开 (code=' + ev.code + ', reason=' + ev.reason + ')', 'error');
+          ws = null;
+        };
+      } catch (e) {
+        log('✗ 连接失败: ' + e.message, 'error');
+        console.error(e);
+      }
+    }
+
+    // 自动测试
+    window.addEventListener('load', function() {
+      log('页面加载完成，2 秒后自动测试...');
+      setTimeout(testConnect, 2000);
+    });
+  </script>
+</body>
+</html>

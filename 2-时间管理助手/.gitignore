@@ -3,6 +3,9 @@ certs/
 *.pem
 *.key
 
+# AI 复盘的 API 凭证 —— 永远不入库
+ai-config.json
+
 # 工具内 node_modules
 tools/**/node_modules/
 

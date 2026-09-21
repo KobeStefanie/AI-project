@@ -1,0 +1,34 @@
+{
+  "session_id": "session_20260904_233602_f7a845",
+  "created_at": "2026-09-04T23:36:02.457533",
+  "duration_seconds": 0,
+  "approach": "IFS内在家庭系统",
+  "model_used": "claude-opus-4-8",
+  "persona_source": {
+    "type": "real_visitor",
+    "visitor_id": "V20260522003",
+    "visit_id": "visit_001"
+  },
+  "visitor_persona": {
+    "age": null,
+    "background_summary": null,
+    "core_issues": null,
+    "data_status": "无有效接访记录数据",
+    "defense_mechanisms": null,
+    "emotional_state": null,
+    "expectations": {
+      "explicit": null,
+      "implicit": null
+    },
+    "gender": null,
+    "key_phrases": null,
+    "name": null
+  },
+  "dialogue": [],
+  "final_report": null,
+  "cost_info": {
+    "total_input_tokens": 0,
+    "total_output_tokens": 0,
+    "estimated_cost_usd": 0
+  }
+}

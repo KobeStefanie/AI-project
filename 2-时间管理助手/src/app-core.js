@@ -1146,25 +1146,44 @@ var syncClient = (function() {
     var wsProto = (proto === 'https:') ? 'wss:' : 'ws:';
     var host = getEffectiveHost(cfg);
     var port = getEffectivePort(cfg);
+    if (typeof console !== 'undefined') {
+      console.log('[sync] _wsBuildUrl DEBUG:');
+      console.log('  cfg:', cfg);
+      console.log('  proto:', proto);
+      console.log('  wsProto:', wsProto);
+      console.log('  host (raw):', host);
+      console.log('  port:', port);
+    }
     if (!host) return '';
     host = host.replace(/^https?:\/\//i, '').replace(/[\/\?#].*$/, '').replace(/:\d+$/, '');
     // IPv4 字面量直接用
     if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) {
-      return wsProto + '//' + host + ':' + port + '/events';
+      var url = wsProto + '//' + host + ':' + port + '/events';
+      if (typeof console !== 'undefined') console.log('  final URL (IPv4):', url);
+      return url;
     }
     // 已带 .local 后缀直接用
     if (/\.local$/i.test(host)) {
-      return wsProto + '//' + host + ':' + port + '/events';
+      var url = wsProto + '//' + host + ':' + port + '/events';
+      if (typeof console !== 'undefined') console.log('  final URL (.local):', url);
+      return url;
     }
     // 普通主机名 → 优先 .local（mDNS）
-    return wsProto + '//' + host + '.local:' + port + '/events';
+    var url = wsProto + '//' + host + '.local:' + port + '/events';
+    if (typeof console !== 'undefined') console.log('  final URL (mDNS):', url);
+    return url;
   }
 
   function _wsConnect() {
-    if (_state.ws && (_state.ws.readyState === WebSocket.OPEN || _state.ws.readyState === WebSocket.CONNECTING)) return;
+    if (typeof console !== 'undefined') console.log('[sync] _wsConnect 被调用');
+    if (_state.ws && (_state.ws.readyState === WebSocket.OPEN || _state.ws.readyState === WebSocket.CONNECTING)) {
+      if (typeof console !== 'undefined') console.log('[sync] WebSocket 已经在连接或已连接，跳过');
+      return;
+    }
     _wsDisconnect(); // 清理旧连接
 
     var url = _wsBuildUrl();
+    if (typeof console !== 'undefined') console.log('[sync] WebSocket URL:', url);
     if (!url) {
       if (typeof console !== 'undefined') console.log('[sync] WebSocket：未配置主机，跳过');
       return;
@@ -1208,10 +1227,12 @@ var syncClient = (function() {
         _wsScheduleReconnect();
       };
 
-      ws.onerror = function() {
+      ws.onerror = function(err) {
+        if (typeof console !== 'undefined') console.error('[sync] WebSocket 错误:', err);
         // onclose 会紧随其后，在 onclose 里统一处理重连
       };
     } catch (e) {
+      if (typeof console !== 'undefined') console.error('[sync] WebSocket 连接异常:', e);
       _state.ws = null;
       _wsScheduleReconnect();
     }
@@ -1244,18 +1265,31 @@ var syncClient = (function() {
   // ----- 启动 -----
 
   function init() {
+    if (typeof console !== 'undefined') console.log('[sync] init() 被调用');
     onSaveChange(_handleSaveChange);
     var cfg = getSyncConfig();
+    if (typeof console !== 'undefined') {
+      console.log('[sync] 同步配置:', cfg);
+      console.log('[sync] cfg.enabled =', cfg.enabled);
+    }
     _setState({
       status: cfg.enabled ? 'disconnected' : 'disabled',
       pendingQueueSize: _loadPendingQueue().length
     });
 
     // v2.11.1：启用同步时启动周期性心跳检测（§22.10 修复）
-    if (cfg.enabled) _startHealthCheck();
+    if (cfg.enabled) {
+      if (typeof console !== 'undefined') console.log('[sync] 启动健康检查');
+      _startHealthCheck();
+    }
 
     // v2.12.0：启用同步时连接 WebSocket 实时推送
-    if (cfg.enabled) _wsConnect();
+    if (cfg.enabled) {
+      if (typeof console !== 'undefined') console.log('[sync] 准备连接 WebSocket');
+      _wsConnect();
+    } else {
+      if (typeof console !== 'undefined') console.log('[sync] 同步未启用，跳过 WebSocket');
+    }
 
     // v2.13.0：若无设备令牌，桌面自动注册（首次部署 + 过渡期兼容）
     if (cfg.enabled && !getDeviceToken()) {

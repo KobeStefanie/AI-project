@@ -96,44 +96,145 @@
 
 ---
 
-## 深度探索会话导出标准流程（2026年7月15日确立）
+## 深度探索会话导出标准流程（2026年9月4日更新）
 
 ### 从 Claude Code session 直接导出完整对话（推荐方式）
 
 **不要手动整理对话，直接从 JSONL 源文件提取**
 
-**标准流程**：
-1. 用户提供会话**主题关键词**（如"漂泊""金钱""愤怒"）
-2. 在 `C:/Users/Administrator/.claude/projects/` 找包含该关键词的最新 `.jsonl` 文件
-3. 解析 JSONL 提取完整对话：
-   - `type=='user'` → `message.content`（字符串）
-   - `type=='assistant'` → `message.content[]` 中 `type=='text'` 的部分（列表）
-4. 生成 markdown 对话记录
-5. 用标准脚本生成 PDF（角色区分版）
+---
 
-**Python 提取模板**：
+### 核心要求（⚠️ 极其重要）
+
+**必须保留的内容**：
+1. ✅ **来访者的原话**（一字不差）
+2. ✅ **治疗师的完整分析内容**（包括所有的拆解、猜测、框架、案例）
+3. ✅ **治疗师的markdown结构**（## 标题、### 子标题、列表、代码块等）
+4. ✅ **治疗师的理论框架展开**（IFS、拉康、荣格、存在主义等）
+
+**必须过滤的内容**：
+1. ❌ **英文系统信息**（Summary、Primary Request、Key Technical Concepts等）
+2. ❌ **工具加载信息**（"现在加载相关心理咨询技能"、"There's an issue with the selected model"等）
+3. ❌ **命令输出**（`<local-command-*>`、`<command-*>`、`<ide_opened_file>`等）
+4. ❌ **会话管理信息**（"This session is being continued"、"Continue the conversation"等）
+5. ❌ **治疗师的工作日志**（"我看到了"、"现在更新"、"完成！"等操作性描述）
+
+**参考示例**：
+- ✅ 正确格式：`02-心理探索/深度探索会话/20260711-我与金钱的关系/对话记录-20260711-我与金钱的关系.md`
+- ✅ 正确格式：`02-心理探索/深度探索会话/20260808-妈妈治愈与侄女赋权/完整对话记录-20260808.md`
+
+---
+
+### 标准流程
+
+**步骤1：定位会话起点**
+1. 用户提供会话**主题关键词**或**触发句**（如"刚才在听心理学的课程"、"钢琴时刻"）
+2. 在当前项目的 JSONL 文件中搜索触发句的行号
+3. 从该行号开始提取对话
+
+**步骤2：提取完整对话**
 ```python
 import json
 
+jsonl_file = r'C:/Users/Administrator/.claude/projects/[project_id]/[session_id].jsonl'
+output_file = r'完整对话记录-YYYYMMDD.md'
+
+# 停止关键词（遇到这些就停止提取）
+stop_keywords = [
+    'This session is being continued',
+    'Summary:',
+    '<local-command-',
+    '<command-',
+    '<ide_opened_file>',
+    '你看下这个完整的对话记录',  # 用户开始要求整理对话时停止
+]
+
+# 过滤关键词（单条消息内过滤）
+filter_keywords = [
+    'Primary Request and Intent',
+    'Key Technical Concepts',
+    'Files and Code Sections',
+    'Errors and fixes',
+    'No response requested',
+    '现在加载相关心理咨询技能',
+]
+
+def should_stop(content):
+    for kw in stop_keywords:
+        if kw in content:
+            return True
+    return False
+
+def should_filter(content):
+    for kw in filter_keywords:
+        if kw in content:
+            return True
+    return False
+
 dialogue = []
+line_num = 0
+start_line = 177  # 根据实际搜索结果调整
+
 with open(jsonl_file, encoding='utf-8') as f:
     for line in f:
+        line_num += 1
+        
+        if line_num < start_line:
+            continue
+        
         msg = json.loads(line)
         t = msg.get('type')
+        
         if t == 'user':
             content = msg.get('message', {}).get('content', '')
-            if isinstance(content, str) and content.strip():
-                dialogue.append(('用户', content.strip()))
+            if isinstance(content, str):
+                if should_stop(content):
+                    break
+                if content.strip() and not should_filter(content):
+                    dialogue.append(('来访者', content.strip()))
+        
         elif t == 'assistant':
             msg_content = msg.get('message', {}).get('content', [])
             if isinstance(msg_content, list):
                 texts = [item.get('text', '') for item in msg_content if item.get('type') == 'text']
-                content = '\n'.join(texts).strip()
-                if content:
-                    dialogue.append(('AI', content))
+                content = '\n\n'.join(texts).strip()  # 保留段落分隔
+                if should_stop(content):
+                    break
+                if content and not should_filter(content):
+                    dialogue.append(('治疗师', content))
 ```
 
-**输出格式**：
+**步骤3：生成markdown格式**
+```python
+header = f'''# 第N次深度自我探索对话记录（完整版）
+
+**日期**：YYYY年MM月DD日
+**主题**：主题名称
+**消息数量**：{len(dialogue)}
+
+---
+
+## 对话记录
+
+'''
+
+body = []
+for role, content in dialogue:
+    if role == '来访者':
+        body.append(f'## 👤 {role}\n\n{content}\n\n---\n')
+    else:
+        body.append(f'## 🤖 {role}\n\n{content}\n\n---\n')
+
+output = header + '\n'.join(body)
+
+with open(output_file, 'w', encoding='utf-8') as f:
+    f.write(output)
+```
+
+---
+
+### 输出格式标准
+
 ```markdown
 # 第N次深度自我探索对话记录（完整版）
 
@@ -143,16 +244,60 @@ with open(jsonl_file, encoding='utf-8') as f:
 
 ---
 
-## 对话开始
+## 对话记录
 
-**用户**：内容
+## 👤 来访者
+
+[来访者原话，一字不差]
 
 ---
 
-**AI**：内容
+## 🤖 治疗师
+
+[治疗师完整回复，包括所有markdown结构]
+
+---
+
+## 你说的"XXX"，准确说是：**核心洞察**
+
+### 拆解层次
+
+[保留所有的理论框架、案例分析、拆解过程]
 
 ---
 ```
+
+---
+
+### 验收标准
+
+完成对话导出后，必须检查：
+
+- [ ] 来访者的每句原话都保留了吗？
+- [ ] 治疗师的完整分析内容都保留了吗？（不是总结，是完整内容）
+- [ ] 治疗师的markdown结构（## ### 列表等）都保留了吗？
+- [ ] 所有英文系统信息都过滤掉了吗？
+- [ ] 工具加载信息都过滤掉了吗？
+- [ ] 文件末尾没有Summary或系统标签吗？
+- [ ] 文件大小合理吗？（通常80-150KB）
+- [ ] 参考示例文件确认格式一致吗？
+
+---
+
+### 禁止行为
+
+❌ **绝对禁止**：
+1. 用`[长回复，系统性拆解...]`替代治疗师的完整内容
+2. 删除治疗师的理论框架展开（如"## 心理学中的经典案例"）
+3. 删除治疗师的markdown结构（标题、列表、代码块）
+4. 保留英文的Summary、Primary Request等系统信息
+5. 保留工具加载、命令输出等技术信息
+
+✅ **正确做法**：
+1. 完整保留治疗师的每一段分析
+2. 完整保留治疗师的markdown结构
+3. 只过滤明确的系统信息和工具输出
+4. 对比参考示例文件确认格式
 
 ---
 

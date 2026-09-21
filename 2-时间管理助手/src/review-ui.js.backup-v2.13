@@ -1,0 +1,683 @@
+// UI 控制层
+class ReviewUI {
+  constructor() {
+    this.engine = window.ReviewEngine;
+    this.currentLayer = 1;
+    this.currentYear = 2026;
+    this.currentStartWeek = 33;
+    this.currentEndWeek = 36;
+    this.currentWeeks = [];
+    this.currentAnalysis = {
+      layer1: null,
+      layer2: null,
+      layer3: null,
+      layer4: null
+    };
+  }
+
+  // 初始化
+  init() {
+    this.loadGoals();
+    this.loadHistory();
+    this.initWeekSelectors();
+    this.initQuickSelect();
+  }
+
+  // 加载目标
+  loadGoals() {
+    const goals = this.engine.loadGoals();
+    const goalsList = document.getElementById('goals-list');
+    if (goals.length === 0) {
+      goalsList.innerHTML = '<li style="color: #95a5a6;">尚未设置长远目标</li>';
+    } else {
+      goalsList.innerHTML = goals.map((g, i) => `<li>${i + 1}. ${g}</li>`).join('');
+    }
+  }
+
+  // 加载历史记录
+  loadHistory() {
+    const records = this.engine.listReviewRecords();
+    const historyList = document.getElementById('history-list');
+
+    if (records.length === 0) {
+      historyList.innerHTML = '<p style="color: #95a5a6;">暂无历史复盘记录</p>';
+      return;
+    }
+
+    historyList.innerHTML = records.map(record => `
+      <div class="history-item">
+        <div class="history-item-header">
+          ${record.yearMonth} (第${record.weekRange[0]}-${record.weekRange[1]}周)
+        </div>
+        <div class="history-item-content">
+          "${record.conclusion || '无结论'}"
+        </div>
+        <div class="history-item-actions">
+          <button class="btn btn-secondary" onclick="reviewUI.viewHistory('${record.key}')">查看详情</button>
+          <button class="btn btn-secondary" onclick="reviewUI.exportHistoryPDF('${record.key}')">导出PDF</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // 初始化周选择器
+  initWeekSelectors() {
+    const startSelect = document.getElementById('start-week-select');
+    const endSelect = document.getElementById('end-week-select');
+    const yearSelect = document.getElementById('year-select');
+
+    for (let i = 1; i <= 52; i++) {
+      startSelect.innerHTML += `<option value="${i}">${i}</option>`;
+      endSelect.innerHTML += `<option value="${i}">${i}</option>`;
+    }
+
+    startSelect.value = this.currentStartWeek;
+    endSelect.value = this.currentEndWeek;
+
+    // 监听选择变化，更新日期范围显示
+    const updateDateRange = () => this.updateDateRangeDisplay();
+    yearSelect.addEventListener('change', updateDateRange);
+    startSelect.addEventListener('change', updateDateRange);
+    endSelect.addEventListener('change', updateDateRange);
+
+    // 初始显示
+    this.updateDateRangeDisplay();
+  }
+
+  // 初始化快速选择
+  initQuickSelect() {
+    const today = new Date();
+    const currentWeek = this.getISOWeek(today);
+    this.currentStartWeek = Math.max(1, currentWeek - 3);
+    this.currentEndWeek = currentWeek;
+
+    document.getElementById('start-week-select').value = this.currentStartWeek;
+    document.getElementById('end-week-select').value = this.currentEndWeek;
+  }
+
+  // 获取ISO周数
+  getISOWeek(date) {
+    const target = new Date(date.valueOf());
+    const dayNr = (date.getDay() + 6) % 7;
+    target.setDate(target.getDate() - dayNr + 3);
+    const firstThursday = target.valueOf();
+    target.setMonth(0, 1);
+    if (target.getDay() !== 4) {
+      target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+    }
+    return 1 + Math.ceil((firstThursday - target) / 604800000);
+  }
+
+  // 更新日期范围显示
+  updateDateRangeDisplay() {
+    const year = parseInt(document.getElementById('year-select').value);
+    const startWeek = parseInt(document.getElementById('start-week-select').value);
+    const endWeek = parseInt(document.getElementById('end-week-select').value);
+    const display = document.getElementById('date-range-display');
+
+    if (!startWeek || !endWeek) {
+      display.style.display = 'none';
+      return;
+    }
+
+    // 使用AppCore的getWeekDates函数获取日期范围
+    const startDates = window.AppCore.getWeekDates(year, startWeek);
+    const endDates = window.AppCore.getWeekDates(year, endWeek);
+
+    if (!startDates || !endDates || startDates.length === 0 || endDates.length === 0) {
+      display.style.display = 'none';
+      return;
+    }
+
+    // 格式化日期：月日
+    const formatDate = (dateStr) => {
+      const date = new Date(dateStr);
+      return `${date.getMonth() + 1}月${date.getDate()}日`;
+    };
+
+    const startStr = formatDate(startDates[0]);
+    const endStr = formatDate(endDates[6]);
+
+    display.innerHTML = `📅 <strong>第${startWeek}周</strong>（${startStr}）至 <strong>第${endWeek}周</strong>（${endStr}）`;
+    display.style.display = 'block';
+  }
+
+  // 开始分析
+  startAnalysis() {
+    const year = parseInt(document.getElementById('year-select').value);
+    const startWeek = parseInt(document.getElementById('start-week-select').value);
+    const endWeek = parseInt(document.getElementById('end-week-select').value);
+
+    if (startWeek > endWeek) {
+      alert('开始周不能大于结束周');
+      return;
+    }
+
+    this.currentYear = year;
+    this.currentStartWeek = startWeek;
+    this.currentEndWeek = endWeek;
+
+    // 加载数据
+    this.currentWeeks = this.engine.loadWeekRange(year, startWeek, endWeek);
+
+    // 更新标题
+    document.getElementById('analysis-title').textContent =
+      `复盘分析 - ${year}年第${startWeek}-${endWeek}周`;
+
+    // 切换到分析页面
+    document.getElementById('main-view').style.display = 'none';
+    document.getElementById('analysis-view').style.display = 'block';
+
+    // 渲染第1层
+    this.switchLayer(1);
+  }
+
+  // 切换层
+  switchLayer(layer) {
+    this.currentLayer = layer;
+
+    // 更新标签状态
+    document.querySelectorAll('.layer-tab').forEach(tab => {
+      tab.classList.toggle('active', parseInt(tab.dataset.layer) === layer);
+    });
+
+    // 隐藏所有层
+    document.querySelectorAll('.layer-content').forEach(content => {
+      content.classList.remove('active');
+    });
+
+    // 显示当前层
+    document.getElementById(`layer-${layer}`).classList.add('active');
+
+    // 渲染当前层
+    this.renderLayer(layer);
+  }
+
+  // 渲染指定层
+  renderLayer(layer) {
+    switch (layer) {
+      case 1:
+        this.renderLayer1();
+        break;
+      case 2:
+        this.renderLayer2();
+        break;
+      case 3:
+        this.renderLayer3();
+        break;
+      case 4:
+        this.renderLayer4();
+        break;
+    }
+  }
+
+  // 渲染第1层：对比镜
+  renderLayer1() {
+    const feelings = document.getElementById('feelings-textarea').value;
+    const analysis = this.engine.analyzeLayer1(this.currentWeeks, feelings);
+    this.currentAnalysis.layer1 = { feelings, analysis };
+
+    // 渲染统计数据
+    const statsList = document.getElementById('stats-list');
+    statsList.innerHTML = `
+      <li>✓ 拖延时长：${analysis.stats.totalProc} 小时</li>
+      <li>✓ 高质量工作（QW）：${analysis.stats.totalQW} 小时</li>
+      <li>✓ 休闲娱乐（GFP）：${analysis.stats.totalGFP} 小时</li>
+      <li>✓ 休息（Rest）：${analysis.stats.totalRest} 小时</li>
+      ${analysis.stats.midnightWorkCount > 0 ? `<li>✓ 凌晨工作：${analysis.stats.midnightWorkCount} 次</li>` : ''}
+      ${analysis.stats.weekendEscapeCount > 0 ? `<li>✓ 周末出去透气：${analysis.stats.weekendEscapeCount} 次</li>` : ''}
+    `;
+
+    // 渲染趋势
+    const trendDisplay = document.getElementById('trend-display');
+    const procTrendStr = analysis.trends.procTrend.map(t => `第${t.week}周: ${t.value}h`).join(' → ');
+    const qwTrendStr = analysis.trends.qwTrend.map(t => `第${t.week}周: ${t.value}h`).join(' → ');
+
+    trendDisplay.innerHTML = `
+      <p><strong>拖延时长变化：</strong>${procTrendStr}</p>
+      <p><strong>QW时长变化：</strong>${qwTrendStr}</p>
+    `;
+
+    // 渲染反差分析
+    const contrastList = document.getElementById('contrast-list');
+    if (analysis.contrast.length === 0) {
+      contrastList.innerHTML = '<li>暂无反差分析（请填写本周期感受以获得更精准的分析）</li>';
+    } else {
+      contrastList.innerHTML = analysis.contrast.map(c => `<li>${c}</li>`).join('');
+    }
+  }
+
+  // 渲染第2层：时间尺度
+  renderLayer2() {
+    const analysis = this.engine.analyzeLayer2(this.currentWeeks, this.currentYear);
+    this.currentAnalysis.layer2 = analysis;
+
+    const container = document.getElementById('layer-2-content');
+    container.innerHTML = `
+      <div class="time-scale">
+        <h3>📅 周视角（当下）</h3>
+        <div style="padding: 16px; background: #f8f9fa; border-radius: 6px; margin-bottom: 20px;">
+          <p><strong>${analysis.weekView.title}</strong></p>
+          <p>${analysis.weekView.summary}</p>
+          <p>关键词：${analysis.weekView.keyword}</p>
+        </div>
+
+        <h3>📊 月视角（拉长一步）</h3>
+        <div style="padding: 16px; background: #e8f4f8; border-radius: 6px; margin-bottom: 20px;">
+          <p><strong>${analysis.monthView.title}</strong></p>
+          <p>${analysis.monthView.summary}</p>
+          <p><strong>趋势：</strong>${analysis.monthView.trend}</p>
+          <p><strong>进展：</strong>${analysis.monthView.progress}</p>
+        </div>
+
+        <h3>📈 季度视角（更长视角）</h3>
+        <div style="padding: 16px; background: #fff3cd; border-radius: 6px; margin-bottom: 20px;">
+          <p><strong>${analysis.quarterView.title}</strong></p>
+          <p>${analysis.quarterView.summary}</p>
+          <p><strong>背景：</strong>${analysis.quarterView.context}</p>
+        </div>
+
+        <h3>🗓️ 年度视角（最长视角）</h3>
+        <div style="padding: 16px; background: #d1ecf1; border-radius: 6px;">
+          <p><strong>${analysis.yearView.title}</strong></p>
+          <p>${analysis.yearView.summary}</p>
+          <p><strong>全年主题：</strong>${analysis.yearView.context}</p>
+        </div>
+
+        <div style="margin-top: 24px; padding: 16px; background: #d4edda; border-left: 4px solid #28a745; border-radius: 4px;">
+          <p><strong>💡 视角切换的价值</strong></p>
+          <p>当你陷入"这周好糟糕"的内耗时，拉长到月度/季度/年度视角，会发现：你不是孤立的"这周糟糕"，而是在一个更长的转变过程中。</p>
+        </div>
+      </div>
+    `;
+  }
+
+  // 渲染第3层：位置地图
+  renderLayer3() {
+    const currentWeek = this.currentEndWeek;
+    const analysis = this.engine.analyzeLayer3(this.currentYear, currentWeek);
+    this.currentAnalysis.layer3 = analysis;
+
+    const container = document.getElementById('layer-3-content');
+
+    if (analysis.phases.length === 0) {
+      container.innerHTML = '<p style="color: #95a5a6;">暂无足够数据生成位置地图（需要填写周回顾关键词）</p>';
+      return;
+    }
+
+    const phasesHTML = analysis.phases.map((phase, index) => {
+      const isCurrent = currentWeek >= phase.startWeek && currentWeek <= phase.endWeek;
+      const keywords = [...new Set(phase.keywords)].filter(k => k).slice(0, 3).join('、');
+
+      return `
+        <div style="padding: 16px; background: ${isCurrent ? '#d1ecf1' : '#f8f9fa'};
+                    border-radius: 6px; margin-bottom: 12px;
+                    border-left: 4px solid ${isCurrent ? '#17a2b8' : '#6c757d'};">
+          <p><strong>${phase.title}</strong> ${isCurrent ? '🎯 你在这里' : ''}</p>
+          <p>第 ${phase.startWeek}-${phase.endWeek} 周</p>
+          ${keywords ? `<p>关键词：${keywords}</p>` : ''}
+        </div>
+        ${index < analysis.phases.length - 1 ? '<div style="text-align: center; margin: 8px 0;">↓</div>' : ''}
+      `;
+    }).join('');
+
+    container.innerHTML = `
+      <div class="journey-map">
+        <h3>🗺️ ${this.currentYear}年时间旅程</h3>
+        ${phasesHTML}
+
+        <div style="margin-top: 24px; padding: 16px; background: #d4edda; border-left: 4px solid #28a745; border-radius: 4px;">
+          <p><strong>💡 位置地图的价值</strong></p>
+          <p>当你迷茫"我到底在干什么"时，位置地图告诉你：你不是孤立的"现在"，而是在从A到B的路上，现在在C点。这提供了方向感和连贯性。</p>
+        </div>
+      </div>
+    `;
+  }
+
+  // 渲染第4层：目标对齐
+  renderLayer4() {
+    const goals = this.engine.loadGoals();
+    const analysis = this.engine.analyzeLayer4(this.currentWeeks, goals);
+    this.currentAnalysis.layer4 = analysis;
+
+    const container = document.getElementById('layer-4-content');
+
+    const goalsHTML = goals.map((goal, index) => {
+      const alignment = analysis.alignment[index];
+      const statusColor = alignment.aligned === true ? '#28a745' :
+                         alignment.aligned === false ? '#dc3545' : '#6c757d';
+      const statusIcon = alignment.aligned === true ? '✅' :
+                        alignment.aligned === false ? '⚠️' : '❓';
+
+      return `
+        <div style="padding: 16px; background: #f8f9fa; border-radius: 6px; margin-bottom: 16px;
+                    border-left: 4px solid ${statusColor};">
+          <p><strong>${statusIcon} 目标${index + 1}：${goal}</strong></p>
+          <p style="margin-top: 8px;"><strong>对齐情况：</strong>${alignment.reason}</p>
+          <p style="margin-top: 4px; color: #6c757d;"><strong>建议：</strong>${alignment.suggestion}</p>
+        </div>
+      `;
+    }).join('');
+
+    const allAligned = analysis.alignment.every(a => a.aligned === true);
+    const someAligned = analysis.alignment.some(a => a.aligned === true);
+
+    let conclusionHTML = '';
+    if (allAligned) {
+      conclusionHTML = `
+        <div style="padding: 16px; background: #d4edda; border-left: 4px solid #28a745; border-radius: 4px;">
+          <p><strong>✅ 总体结论</strong></p>
+          <p>当前轨迹与所有长远目标对齐。继续保持当前策略，定期复盘验证。</p>
+        </div>
+      `;
+    } else if (someAligned) {
+      conclusionHTML = `
+        <div style="padding: 16px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+          <p><strong>⚠️ 总体结论</strong></p>
+          <p>部分目标对齐，部分目标需要调整。建议根据上述建议优化策略。</p>
+        </div>
+      `;
+    } else {
+      conclusionHTML = `
+        <div style="padding: 16px; background: #f8d7da; border-left: 4px solid #dc3545; border-radius: 4px;">
+          <p><strong>❌ 总体结论</strong></p>
+          <p>当前轨迹与长远目标偏离较多。建议重新审视当前策略，必要时调整目标或行动。</p>
+        </div>
+      `;
+    }
+
+    container.innerHTML = `
+      <div class="goal-alignment">
+        <h3>🎯 长远目标对齐检查</h3>
+        ${goalsHTML}
+        ${conclusionHTML}
+
+        <div style="margin-top: 24px;">
+          <h3>📝 本次复盘总结（可编辑）</h3>
+          <textarea id="review-conclusion" style="width: 100%; min-height: 120px; padding: 12px;
+                    border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit;"
+                    placeholder="写下你对本次复盘的总结和思考..."></textarea>
+        </div>
+
+        <div style="margin-top: 24px; padding: 16px; background: #e7f3ff; border-left: 4px solid #2196F3; border-radius: 4px;">
+          <p><strong>💡 目标对齐的价值</strong></p>
+          <p>当你对某个选择感到纠结时（比如"拖延25小时是不是不好"），回到目标对齐检查：<strong>这个选择是否服务于长远目标？</strong>如果服务，就是合理的；如果偏离，就需要调整。</p>
+        </div>
+      </div>
+    `;
+  }
+
+  // 返回主页面
+  backToMain() {
+    document.getElementById('main-view').style.display = 'block';
+    document.getElementById('analysis-view').style.display = 'none';
+    this.loadHistory(); // 刷新历史列表
+  }
+
+  // 保存复盘
+  saveReview() {
+    const conclusion = document.getElementById('review-conclusion').value.trim();
+
+    if (!conclusion) {
+      if (!confirm('未填写复盘总结，是否继续保存？')) {
+        return;
+      }
+    }
+
+    // 计算月份（基于周范围的中间周）
+    const midWeek = Math.floor((this.currentStartWeek + this.currentEndWeek) / 2);
+    const month = Math.ceil(midWeek / 4.33);
+
+    // 保存数据
+    const reviewData = {
+      yearMonth: `${this.currentYear}年${month}月`,
+      weekRange: [this.currentStartWeek, this.currentEndWeek],
+      feelings: this.currentAnalysis.layer1?.feelings || '',
+      layer1: this.currentAnalysis.layer1,
+      layer2: this.currentAnalysis.layer2,
+      layer3: this.currentAnalysis.layer3,
+      layer4: this.currentAnalysis.layer4,
+      conclusion: conclusion || '无总结'
+    };
+
+    this.engine.saveReviewRecord(this.currentYear, month, reviewData);
+
+    alert('复盘已保存！');
+
+    // 导出PDF
+    this.exportCurrentReviewPDF(reviewData);
+  }
+
+  // 导出当前复盘为PDF
+  exportCurrentReviewPDF(reviewData) {
+    // 生成Markdown内容
+    const md = this.generateReviewMarkdown(reviewData);
+
+    // 创建临时文件并调用转换脚本
+    // 注意：这里需要后端支持，暂时只保存Markdown
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `复盘-${reviewData.yearMonth}-第${reviewData.weekRange[0]}-${reviewData.weekRange[1]}周.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    alert('Markdown文件已下载，可以手动转换为PDF');
+  }
+
+  // 生成复盘Markdown
+  generateReviewMarkdown(data) {
+    let md = `# 复盘报告 - ${data.yearMonth}\n\n`;
+    md += `**周范围**：第 ${data.weekRange[0]}-${data.weekRange[1]} 周\n\n`;
+    md += `**生成时间**：${new Date().toLocaleString('zh-CN')}\n\n`;
+    md += `---\n\n`;
+
+    // 第1层
+    md += `## 第1层：对比镜\n\n`;
+    if (data.feelings) {
+      md += `### 本周期感受\n\n${data.feelings}\n\n`;
+    }
+    md += `### 数据显示\n\n`;
+    const stats = data.layer1?.analysis?.stats;
+    if (stats) {
+      md += `- 拖延时长：${stats.totalProc} 小时\n`;
+      md += `- 高质量工作（QW）：${stats.totalQW} 小时\n`;
+      md += `- 休闲娱乐（GFP）：${stats.totalGFP} 小时\n`;
+      if (stats.midnightWorkCount > 0) {
+        md += `- 凌晨工作：${stats.midnightWorkCount} 次\n`;
+      }
+      md += `\n`;
+    }
+
+    md += `### 反差分析\n\n`;
+    const contrast = data.layer1?.analysis?.contrast || [];
+    contrast.forEach(c => {
+      md += `- ${c}\n`;
+    });
+    md += `\n---\n\n`;
+
+    // 第2层
+    md += `## 第2层：时间尺度\n\n`;
+    if (data.layer2) {
+      md += `### 月度视角\n\n`;
+      md += `${data.layer2.monthView.summary}\n\n`;
+      md += `**趋势**：${data.layer2.monthView.trend}\n\n`;
+      md += `**进展**：${data.layer2.monthView.progress}\n\n`;
+    }
+    md += `---\n\n`;
+
+    // 第4层（跳过第3层位置地图，因为内容较长）
+    md += `## 第4层：目标对齐\n\n`;
+    const alignment = data.layer4?.alignment || [];
+    alignment.forEach((a, i) => {
+      md += `### 目标${i + 1}：${a.goal}\n\n`;
+      md += `**对齐情况**：${a.reason}\n\n`;
+      md += `**建议**：${a.suggestion}\n\n`;
+    });
+    md += `---\n\n`;
+
+    // 总结
+    md += `## 复盘总结\n\n`;
+    md += `${data.conclusion}\n\n`;
+
+    return md;
+  }
+
+  // 查看历史复盘
+  viewHistory(key) {
+    const data = JSON.parse(localStorage.getItem(key));
+    alert(`历史复盘详情\n\n${data.yearMonth}\n第${data.weekRange[0]}-${data.weekRange[1]}周\n\n${data.conclusion}`);
+    // TODO: 可以扩展为完整的详情页面
+  }
+
+  // 导出历史复盘PDF
+  exportHistoryPDF(key) {
+    const data = JSON.parse(localStorage.getItem(key));
+    this.exportCurrentReviewPDF(data);
+  }
+
+  // 编辑目标
+  editGoals() {
+    const currentGoals = this.engine.loadGoals();
+    this.tempGoals = [...currentGoals]; // 临时存储
+
+    // 显示模态框
+    document.getElementById('goal-edit-modal').classList.add('show');
+
+    // 渲染目标列表
+    this.renderGoalEditList();
+  }
+
+  // 渲染目标编辑列表
+  renderGoalEditList() {
+    const container = document.getElementById('goal-edit-list');
+    container.innerHTML = this.tempGoals.map((goal, index) => `
+      <div class="goal-edit-item">
+        <input type="text" value="${goal}" data-index="${index}"
+               placeholder="输入长远目标..." />
+        <button class="btn btn-secondary" onclick="reviewUI.removeGoal(${index})">删除</button>
+      </div>
+    `).join('');
+  }
+
+  // 添加目标输入框
+  addGoalInput() {
+    this.tempGoals.push('');
+    this.renderGoalEditList();
+  }
+
+  // 删除目标
+  removeGoal(index) {
+    if (this.tempGoals.length <= 1) {
+      alert('至少保留一个目标');
+      return;
+    }
+    this.tempGoals.splice(index, 1);
+    this.renderGoalEditList();
+  }
+
+  // 保存目标
+  saveGoalsFromModal() {
+    // 收集输入框的值
+    const inputs = document.querySelectorAll('#goal-edit-list input');
+    const goals = Array.from(inputs)
+      .map(input => input.value.trim())
+      .filter(g => g !== '');
+
+    if (goals.length === 0) {
+      alert('至少设置一个目标');
+      return;
+    }
+
+    this.engine.saveGoals(goals);
+    this.loadGoals();
+    this.closeGoalModal();
+    alert('目标已保存');
+  }
+
+  // 关闭模态框
+  closeGoalModal() {
+    document.getElementById('goal-edit-modal').classList.remove('show');
+  }
+}
+
+// 全局函数（供HTML调用）
+function quickSelectThisMonth() {
+  const today = new Date();
+  const currentWeek = reviewUI.getISOWeek(today);
+  const month = today.getMonth() + 1;
+  const weekInMonth = Math.floor((today.getDate() - 1) / 7);
+
+  // 简化：当前周往前推4周
+  const start = Math.max(1, currentWeek - 3);
+  const end = currentWeek;
+
+  document.getElementById('start-week-select').value = start;
+  document.getElementById('end-week-select').value = end;
+}
+
+function quickSelectLastMonth() {
+  const today = new Date();
+  const currentWeek = reviewUI.getISOWeek(today);
+
+  // 简化：当前周往前推5-8周
+  const start = Math.max(1, currentWeek - 7);
+  const end = Math.max(1, currentWeek - 4);
+
+  document.getElementById('start-week-select').value = start;
+  document.getElementById('end-week-select').value = end;
+}
+
+function quickSelectLast4Weeks() {
+  const today = new Date();
+  const currentWeek = reviewUI.getISOWeek(today);
+
+  const start = Math.max(1, currentWeek - 3);
+  const end = currentWeek;
+
+  document.getElementById('start-week-select').value = start;
+  document.getElementById('end-week-select').value = end;
+}
+
+function startAnalysis() {
+  reviewUI.startAnalysis();
+}
+
+function switchLayer(layer) {
+  reviewUI.switchLayer(layer);
+}
+
+function refreshLayer1() {
+  reviewUI.renderLayer1();
+}
+
+function backToMain() {
+  reviewUI.backToMain();
+}
+
+function saveReview() {
+  reviewUI.saveReview();
+}
+
+function editGoals() {
+  reviewUI.editGoals();
+}
+
+function closeGoalModal() {
+  reviewUI.closeGoalModal();
+}
+
+function addGoalInput() {
+  reviewUI.addGoalInput();
+}
+
+function saveGoals() {
+  reviewUI.saveGoalsFromModal();
+}
+
+// 初始化
+const reviewUI = new ReviewUI();
+window.addEventListener('DOMContentLoaded', () => {
+  reviewUI.init();
+});

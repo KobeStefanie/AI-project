@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>对话模拟训练 - Phase 4</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- 顶部导航 -->
+    <nav class="bg-indigo-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <i class="fa fa-comments text-2xl"></i>
+                <h1 class="text-xl font-bold">对话模拟训练系统</h1>
+            </div>
+            <div class="flex space-x-3">
+                <a href="records.html" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition">
+                    <i class="fa fa-history mr-2"></i>训练记录
+                </a>
+                <a href="../index.html" class="bg-white text-indigo-600 px-4 py-2 rounded hover:bg-indigo-50 transition">
+                    <i class="fa fa-home mr-2"></i>返回主页
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- 服务器状态检查 -->
+        <div id="server-status" class="mb-6 p-4 rounded-lg hidden">
+            <div class="flex items-center">
+                <i class="fa fa-circle-o-notch fa-spin mr-3 text-xl"></i>
+                <span>检查服务器状态...</span>
+            </div>
+        </div>
+
+        <!-- 主标题 -->
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-3">选择训练方式</h2>
+            <p class="text-gray-600">基于真实案例或虚拟人设，开始对话模拟训练</p>
+        </div>
+
+        <!-- 三个选择卡片 -->
+        <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <!-- 卡片1：基于真实来访者 -->
+            <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition cursor-pointer" onclick="showRealVisitors()">
+                <div class="text-center mb-4">
+                    <i class="fa fa-user text-5xl text-blue-500"></i>
+                </div>
+                <h3 class="text-xl font-bold text-center mb-3">基于真实来访者</h3>
+                <p class="text-gray-600 text-sm mb-4">
+                    从已有的来访者档案中选择，AI将扮演该来访者，保持人设一致性进行对话训练。
+                </p>
+                <div class="text-center">
+                    <button class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition w-full">
+                        选择真实案例
+                    </button>
+                </div>
+            </div>
+
+            <!-- 卡片2：虚拟人设库 -->
+            <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition cursor-pointer" onclick="showPersonaLibrary()">
+                <div class="text-center mb-4">
+                    <i class="fa fa-users text-5xl text-green-500"></i>
+                </div>
+                <h3 class="text-xl font-bold text-center mb-3">虚拟人设库</h3>
+                <p class="text-gray-600 text-sm mb-4">
+                    从已保存的虚拟人设中选择，针对特定课题（如危机干预、青少年问题）进行专项训练。
+                </p>
+                <div class="text-center">
+                    <button class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition w-full">
+                        浏览人设库
+                    </button>
+                </div>
+            </div>
+
+            <!-- 卡片3：创建新人设 -->
+            <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition cursor-pointer" onclick="showCreatePersona()">
+                <div class="text-center mb-4">
+                    <i class="fa fa-plus-circle text-5xl text-purple-500"></i>
+                </div>
+                <h3 class="text-xl font-bold text-center mb-3">创建新虚拟人设</h3>
+                <p class="text-gray-600 text-sm mb-4">
+                    手动创建一个全新的虚拟来访者，自定义背景、问题、情绪状态等，保存到人设库后可复用。
+                </p>
+                <div class="text-center">
+                    <button class="bg-purple-500 text-white px-6 py-2 rounded hover:bg-purple-600 transition w-full">
+                        创建新人设
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 内容区域（动态切换） -->
+        <div id="content-area" class="bg-white rounded-lg shadow-lg p-8">
+            <div class="text-center text-gray-500">
+                <i class="fa fa-arrow-up text-3xl mb-3"></i>
+                <p>请从上方选择一种训练方式开始</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 检查服务器状态
+        async function checkServerStatus() {
+            const statusDiv = document.getElementById('server-status');
+            statusDiv.classList.remove('hidden');
+            statusDiv.classList.add('bg-yellow-100', 'text-yellow-800');
+
+            try {
+                const response = await fetch('http://localhost:8772/health');
+                const data = await response.json();
+
+                if (data.status === 'healthy') {
+                    statusDiv.classList.remove('bg-yellow-100', 'text-yellow-800');
+                    statusDiv.classList.add('bg-green-100', 'text-green-800');
+                    statusDiv.innerHTML = '<i class="fa fa-check-circle mr-3 text-xl"></i><span>服务器运行正常</span>';
+                    setTimeout(() => statusDiv.classList.add('hidden'), 3000);
+                } else {
+                    throw new Error('服务器状态异常');
+                }
+            } catch (error) {
+                statusDiv.classList.remove('bg-yellow-100', 'text-yellow-800');
+                statusDiv.classList.add('bg-red-100', 'text-red-800');
+                statusDiv.innerHTML = `
+                    <div>
+                        <i class="fa fa-exclamation-triangle mr-3 text-xl"></i>
+                        <span>服务器未启动！请运行 start_all_servers.bat</span>
+                    </div>
+                `;
+            }
+        }
+
+        // 显示真实来访者列表
+        async function showRealVisitors() {
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = '<div class="text-center"><i class="fa fa-spinner fa-spin text-3xl text-gray-400"></i><p class="mt-3 text-gray-600">加载来访者列表...</p></div>';
+
+            try {
+                const response = await fetch('http://localhost:8770/api/visitors');
+                const data = await response.json();
+
+                if (data.visitors && data.visitors.length > 0) {
+                    // 过滤掉空档案：只显示有姓名且有来访记录的
+                    const validVisitors = data.visitors.filter(v => {
+                        return v.name && v.name.trim() !== '' &&
+                               v.name !== v.visitor_id && // 排除姓名=ID的
+                               (v.visit_count > 0 || v.age || v.gender); // 有来访记录或有基本信息
+                    });
+
+                    if (validVisitors.length === 0) {
+                        contentArea.innerHTML = '<div class="text-center text-gray-500"><p>暂无可用的来访者档案</p></div>';
+                        return;
+                    }
+
+                    let html = `
+                        <h3 class="text-2xl font-bold mb-6">选择真实来访者</h3>
+                        <div class="grid md:grid-cols-2 gap-4">
+                    `;
+
+                    validVisitors.forEach(visitor => {
+                        html += `
+                            <div class="border rounded-lg p-4 hover:shadow-md transition cursor-pointer"
+                                 onclick="selectRealVisitor('${visitor.visitor_id}', '${visitor.name}')">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h4 class="font-bold text-lg">${visitor.name}</h4>
+                                    <span class="text-sm text-gray-500">${visitor.visit_count || 0}次来访</span>
+                                </div>
+                                <div class="text-sm text-gray-600">
+                                    <p>年龄: ${visitor.age || '未知'} | 性别: ${visitor.gender || '未知'}</p>
+                                    <p class="mt-1 text-gray-500">ID: ${visitor.visitor_id}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    html += '</div>';
+                    contentArea.innerHTML = html;
+                } else {
+                    contentArea.innerHTML = '<div class="text-center text-gray-500"><p>暂无来访者档案</p></div>';
+                }
+            } catch (error) {
+                contentArea.innerHTML = `<div class="text-center text-red-600"><i class="fa fa-exclamation-triangle mr-2"></i>加载失败：${error.message}</div>`;
+            }
+        }
+
+        // 选择真实来访者（跳转到访谈列表）
+        async function selectRealVisitor(visitorId, visitorName) {
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = '<div class="text-center"><i class="fa fa-spinner fa-spin text-3xl text-gray-400"></i><p class="mt-3 text-gray-600">加载访谈记录...</p></div>';
+
+            // 这里需要读取该visitor的visits列表，先简化为直接选择visit_001
+            // 后续可优化为显示访谈列表让用户选择
+
+            try {
+                const response = await fetch('http://localhost:8772/api/generate_persona_from_visit', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        visitor_id: visitorId,
+                        visit_id: 'visit_001'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.persona) {
+                    // 显示流派选择
+                    showApproachSelection(data.persona, {
+                        type: 'real_visitor',
+                        visitor_id: visitorId,
+                        visit_id: 'visit_001'
+                    });
+                } else {
+                    contentArea.innerHTML = `<div class="text-center text-red-600"><i class="fa fa-exclamation-triangle mr-2"></i>生成人设失败：${data.error}</div>`;
+                }
+            } catch (error) {
+                contentArea.innerHTML = `<div class="text-center text-red-600"><i class="fa fa-exclamation-triangle mr-2"></i>请求失败：${error.message}</div>`;
+            }
+        }
+
+        // 显示虚拟人设库
+        async function showPersonaLibrary() {
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = '<div class="text-center"><i class="fa fa-spinner fa-spin text-3xl text-gray-400"></i><p class="mt-3 text-gray-600">加载人设库...</p></div>';
+
+            try {
+                const response = await fetch('http://localhost:8772/api/list_personas');
+                const data = await response.json();
+
+                if (data.personas && data.personas.length > 0) {
+                    let html = `
+                        <h3 class="text-2xl font-bold mb-6">虚拟人设库</h3>
+                        <div class="grid md:grid-cols-2 gap-4">
+                    `;
+
+                    data.personas.forEach(persona => {
+                        const tags = persona.tags ? persona.tags.map(t => `<span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">${t}</span>`).join(' ') : '';
+                        html += `
+                            <div class="border rounded-lg p-4 hover:shadow-md transition cursor-pointer"
+                                 onclick="selectPersona('${persona.persona_id}')">
+                                <h4 class="font-bold text-lg mb-2">${persona.name}</h4>
+                                <div class="mb-2">${tags}</div>
+                                <p class="text-sm text-gray-500">创建于: ${persona.created_at ? new Date(persona.created_at).toLocaleDateString() : '未知'}</p>
+                            </div>
+                        `;
+                    });
+
+                    html += '</div>';
+                    contentArea.innerHTML = html;
+                } else {
+                    contentArea.innerHTML = '<div class="text-center text-gray-500"><p>人设库为空，请先创建虚拟人设</p></div>';
+                }
+            } catch (error) {
+                contentArea.innerHTML = `<div class="text-center text-red-600"><i class="fa fa-exclamation-triangle mr-2"></i>加载失败：${error.message}</div>`;
+            }
+        }
+
+        // 选择虚拟人设
+        async function selectPersona(personaId) {
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = '<div class="text-center"><i class="fa fa-spinner fa-spin text-3xl text-gray-400"></i><p class="mt-3 text-gray-600">加载人设...</p></div>';
+
+            // 加载完整人设数据并显示流派选择（此处简化，实际需要先GET获取完整数据）
+            // 暂时直接进入流派选择
+            showApproachSelection({name: '虚拟人设'}, {type: 'virtual_custom', persona_file: personaId});
+        }
+
+        // 显示创建新人设表单
+        function showCreatePersona() {
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = `
+                <h3 class="text-2xl font-bold mb-6">创建新虚拟人设</h3>
+                <p class="text-gray-600 mb-6">请填写以下信息创建一个虚拟来访者，保存后可在人设库中复用</p>
+                <p class="text-yellow-700 bg-yellow-50 p-3 rounded mb-6">
+                    <i class="fa fa-lightbulb-o mr-2"></i>
+                    <strong>提示：</strong>人设创建功能正在完善中。当前版本请先使用"基于真实来访者"或等待下个版本。
+                </p>
+                <div class="text-center">
+                    <button onclick="showRealVisitors()" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                        返回选择真实来访者
+                    </button>
+                </div>
+            `;
+        }
+
+        // 显示流派选择
+        function showApproachSelection(persona, personaSource) {
+            const contentArea = document.getElementById('content-area');
+            const approaches = [
+                {name: '存在主义', icon: 'fa-lightbulb-o', color: 'blue'},
+                {name: '精神动力学', icon: 'fa-brain', color: 'purple'},
+                {name: 'CBT认知行为', icon: 'fa-cogs', color: 'green'},
+                {name: '人本主义', icon: 'fa-heart', color: 'red'},
+                {name: 'IFS内在家庭系统', icon: 'fa-users', color: 'yellow'},
+                {name: '大观危机干预', icon: 'fa-shield', color: 'orange'},
+                {name: '拉康精神分析', icon: 'fa-language', color: 'indigo'},
+                {name: '荣格分析心理学', icon: 'fa-yin-yang', color: 'pink'}
+            ];
+
+            let html = `
+                <h3 class="text-2xl font-bold mb-4">选择督导流派</h3>
+                <p class="text-gray-600 mb-6">将基于 <strong>${persona.name}</strong> 进行对话训练，请选择督导流派：</p>
+                <div class="grid md:grid-cols-4 gap-4">
+            `;
+
+            approaches.forEach(approach => {
+                html += `
+                    <div class="border border-${approach.color}-300 rounded-lg p-4 hover:bg-${approach.color}-50 transition cursor-pointer text-center"
+                         onclick='startSession(${JSON.stringify(persona)}, "${approach.name}", ${JSON.stringify(personaSource)})'>
+                        <i class="fa ${approach.icon} text-3xl text-${approach.color}-600 mb-2"></i>
+                        <p class="font-bold">${approach.name}</p>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            contentArea.innerHTML = html;
+        }
+
+        // 启动训练会话
+        async function startSession(persona, approach, personaSource) {
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = '<div class="text-center"><i class="fa fa-spinner fa-spin text-3xl text-gray-400"></i><p class="mt-3 text-gray-600">启动训练会话...</p></div>';
+
+            try {
+                const response = await fetch('http://localhost:8772/api/start_session', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        persona: persona,
+                        approach: approach,
+                        persona_source: personaSource
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.session_id) {
+                    // 跳转到对话界面
+                    window.location.href = `session.html?session_id=${data.session_id}`;
+                } else {
+                    contentArea.innerHTML = `<div class="text-center text-red-600"><i class="fa fa-exclamation-triangle mr-2"></i>启动失败：${data.error}</div>`;
+                }
+            } catch (error) {
+                contentArea.innerHTML = `<div class="text-center text-red-600"><i class="fa fa-exclamation-triangle mr-2"></i>请求失败：${error.message}</div>`;
+            }
+        }
+
+        // 页面加载时检查服务器
+        window.onload = checkServerStatus;
+    </script>
+</body>
+</html>

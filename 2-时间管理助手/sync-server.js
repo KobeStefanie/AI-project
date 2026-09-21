@@ -317,6 +317,9 @@ function mergeChanges(existing, changes) {
 // -------- HTTP --------
 
 function json(res, status, data) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Device-Token');
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(data, null, 2));
 }
@@ -353,6 +356,8 @@ function setCors(res) {
 
 async function route(req, res, meta) {
   setCors(res);
+
+  // OPTIONS 预检请求直接通过，不走鉴权
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
     res.end();
@@ -363,6 +368,7 @@ async function route(req, res, meta) {
   const pathname = parsed.pathname;
 
   // v2.13.0：鉴权（除公开端点外）
+  // 注意：OPTIONS 已在上方提前返回，不走此分支
   if (!authenticate(req, meta)) {
     return json(res, 401, { error: 'unauthorized', hint: '请通过扫码绑定设备获取令牌' });
   }

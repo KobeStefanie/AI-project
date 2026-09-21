@@ -520,8 +520,8 @@ class ReviewUI {
       // 提取关键词（在报告最后一节，反引号包裹）
       this.extractKeywords();
 
-      // 渲染 markdown 报告 + 折叠的原始数据
-      this.renderReport();
+      // 渲染 markdown 报告 + 周期数据对比（异步加载）
+      await this.renderReport();
     } catch (e) {
       document.getElementById('report-content').innerHTML = `<p style="color:#e74c3c;">❌ 报告生成失败：${e.message}</p>`;
     }
@@ -537,7 +537,7 @@ class ReviewUI {
     }
   }
 
-  renderReport() {
+  async renderReport() {
     const container = document.getElementById('report-content');
 
     // 简易 markdown 渲染（足够应对 AI 输出的结构化报告）
@@ -579,59 +579,182 @@ class ReviewUI {
 
     container.innerHTML = html;
 
-    // 追加折叠的原始数据
-    this.appendDataDetails(container);
+    // 追加周期数据对比（异步加载）
+    await this.appendDataDetails(container);
   }
 
-  appendDataDetails(container) {
-    const s = this.dataContext.stats;
-    const details = document.createElement('details');
-    details.innerHTML = `
-      <summary>📊 原始数据（点击展开）</summary>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>指标</th>
-            <th>数值</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>高质量工作 (QW)</td><td>${s.totalQW} 小时</td></tr>
-          <tr><td>休闲娱乐 (GFP)</td><td>${s.totalGFP} 小时</td></tr>
-          <tr><td>拖延 (Proc)</td><td>${s.totalProc} 小时</td></tr>
-          <tr><td>休息 (Rest)</td><td>${s.totalRest} 小时</td></tr>
-          <tr><td>无意义工作 (MW)</td><td>${s.totalMW} 小时</td></tr>
-          <tr><td>凌晨工作次数</td><td>${s.midnightWorkCount}</td></tr>
-          <tr><td>周末外出次数</td><td>${s.weekendEscapeCount}</td></tr>
-        </tbody>
-      </table>
-      <h4 style="margin-top: 16px;">逐周数据</h4>
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>周</th>
-            <th>QW</th>
-            <th>GFP</th>
-            <th>拖延</th>
-            <th>休息</th>
-            <th>关键词</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${this.dataContext.weekDetails.map(w => `
-            <tr>
-              <td>第 ${w.week} 周</td>
-              <td>${w.qw}h</td>
-              <td>${w.gfp}h</td>
-              <td>${w.proc}h</td>
-              <td>${w.rest}h</td>
-              <td>${w.keyword || '-'}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `;
-    container.appendChild(details);
+  async appendDataDetails(container) {
+    try {
+      console.log('[appendDataDetails] 开始添加数据对比');
+
+      // 添加周期数据对比部分
+      const detailsSection = document.createElement('div');
+      detailsSection.style.marginTop = '40px';
+      detailsSection.innerHTML = '<h2 style="color: #2c3e50; margin-bottom: 20px;">📊 周期数据对比</h2>';
+
+      // 加载每周完整数据用于对比
+      const year = this.currentYear;
+      const startWeek = this.currentStartWeek;
+      const endWeek = this.currentEndWeek;
+
+      console.log('[appendDataDetails] 周期范围:', { year, startWeek, endWeek });
+
+      const weeksData = [];
+      for (let week = startWeek; week <= endWeek; week++) {
+        const weekData = await this.loadWeekData(year, week);
+        weeksData.push({ year, week, ...weekData });
+      }
+
+      console.log('[appendDataDetails] 加载的周数据:', weeksData.length);
+
+      // 生成对比表格（复用 renderCompareTable 的 HTML 生成逻辑，但不需要交互）
+      const compareHtml = this.generateCompareTableHTML(weeksData);
+      console.log('[appendDataDetails] 生成的表格 HTML 长度:', compareHtml.length);
+
+      detailsSection.innerHTML += compareHtml;
+
+      container.appendChild(detailsSection);
+      console.log('[appendDataDetails] 数据对比表格已添加到容器');
+    } catch (e) {
+      console.error('[appendDataDetails] 错误:', e);
+      const errorDiv = document.createElement('div');
+      errorDiv.innerHTML = `<p style="color: #e74c3c;">❌ 数据对比加载失败：${e.message}</p>`;
+      container.appendChild(errorDiv);
+    }
+  }
+
+  generateCompareTableHTML(weeksData) {
+    let html = '<div style="overflow-x: auto; margin-bottom: 20px;"><table style="width: 100%; border-collapse: collapse; font-size: 13px;">';
+
+    // 表头
+    html += '<thead><tr style="background: #1e293b; color: #e2e8f0;">';
+    html += '<th style="padding: 12px; text-align: left; border: 1px solid #334155;">项目</th>';
+
+    weeksData.forEach((wd, i) => {
+      const label = String.fromCharCode(65 + i); // A, B, C, D...
+      const dateStr = `${wd.dates[0].getUTCMonth() + 1}/${wd.dates[0].getUTCDate()}-${wd.dates[6].getUTCMonth() + 1}/${wd.dates[6].getUTCDate()}`;
+      html += `<th style="padding: 12px; text-align: center; border: 1px solid #334155;">${label}<br>${wd.year}年第${wd.week}周<br>${dateStr}</th>`;
+    });
+
+    html += '</tr></thead><tbody>';
+
+    let rowCount = 0;
+    const rows = [
+      { label: 'QW 时间', key: 'qw', format: v => v ? v.toFixed(1) + 'h' : '0h', hasDetail: true },
+      { label: 'GFP 时间', key: 'gfp', format: v => v ? v.toFixed(1) + 'h' : '0h', hasDetail: true },
+      { label: '拖延时间', key: 'proc', format: v => v ? v.toFixed(1) + 'h' : '0h', hasDetail: true },
+      { label: '休息时间', key: 'rest', format: v => v ? v.toFixed(1) + 'h' : '0h', hasDetail: false },
+      { label: 'MW 时间', key: 'mw', format: v => v ? v.toFixed(1) + 'h' : '0h', hasDetail: false }
+    ];
+
+    rows.forEach((row, rowIndex) => {
+      const isEven = rowCount % 2 === 0;
+      const rowBg = isEven ? 'white' : '#e0f2fe';
+      rowCount++;
+
+      html += '<tr>';
+      html += `<td style="padding: 10px; border: 1px solid #334155; background: #1e293b; color: #e2e8f0; font-weight: 500;">${row.label}</td>`;
+
+      const values = weeksData.map(wd => {
+        if (!wd.hasData) return null;
+        return wd.stats.totals[row.key] || 0;
+      });
+
+      const maxValue = Math.max(...values.filter(v => v !== null && v > 0));
+
+      values.forEach((v, i) => {
+        const color = weeksData[i].hasData ? '#1e293b' : '#94a3b8';
+        const content = v !== null ? row.format(v) : '-';
+        const isBig = v !== null && maxValue > 0 && v >= maxValue * 0.8;
+        const fontSize = isBig ? '16px' : '13px';
+        const fontWeight = isBig ? 'bold' : 'normal';
+        html += `<td style="padding: 10px; border: 1px solid #334155; text-align: center; color: ${color}; background: ${rowBg}; font-size: ${fontSize}; font-weight: ${fontWeight};">${content}</td>`;
+      });
+
+      html += '</tr>';
+
+      // 明细行（展开显示）
+      if (row.hasDetail) {
+        html += this.generateDetailRowsHTML(weeksData, row, rowCount);
+      }
+    });
+
+    html += '</tbody></table></div>';
+    return html;
+  }
+
+  generateDetailRowsHTML(weeksData, parentRow, rowCount) {
+    let html = '';
+    const firstValidWeek = weeksData.find(wd => wd.hasData);
+    if (!firstValidWeek) return html;
+
+    const configKey = `tm_${firstValidWeek.year}_w${firstValidWeek.week}_config`;
+    let config = {};
+    try {
+      const configStr = localStorage.getItem(configKey);
+      if (configStr) config = JSON.parse(configStr);
+    } catch (e) {
+      console.error('读取配置失败:', e);
+    }
+
+    let names = [];
+    let detailKey = '';
+    let codePrefix = '';
+    if (parentRow.key === 'qw') {
+      names = config.qwNames || [];
+      detailKey = 'qwDetail';
+      codePrefix = '1';
+    } else if (parentRow.key === 'gfp') {
+      names = config.gfpNames || [];
+      detailKey = 'gfpDetail';
+      codePrefix = '2';
+    } else if (parentRow.key === 'proc') {
+      names = config.procNames || [];
+      detailKey = 'procDetail';
+      codePrefix = '3';
+    }
+
+    names.forEach((name, idx) => {
+      const hasAnyData = weeksData.some(wd => {
+        if (!wd.hasData || !wd.stats.totals[detailKey]) return false;
+        const arr = wd.stats.totals[detailKey];
+        return Array.isArray(arr) && arr[idx] > 0;
+      });
+
+      if (!hasAnyData) return;
+
+      const isEven = idx % 2 === 0;
+      const rowBg = isEven ? 'white' : '#e0f2fe';
+      const codeLabel = `${codePrefix}.${idx + 1}`;
+
+      html += '<tr>';
+      html += `<td style="padding: 8px 10px 8px 30px; border: 1px solid #334155; background: ${rowBg}; color: #475569; font-size: 14px;">└ ${codeLabel}-${name}</td>`;
+
+      const values = weeksData.map(wd => {
+        if (!wd.hasData || !wd.stats.totals[detailKey]) return null;
+        const arr = wd.stats.totals[detailKey];
+        if (!Array.isArray(arr) || idx >= arr.length) return null;
+        return arr[idx] * 0.5;
+      });
+
+      const maxValue = Math.max(...values.filter(v => v !== null && v > 0));
+
+      values.forEach((v, i) => {
+        if (v === null || v === 0) {
+          html += `<td style="padding: 8px 10px; border: 1px solid #334155; text-align: center; color: #94a3b8; background: ${rowBg}; font-size: 14px;">-</td>`;
+        } else {
+          const content = v.toFixed(1) + 'h';
+          const isBig = maxValue > 0 && v >= maxValue * 0.8;
+          const fontSize = isBig ? '16px' : '14px';
+          const fontWeight = isBig ? 'bold' : 'normal';
+          html += `<td style="padding: 8px 10px; border: 1px solid #334155; text-align: center; color: #475569; background: ${rowBg}; font-size: ${fontSize}; font-weight: ${fontWeight};">${content}</td>`;
+        }
+      });
+
+      html += '</tr>';
+    });
+
+    return html;
   }
 
   // ===== 保存复盘 =====
@@ -1117,6 +1240,33 @@ function sendMessage() { reviewUI.sendMessage(); }
 function finishChatAndGenerateReport() { reviewUI.finishChatAndGenerateReport(); }
 function saveCurrentReview() { reviewUI.saveCurrentReview(); }
 function backToStart() { reviewUI.backToStart(); }
+
+// 导出 PDF 功能
+function exportReportToPDF() {
+  // 获取报告内容
+  const reportContent = document.getElementById('report-content');
+  if (!reportContent || !reportContent.innerHTML.trim()) {
+    alert('没有可导出的报告内容');
+    return;
+  }
+
+  // 生成文件名（使用当前周期信息）
+  const year = reviewUI.currentYear || new Date().getFullYear();
+  const startWeek = reviewUI.currentStartWeek || '';
+  const endWeek = reviewUI.currentEndWeek || '';
+  const fileName = `复盘报告_${year}年第${startWeek}-${endWeek}周.pdf`;
+
+  // 设置打印标题
+  document.title = fileName.replace('.pdf', '');
+
+  // 触发浏览器打印对话框
+  window.print();
+
+  // 恢复原标题
+  setTimeout(() => {
+    document.title = 'AI 复盘中心 - 时间管理助手';
+  }, 500);
+}
 
 // Enter 键发送消息
 document.addEventListener('DOMContentLoaded', () => {

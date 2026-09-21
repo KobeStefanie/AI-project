@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据恢复工具</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 { color: #333; }
+    .section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .week-item {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #fafafa;
+    }
+    .week-item:hover {
+      background: #f0f0f0;
+    }
+    .week-checkbox {
+      margin-right: 12px;
+      transform: scale(1.2);
+    }
+    .week-label {
+      flex: 1;
+      font-size: 14px;
+    }
+    .week-status {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .status-exists {
+      background: #4caf50;
+      color: white;
+    }
+    .status-missing {
+      background: #ff9800;
+      color: white;
+    }
+    .status-restored {
+      background: #2196f3;
+      color: white;
+    }
+    button {
+      padding: 12px 24px;
+      margin: 5px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .btn-primary {
+      background: #2196f3;
+      color: white;
+    }
+    .btn-success {
+      background: #4caf50;
+      color: white;
+    }
+    .btn-danger {
+      background: #f44336;
+      color: white;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .log {
+      background: #f0f0f0;
+      padding: 12px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .log-item {
+      margin: 4px 0;
+    }
+    .log-success { color: #4caf50; }
+    .log-error { color: #f44336; }
+    .log-info { color: #2196f3; }
+    .controls {
+      margin: 20px 0;
+    }
+    .select-all-btn {
+      background: #757575;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>📦 数据恢复工具</h1>
+
+  <div class="section">
+    <h3>说明</h3>
+    <p>此工具将从同步服务器恢复周数据到浏览器 LocalStorage。</p>
+    <p><strong>注意：</strong>如果本地已有数据，恢复操作会覆盖本地版本。</p>
+  </div>
+
+  <div class="section">
+    <h3>可用的周数据</h3>
+    <div class="controls">
+      <button class="select-all-btn" onclick="selectAll()">全选</button>
+      <button class="select-all-btn" onclick="selectNone()">全不选</button>
+      <button class="select-all-btn" onclick="selectMissing()">仅选缺失的</button>
+    </div>
+    <div id="weekList">加载中...</div>
+  </div>
+
+  <div class="section">
+    <button class="btn-primary" onclick="checkLocalData()" id="checkBtn">检查本地数据</button>
+    <button class="btn-success" onclick="restoreSelected()" id="restoreBtn" disabled>恢复选中的周</button>
+    <button class="btn-danger" onclick="clearAllLocal()">清空本地所有数据</button>
+  </div>
+
+  <div class="section">
+    <h3>操作日志</h3>
+    <div id="log" class="log"></div>
+  </div>
+
+  <script src="app-core.js"></script>
+  <script>
+    const SYNC_URL = 'http://127.0.0.1:6372';
+    let availableWeeks = [];
+    let localStatus = {};
+
+    function log(msg, type = 'info') {
+      const div = document.createElement('div');
+      div.className = 'log-item log-' + type;
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      document.getElementById('log').appendChild(div);
+      div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+
+    async function loadAvailableWeeks() {
+      try {
+        log('正在从服务器获取周列表...', 'info');
+        const resp = await fetch(`${SYNC_URL}/weeks`);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+        availableWeeks = data.weeks || [];
+        log(`找到 ${availableWeeks.length} 个周数据`, 'success');
+        renderWeekList();
+      } catch (e) {
+        log('获取周列表失败: ' + e.message, 'error');
+      }
+    }
+
+    function checkLocalData() {
+      log('检查本地 LocalStorage 数据...', 'info');
+      localStatus = {};
+      let totalLocal = 0;
+
+      availableWeeks.forEach(week => {
+        const cellsKey = `tm_${week.year}_w${week.week}_cells`;
+        const hasLocal = localStorage.getItem(cellsKey) !== null;
+        localStatus[`${week.year}-${week.week}`] = hasLocal;
+        if (hasLocal) totalLocal++;
+      });
+
+      log(`本地已有 ${totalLocal} 个周的数据`, 'success');
+      renderWeekList();
+      document.getElementById('restoreBtn').disabled = false;
+    }
+
+    function renderWeekList() {
+      const container = document.getElementById('weekList');
+      if (availableWeeks.length === 0) {
+        container.innerHTML = '<p>没有可用的周数据</p>';
+        return;
+      }
+
+      container.innerHTML = '';
+      availableWeeks.forEach(week => {
+        const key = `${week.year}-${week.week}`;
+        const hasLocal = localStatus[key];
+
+        const div = document.createElement('div');
+        div.className = 'week-item';
+        div.innerHTML = `
+          <input type="checkbox" class="week-checkbox" id="week-${key}" data-year="${week.year}" data-week="${week.week}">
+          <label class="week-label" for="week-${key}">
+            ${week.year} 年第 ${week.week} 周 (${week.start} ~ ${week.end})
+          </label>
+          <span class="week-status ${hasLocal === true ? 'status-exists' : hasLocal === false ? 'status-missing' : ''}">
+            ${hasLocal === true ? '本地已有' : hasLocal === false ? '本地缺失' : '未检查'}
+          </span>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function selectAll() {
+      document.querySelectorAll('.week-checkbox').forEach(cb => cb.checked = true);
+    }
+
+    function selectNone() {
+      document.querySelectorAll('.week-checkbox').forEach(cb => cb.checked = false);
+    }
+
+    function selectMissing() {
+      document.querySelectorAll('.week-checkbox').forEach(cb => {
+        const year = cb.dataset.year;
+        const week = cb.dataset.week;
+        const key = `${year}-${week}`;
+        cb.checked = localStatus[key] === false;
+      });
+    }
+
+    async function restoreSelected() {
+      const checkboxes = document.querySelectorAll('.week-checkbox:checked');
+      if (checkboxes.length === 0) {
+        alert('请先选择要恢复的周');
+        return;
+      }
+
+      if (!confirm(`确定要恢复 ${checkboxes.length} 个周的数据吗？\n\n已有的本地数据将被覆盖。`)) {
+        return;
+      }
+
+      log(`开始恢复 ${checkboxes.length} 个周...`, 'info');
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const cb of checkboxes) {
+        const year = parseInt(cb.dataset.year);
+        const week = parseInt(cb.dataset.week);
+
+        try {
+          log(`正在恢复 ${year}-W${week}...`, 'info');
+          const resp = await fetch(`${SYNC_URL}/weeks/${year}/${week}`);
+          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+          const serverData = await resp.json();
+
+          // 恢复 cells
+          if (serverData.cells) {
+            const cells = {};
+            for (const cellKey in serverData.cells) {
+              const cellData = serverData.cells[cellKey];
+              if (cellData && cellData.value) {
+                cells[cellKey] = cellData.value;
+              }
+            }
+            localStorage.setItem(`tm_${year}_w${week}_cells`, JSON.stringify(cells));
+          }
+
+          // 恢复 keyitems
+          if (serverData.keyitems) {
+            const keyitems = {};
+            for (const kiKey in serverData.keyitems) {
+              const kiData = serverData.keyitems[kiKey];
+              if (kiData && kiData.value !== undefined) {
+                keyitems[kiKey] = kiData.value;
+              }
+            }
+            localStorage.setItem(`tm_${year}_w${week}_keyitems`, JSON.stringify(keyitems));
+          }
+
+          // 恢复 keyitemStatus
+          if (serverData.keyitemStatus) {
+            const status = {};
+            for (const stKey in serverData.keyitemStatus) {
+              const stData = serverData.keyitemStatus[stKey];
+              if (stData && stData.value !== undefined) {
+                status[stKey] = stData.value;
+              }
+            }
+            localStorage.setItem(`tm_${year}_w${week}_keyitemStatus`, JSON.stringify(status));
+          }
+
+          // 恢复 review
+          if (serverData.review && serverData.review.value) {
+            localStorage.setItem(`tm_${year}_w${week}_review`, JSON.stringify(serverData.review.value));
+          }
+
+          // 恢复 config
+          if (serverData.config && serverData.config.value) {
+            localStorage.setItem(`tm_${year}_w${week}_config`, JSON.stringify(serverData.config.value));
+          }
+
+          // 恢复 archived
+          if (serverData.archived === true) {
+            localStorage.setItem(`tm_${year}_w${week}_archived`, '1');
+          }
+
+          log(`✓ ${year}-W${week} 恢复成功`, 'success');
+          successCount++;
+
+          // 更新状态显示
+          const statusSpan = cb.parentElement.querySelector('.week-status');
+          statusSpan.className = 'week-status status-restored';
+          statusSpan.textContent = '已恢复';
+
+        } catch (e) {
+          log(`✗ ${year}-W${week} 恢复失败: ${e.message}`, 'error');
+          failCount++;
+        }
+      }
+
+      log(`恢复完成！成功: ${successCount}, 失败: ${failCount}`, successCount > 0 ? 'success' : 'error');
+
+      if (successCount > 0) {
+        log('请刷新主应用页面以查看恢复的数据', 'info');
+      }
+    }
+
+    function clearAllLocal() {
+      if (!confirm('确定要清空所有本地数据吗？\n\n此操作不可恢复！')) {
+        return;
+      }
+
+      log('正在清空本地数据...', 'info');
+      let count = 0;
+      const keys = [];
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('tm_')) {
+          keys.push(key);
+        }
+      }
+
+      keys.forEach(key => {
+        localStorage.removeItem(key);
+        count++;
+      });
+
+      log(`已清空 ${count} 个本地数据项`, 'success');
+      localStatus = {};
+      renderWeekList();
+    }
+
+    // 页面加载时自动获取周列表
+    window.addEventListener('load', () => {
+      log('数据恢复工具已启动', 'info');
+      loadAvailableWeeks();
+    });
+  </script>
+</body>
+</html>
