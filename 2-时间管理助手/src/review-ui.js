@@ -132,24 +132,109 @@ class ReviewUI {
       historyList.innerHTML = '<p style="color: #95a5a6;">暂无历史复盘记录</p>';
       return;
     }
-    historyList.innerHTML = records.map(record => `
-      <div class="history-item">
-        <div class="history-item-header">
-          ${record.yearMonth} (第${record.weekRange[0]}-${record.weekRange[1]}周)
+    historyList.innerHTML = records.map(record => {
+      // 格式化日期
+      let dateStr = '';
+      if (record.savedAt) {
+        const date = new Date(record.savedAt);
+        dateStr = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+      }
+
+      return `
+        <div class="history-item">
+          <div class="history-item-header">
+            ${record.yearMonth} (第${record.weekRange[0]}-${record.weekRange[1]}周)
+            ${dateStr ? `<span style="color: #95a5a6; font-size: 11px; margin-left: 8px;">${dateStr}</span>` : ''}
+          </div>
+          <div class="history-item-content">
+            "${record.conclusion || '无结论'}"
+          </div>
+          <div class="history-item-actions">
+            <button class="btn btn-secondary" onclick="reviewUI.viewHistory('${record.key}')">查看详情</button>
+          </div>
         </div>
-        <div class="history-item-content">
-          "${record.conclusion || '无结论'}"
-        </div>
-        <div class="history-item-actions">
-          <button class="btn btn-secondary" onclick="reviewUI.viewHistory('${record.key}')">查看详情</button>
-        </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   viewHistory(key) {
     const data = JSON.parse(localStorage.getItem(key));
-    alert(`历史复盘详情\n\n${data.yearMonth}\n第${data.weekRange[0]}-${data.weekRange[1]}周\n\n${data.conclusion}`);
+    if (!data) {
+      alert('无法加载历史复盘记录');
+      return;
+    }
+
+    // 切换到报告阶段并显示历史报告
+    this.switchStage(3);
+
+    // 简易 markdown 渲染（与 renderReport 相同的逻辑）
+    let html = data.reportMarkdown || '<p>无报告内容</p>';
+    html = html
+      // 标题
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      // blockquote
+      .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+      // 加粗
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      // 行内代码
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      // 列表
+      .replace(/^- (.+)$/gm, '<li>$1</li>')
+      // 段落
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>');
+
+    // 包裹 <ul> 标签
+    html = html.replace(/(<li>.+?<\/li>)/gs, match => {
+      return '<ul>' + match.replace(/<br>/g, '') + '</ul>';
+    });
+
+    // 包裹段落
+    html = '<p>' + html + '</p>';
+
+    // 修正多余的 <p> 包裹
+    html = html
+      .replace(/<p><h1>/g, '<h1>')
+      .replace(/<\/h1><\/p>/g, '</h1>')
+      .replace(/<p><h2>/g, '<h2>')
+      .replace(/<\/h2><\/p>/g, '</h2>')
+      .replace(/<p><blockquote>/g, '<blockquote>')
+      .replace(/<\/blockquote><\/p>/g, '</blockquote>')
+      .replace(/<p><ul>/g, '<ul>')
+      .replace(/<\/ul><\/p>/g, '</ul>')
+      .replace(/<p><\/p>/g, '');
+
+    // 显示历史报告内容（使用与生成报告相同的样式）
+    const reportContent = document.getElementById('report-content');
+    reportContent.innerHTML = `
+      <div style="padding: 20px; background: #fff3cd; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ffeeba;">
+        <h3 style="margin: 0 0 12px 0; color: #856404;">📅 ${data.yearMonth} 第${data.weekRange[0]}-${data.weekRange[1]}周复盘</h3>
+        <p style="margin: 0; color: #856404; font-size: 13px;">保存于 ${new Date(data.savedAt).toLocaleString('zh-CN')}</p>
+      </div>
+      <div class="report-markdown">
+        ${html}
+      </div>
+    `;
+
+    // 如果有对话记录，添加可展开的对话详情
+    if (data.conversationLog && data.conversationLog.length > 0) {
+      const conversationHtml = data.conversationLog
+        .map(msg => {
+          const msgClass = msg.role === 'user' ? 'user' : 'ai';
+          return `<div class="message ${msgClass}">${msg.content}</div>`;
+        })
+        .join('');
+
+      reportContent.innerHTML += `
+        <details style="margin-top: 24px; padding: 16px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e0e0e0;">
+          <summary style="cursor: pointer; font-weight: 500; color: #667eea; user-select: none;">查看完整对话记录</summary>
+          <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+            ${conversationHtml}
+          </div>
+        </details>
+      `;
+    }
   }
 
   // ===== 周选择器（改为手动输入）=====
