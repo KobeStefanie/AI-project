@@ -17,3 +17,6 @@ tools/**/node_modules/
 Thumbs.db
 *.swp
 *.bak
+
+# 迁移前本地备份（体积大，不入库）
+backups/

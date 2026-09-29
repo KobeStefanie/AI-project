@@ -92,7 +92,12 @@ class ReviewEngine {
         if (!cell || cell.code === undefined || cell.code === null || cell.code === '') return;
 
         const code = String(cell.code).trim();
+        // v2.16.0：休息细分 0.1~0.9；兼容旧数据纯 0（只计总数）
         if (code === '0') totalRest += 0.5;
+        else if (code.startsWith('0.')) {
+          totalRest += 0.5;
+          breakdown[code] = (breakdown[code] || 0) + 0.5;
+        }
         else if (code.startsWith('1')) {
           totalQW += 0.5;
           breakdown[code] = (breakdown[code] || 0) + 0.5;

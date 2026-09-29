@@ -4,7 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-时间管理助手是一个仿 Excel 周计划表的 PWA 应用，支持 Windows 桌面 + iPhone + 华为安卓。核心是 7 天 × 34 半小时格的时间表，搭配分类代码系统（0=Rest, 1.x=QW, 2.x=GFP, 3.x=Proc, 4=MW）进行自动统计与着色。
+时间管理助手是一个仿 Excel 周计划表的 PWA 应用，支持 Windows 桌面 + iPhone + 华为安卓。核心是 7 天 × 34 半小时格的时间表，搭配分类代码系统（0.x=Rest, 1.x=QW, 2.x=GFP, 3.x=Proc, 4=MW）进行自动统计与着色。
+
+### 分类编码（v99 起）
+
+| 大类 | 编码 | 子类（配置字段） |
+|---|---|---|
+| Rest 休息 | 0.1~0.9 | 睡觉/吃喝/散步/出行/刷手机/卫生/游戏/社交/其他（`restNames`，9 项） |
+| QW | 1.1~1.7 | `qwNames`，7 项 |
+| GFP | 2.1~2.7 | `gfpNames`，7 项 |
+| Proc | 3.1~3.5 | `procNames`，5 项，固定 |
+| MW | 4 | 无子类 |
+
+- 纯 `0` 不再允许新录入（`validateCode` 会提示细分）；统计仍兼容旧的纯 0（只计入 rest 总数，不进 `restDetail`）
+- 同名"刷手机"：`0.5` = 正常休息，`3.2` = 内耗，分析时必须区分
+- 历史 w22-w40 的 code=0 已于 2026-09-29 用 `tools/migrate-rest-subcat.js` 迁移，迁移前备份在 `backups/pre-rest-subcat-20260929-1300/`
 
 ## 启动方式
 
@@ -53,9 +67,9 @@ node sync-server.js         # 同步服务：HTTP 6372 + HTTPS 6444
   - 常量（`WEEKDAYS`, `KEY_ROWS`, `TIME_SLOTS`, `DEFAULT_CONFIG`）
   - ISO 周计算（`getISOWeek`, `getWeekDates`, `getPrevWeek`, `getNextWeek`）
   - LocalStorage CRUD（`getCells/saveCells`, `getKeyItems/saveKeyItems`, `getConfig/saveConfig`, `getReview/saveReview`, `getKeyItemStatus/saveKeyItemStatus`）
-  - 统计计算（`calcDailyStats`, `calcWeeklyStats`）
+  - 统计计算（`calcDailyStats`, `calcWeeklyStats`），明细数组 `qwDetail[7]` / `gfpDetail[7]` / `procDetail[5]` / `restDetail[9]`
   - JSON 导出/导入（`exportAllData`, `importAllData`）
-  - 同步客户端 `syncClient`：推送/拉取/心跳/WebSocket/离线队列/配对绑定
+  - 同步客户端 `syncClient`：推送/拉取/心跳/WebSocket/离线队列/配对绑定；`pullAllWeeks()`（v99）串行拉取服务端全部周
   - `onSaveChange` 事件机制：每次 `save*` 后触发，syncClient 订阅以实现保存即推送
 
 - **`app.js`** (~2600 行)：纯 UI 层。启动时从 `AppCore` 解构所有数据函数，负责：
@@ -91,7 +105,7 @@ node sync-server.js         # 同步服务：HTTP 6372 + HTTPS 6444
 | `tm_YYYY_wNN_keyitems` | `{ "日期|行名": "值" }` |
 | `tm_YYYY_wNN_keyitemStatus` | `{ "日期|行名": "done|ongoing|todo" }` |
 | `tm_YYYY_wNN_review` | `{ keyword, selfScore, ... }` |
-| `tm_YYYY_wNN_config` | `{ qwNames[], gfpNames[], procNames[], standard, startTime }` |
+| `tm_YYYY_wNN_config` | `{ qwNames[], gfpNames[], procNames[], restNames[], standard, startTime }`（旧周无 `restNames` 时 `getConfig` 读取补默认值） |
 | `tm_YYYY_wNN_archived` | `"1"` 或不存在 |
 | `tm_YYYY_wNN_syncmeta` | `{ cells:{}, keyitems:{}, ... }` — 每个字段的 `updatedAt` 时间戳 |
 | `tm_sync_config` | `{ enabled, autoHost, hostname, port, ... }` |
@@ -117,8 +131,13 @@ node sync-server.js         # 同步服务：HTTP 6372 + HTTPS 6444
 - **iOS 同步协议**（v2.13.2 修正）：iOS 不再强制 HTTP。页面用 HTTPS 访问时同步也走 HTTPS 6444 端口，避免 Mixed Content 阻塞。`getEffectiveProtocol()` 已改为跟随页面协议，新增网络请求时保持此逻辑
 - **新周配置继承**：`getConfig()` 在新周无配置时会自动从上一周继承并保存，无需用户手动复制
 - **心跳自动拉取**：30s 心跳 ping `/info` 后会自动 pull 当前周数据（v2.13.1），作为 WebSocket 断开时的兜底
+- **切周自动拉取**（v100）：`renderAll()` 末尾的 `syncViewedWeek()` 在查看的周变化时 `setCurrentWeek` + `pullWeek`，心跳也随之跟随当前查看的周；首次渲染不拉，交给启动流程（先 flush 离线队列）
+- **改分类编码 / 批量改历史数据**：按 WORKFLOW.md 需求5 执行（备份 → dry-run → apply → 逐格对比 → 客户端拉取验证）。服务端改数据必须刷新 `cell.updatedAt` 和 `weekUpdatedAt`，否则客户端 LWW 合并会忽略
+- **新增编码的消费点**：`validateCode`、`calcDailyStats`、桌面统计表、左栏、移动端明细、配置页、Excel 导出、周对比（两处行列表）、`review-engine.calculateStats`、`review-ui.getCodeLabel` 与周对比明细，缺一处就会漏统计
 - **拉取数据变化判断**：`_applyServerWeekToLocal` 通过 `serverWeekUpdatedAt` 快速跳过无变化数据，返回 `false` 时不触发 UI 刷新，避免页面频繁重绘
 - **Cache-Control 与 SW 的互斥**（v2.13.2 重要教训）：`Cache-Control: no-store` 会阻止 Service Worker Cache API 存储响应（iOS Safari 严格遵守）。服务器必须用 `public, max-age=0` 才能让 SW 缓存正常工作。SW 中 `sanitizeForCache()` 额外剥离限制性头以防万一
+- **SW 拦截范围**（v101）：fetch 事件只接管同源静态资源和 `CDN_HOSTS` 白名单；同步 API（`SYNC_API_RE`：/weeks /info /devices /pair /events，或带 `X-Device-Token` 的请求）一律直连网络。`cache.put` 前必须 `resp.clone()`，因为 `sanitizeForCache` 会接管 body，不 clone 会让页面读不到响应。新增 CDN 依赖时要加进 `CDN_HOSTS`，否则离线不可用
+- **sync-server 鉴权里改设备字段**（v101）：必须在 `authenticate` 已加载的同一份 `data.devices` 中查找并修改，再 `saveDevices(data)`；`findDeviceByToken` 会重新读文件，只能用于只读查询
 
 ## 常见问题排查
 
@@ -130,6 +149,12 @@ node sync-server.js         # 同步服务：HTTP 6372 + HTTPS 6444
 5. 检查服务端数据：`curl http://127.0.0.1:6372/weeks`
 6. 检查 `sync-data/` 目录下 JSON 文件是否有数据
 7. **iPhone Mixed Content**：如果页面 HTTPS 但同步走 HTTP，Safari 会阻止——确保 `getEffectiveProtocol()` 跟随页面协议（v2.13.2 已修复）
+
+### 服务端数据已改，但历史周仍显示旧数据
+- 先确认版本 ≥ v100（v99 及以前切周不拉取，只有本周/上周会自动同步）
+- 同步面板点「⬇ 拉取全部周」强制同步所有周
+- 拉取全部周大量失败 → 看面板「首个失败原因」（v101 起）；确认版本 ≥ v101（v100 及以前 SW 会拦截同步 API 导致失败）；再用手机令牌直连服务端，排除服务端问题
+- 仍不更新 → 检查服务端对应 cell 的 `updatedAt` 是否大于本地 `tm_YYYY_wNN_syncmeta.cells[key]`
 
 ### 页面频繁刷新
 - Service Worker `CACHE_NAME` 与 `EXPECTED_CACHE_NAME` 不一致 → 3 秒自检强制 reload

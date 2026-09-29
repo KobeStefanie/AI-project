@@ -4,6 +4,96 @@
 
 ---
 
+## v101 (2026-09-29)
+
+### Bug：iPhone「拉取全部周」19 周全部失败，历史周停在旧编码
+
+**症状**：iPhone 同步面板点「⬇ 拉取全部周」，日志约每 4 秒一行，最终「共 19 周，更新 0 周，失败 19 周」；已绑定设备中手机「最后同步」一直显示 20480 分钟前。
+
+**排查证据**：
+- 服务端正常：用手机令牌直连 `https://26.104.213.44:6444/weeks/2026/{22,37,40}` 均 200，1~38ms
+- 问题在客户端 SW：用 vm 模拟 v100 的 fetch 事件，同步 API 请求被拦截，缓存未命中时抛 `Body is unusable: Body has already been read`
+
+**根本原因**：
+1. `service-worker.js` 的 fetch 事件对**所有 GET**（包括 6444 端口的同步 API）都做 cache-first SWR：拉取可能拿到旧快照，也可能失败
+2. `cacheFirstSWR` 调用 `cache.put(request, sanitizeForCache(resp))` 时没有 clone。`sanitizeForCache` 用 `new Response(response.body)` 接管了原始流，返回给页面的 `resp` 和缓存副本共用同一个 body，页面 `res.json()` 失败，随后 URL fallback 超时（4s）
+3. （附带）`sync-server.js` 的 `authenticate` 用 `findDeviceByToken` 又读了一遍 devices.json，改的是另一份副本，`lastSyncAt` 从未真正写盘
+4. （附带）`pullAllWeeks` 的 catch 吞掉了错误信息，面板看不到原因
+
+**修复方案**：
+```js
+// service-worker.js：只接管同源静态资源 + 白名单 CDN
+if (url.origin !== location.origin && !CDN_HOSTS.includes(url.hostname)) return;
+if (SYNC_API_RE.test(url.pathname) || req.headers.has('X-Device-Token')) return;
+// 缓存前 clone
+cache.put(request, sanitizeForCache(resp.clone()))
+
+// sync-server.js：在同一份 data 中查找设备
+const dev = data.devices.find(d => d.token === token);
+
+// app-core.js pullAllWeeks：记录 firstError；app.js 面板显示「首个失败原因」
+```
+
+**影响文件**：`src/service-worker.js`（CDN_HOSTS/SYNC_API_RE、fetch 过滤、clone、版本号）、`src/app.js`（EXPECTED_CACHE_NAME、首个失败原因日志）、`src/app-core.js`（pullAllWeeks.firstError）、`src/时间管理助手.html`（版本号）、`sync-server.js`（authenticate）
+
+**验证步骤**：
+1. 语法检查 4 个文件通过；vm 模拟 SW：v101 同步 API / 非白名单跨域不拦截，同源静态资源页面与缓存都能读取；v100 对照复现 `Body is unusable`
+2. iPhone：打开页面，右下角变成 v101（卡旧版本就访问 `/sw-cleanup.html`）→ 同步面板勾选「启用同步」→ 保存 → 点「⬇ 拉取全部周」→ 应显示「失败 0 周」→ 打开 W31 等历史周，看到 0.x 编码
+3. `sync-server.js` 修复需重启同步服务才生效（不影响数据）；生效后手机的「最后同步」会显示为刚刚
+
+---
+
+## v100 (2026-09-29)
+
+### Bug: 切换到历史周看不到服务端新数据
+
+**症状**：v99 迁移后，只有第 39、40 周显示新的休息细分；切到第 31 周等历史周，仍显示旧的编码 0。服务端数据已确认正确。
+
+**根本原因**：
+- 启动时只自动拉取「本周 + 上周」（w40、w39）
+- 点 ◀ ▶ 切周只执行 `renderAll()`，读的是本机 localStorage 旧副本，不请求服务端
+- `syncClient.setCurrentWeek()` 只在启动时调用一次，30s 心跳也一直只拉本周
+
+**修复方案**：`app.js` 的 `renderAll()` 末尾新增 `syncViewedWeek()`：查看的周变化时调用 `setCurrentWeek` 并 `pullWeek` 该周，有变化就重新渲染；首次渲染仍交给启动流程（先 flush 离线队列再拉）。
+
+**影响文件**：`src/app.js`（renderAll + syncViewedWeek），版本号三处 v99 → v100
+
+**验证步骤**：
+1. 用 Node 模拟 w31 为迁移前旧数据的客户端，连接真实同步服务执行 `pullAllWeeks`：19 周全部拉取，w31 纯 0 由 219 格变 0 格，0.9 为 204 格；服务端数据未被改动
+2. 浏览器切到第 31 周，1~2 秒内应自动变为 0.9/0.1 等细分编码
+
+---
+
+## v99 (2026-09-29)
+
+### 功能升级：休息（Rest）细分为 0.1~0.9 + 历史数据重分类
+
+**需求**：休息参照 QW 分细项管理：0.1 睡觉、0.2 吃喝、0.3 散步、0.4 出行、0.5 刷手机、0.6 卫生、0.7 游戏、0.8 社交、0.9 其他。历史 code=0 的数据按新分类重新归类。
+
+**改动**：
+- `app-core.js`：`DEFAULT_CONFIG.restNames`（9 项）；`getConfig/saveConfig` 补齐 restNames；`calcDailyStats/calcWeeklyStats` 新增 `restDetail[9]`；syncClient 新增 `pullAllWeeks()`
+- `app.js`：`validateCode` 接受 0.1~0.9，纯 0 提示细分；编码提示；桌面统计表、左栏、移动端当日/本周明细、配置页（可改名）、Excel 导出、周对比表与导出均加入休息明细；同步面板新增「⬇ 拉取全部周」
+- `styles.css`：`.detail-rest`、`.lp-rest`
+- `review-engine.js`：0.x 计入 totalRest 和 breakdown
+- `review-ui.js`：`getCodeLabel` 支持 0.x；两个周对比表的「休息时间」可展开明细
+- `tools/migrate-rest-subcat.js`：迁移脚本（默认 dry-run，`--apply` 写入，幂等）
+- 版本号：v98 → v99（三处同步）
+
+**数据迁移结果**（w22-w40）：1562 格 = 781h 全部由 0 改为 0.x，其他 2822 格和 keyitems/review/config 逐项比对未变动。
+
+**回退方法**：
+1. 数据：用 `backups/pre-rest-subcat-20260929-1300/sync-data/` 覆盖 `sync-data/`（覆盖前再备份当前版本）
+2. 代码：`git checkout` 本次提交之前的版本，或使用备份目录里的 `src/`
+3. 客户端：数据回退后需把 backup 里的 cell.updatedAt 调到比当前更新，否则客户端不会拉回旧值
+
+**验证步骤**：
+1. 桌面访问主页，右下角显示 v99
+2. 同步面板点「⬇ 拉取全部周」，查看各周休息明细是否出现
+3. 新录入编码 0 → 提示细分；0.1~0.9 正常保存
+4. iPhone：更新到 v99 后点「拉取全部周」，确认填表/保存/同步/离线启动正常
+
+---
+
 ## v98 (2026-09-15)
 
 ### Bug: iPhone 离线无法启动 PWA（白屏 5+ 分钟）

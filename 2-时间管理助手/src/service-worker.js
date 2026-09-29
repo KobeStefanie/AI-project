@@ -1,4 +1,4 @@
-// time-planner v98
+// time-planner v101
 // 缓存策略（v2.13.3 修复离线功能）：
 //   - 移除复盘中心文件缓存（桌面专用，不需离线）
 //   - SW fetch 事件跳过 review-center/engine/ui 请求
@@ -11,7 +11,7 @@
 //
 // 版本更新：浏览器周期性比对 service-worker.js 自身，
 // 配合 app.js 的 updatefound → SKIP_WAITING → controllerchange → reload 流。
-const CACHE_NAME = 'time-planner-v98';
+const CACHE_NAME = 'time-planner-v101';
 // 注意：中文路径用 encodeURI 处理，避免不同浏览器 URL 编码差异
 // 导致 cache.match 命中失败（iOS Safari 与 Chrome 行为不同）
 const HTML_FILE = './' + encodeURI('时间管理助手.html');
@@ -26,6 +26,11 @@ const ASSETS = [
   './icon.svg',
   './icon-192.png'
 ];
+
+// v101：允许 SW 缓存的跨域 CDN 主机（其余跨域请求一律不拦截）
+const CDN_HOSTS = ['cdn.jsdelivr.net', 'unpkg.com', 'cdn.bootcdn.net', 'cdn.tailwindcss.com'];
+// v101：同步 API 路径，永不走 SW
+const SYNC_API_RE = /^\/(weeks|info|devices|pair|events)(\/|$)/;
 
 // -------- 工具：剥离限制性缓存头，确保 Cache API 接受存储 --------
 // iOS Safari 的 Cache API 严格遵循规范：遇到 Cache-Control: no-store
@@ -55,7 +60,7 @@ function sanitizeForCache(response) {
 
 // -------- install：逐个缓存，单文件失败不致命 --------
 self.addEventListener('install', event => {
-  console.log('[sw] install v98 开始，准备缓存', ASSETS.length, '个文件');
+  console.log('[sw] install v101 开始，准备缓存', ASSETS.length, '个文件');
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       const localAssets = ASSETS.filter(u => !u.startsWith('http'));
@@ -109,7 +114,9 @@ function cacheFirstSWR(request) {
       // 后台静默刷新（不阻塞当前请求）
       const networkPromise = fetch(request).then(resp => {
         if (resp && resp.status === 200 && resp.type !== 'opaque') {
-          cache.put(request, sanitizeForCache(resp)).catch(() => {});
+          // v101：必须 clone。sanitizeForCache 会接管 resp.body，
+          // 不 clone 的话返回给页面的 resp 与缓存副本共享同一个流，页面读取会失败
+          cache.put(request, sanitizeForCache(resp.clone())).catch(() => {});
         }
         return resp;
       }).catch(err => {
@@ -128,6 +135,12 @@ self.addEventListener('fetch', event => {
   if (req.method !== 'GET') return;
   let url;
   try { url = new URL(req.url); } catch (e) { return; }
+
+  // v101：只接管「同源静态资源」和「白名单 CDN」。
+  // 同步 API（6372/6444 端口，与页面不同源）必须直连网络：
+  // 走 cache-first 会拿到旧快照，且曾因共享响应流导致拉取失败
+  if (url.origin !== location.origin && !CDN_HOSTS.includes(url.hostname)) return;
+  if (SYNC_API_RE.test(url.pathname) || req.headers.has('X-Device-Token')) return;
 
   // 复盘中心：完全不走 SW（桌面专用，不需要离线）
   if (url.origin === location.origin) {

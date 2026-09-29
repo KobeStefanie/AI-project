@@ -40,6 +40,8 @@ var DEFAULT_CONFIG = {
   qwNames: ['新媒体运营','心理咨询','注会变现','读书','投资','造音师','其他'],
   gfpNames: ['演出','运动','约会','旅行','游戏','小资','其他'],
   procNames: ['睡懒觉','刷手机','拖延','无效/低效社交','其他'],
+  // v2.16.0：休息细分（0.1~0.9），参照 QW 管理
+  restNames: ['睡觉','吃喝','散步','出行','刷手机','卫生','游戏','社交','其他'],
   standard: 12,
   startTime: '7:00'
 };
@@ -125,6 +127,10 @@ function getConfig(year, week) {
   if (!Array.isArray(config.procNames) || config.procNames.length !== 5) {
     config.procNames = DEFAULT_CONFIG.procNames.slice();
   }
+  // v2.16.0：旧周配置没有 restNames，读取时补默认值（不回写，避免触发同步）
+  if (!Array.isArray(config.restNames) || config.restNames.length !== 9) {
+    config.restNames = DEFAULT_CONFIG.restNames.slice();
+  }
   if (typeof config.standard !== 'number' || config.standard < 0) {
     config.standard = DEFAULT_CONFIG.standard;
   }
@@ -148,6 +154,9 @@ function saveConfig(year, week, config) {
   }
   if (config.procNames && (!Array.isArray(config.procNames) || config.procNames.length !== 5)) {
     config.procNames = DEFAULT_CONFIG.procNames.slice();
+  }
+  if (config.restNames && (!Array.isArray(config.restNames) || config.restNames.length !== 9)) {
+    config.restNames = DEFAULT_CONFIG.restNames.slice();
   }
   var prev = null;
   var raw = localStorage.getItem(sKey(year, week, 'config'));
@@ -219,7 +228,8 @@ function getCatClass(code) {
 
 function calcDailyStats(dayCells, standard) {
   var s = { gfp:0, rest:0, mw:0, qw:0, proc:0, filled:0,
-    qwDetail:[0,0,0,0,0,0,0], gfpDetail:[0,0,0,0,0,0,0], procDetail:[0,0,0,0,0] };
+    qwDetail:[0,0,0,0,0,0,0], gfpDetail:[0,0,0,0,0,0,0], procDetail:[0,0,0,0,0],
+    restDetail:[0,0,0,0,0,0,0,0,0] };
 
   for (var slot in dayCells) {
     var cell = dayCells[slot];
@@ -229,7 +239,8 @@ function calcDailyStats(dayCells, standard) {
     s.filled++;
     var f = Math.floor(code);
     var dec = Math.round((code - f) * 10);
-    if (f === 0) s.rest++;
+    // 旧数据的纯 0 只计入 rest 总数，不进细项
+    if (f === 0) { s.rest++; if (dec >= 1 && dec <= 9) s.restDetail[dec-1]++; }
     else if (f === 1) { s.qw++; if (dec >= 1 && dec <= 7) s.qwDetail[dec-1]++; }
     else if (f === 2) { s.gfp++; if (dec >= 1 && dec <= 7) s.gfpDetail[dec-1]++; }
     else if (f === 3) { s.proc++; if (dec >= 1 && dec <= 5) s.procDetail[dec-1]++; }
@@ -258,6 +269,7 @@ function calcWeeklyStats(cellsByDate, dateKeys, standard) {
   var t = { gfp:0, rest:0, mw:0, qw:0, proc:0, earned:0, lost:0, balance:0,
     validInvest:0, invalidWaste:0, potential:0, available:0, standard:0,
     qwDetail:[0,0,0,0,0,0,0], gfpDetail:[0,0,0,0,0,0,0], procDetail:[0,0,0,0,0],
+    restDetail:[0,0,0,0,0,0,0,0,0],
     checkTotal:0, checkLoss:0, checkInvest:0 };
   for (var j = 0; j < daily.length; j++) {
     var d = daily[j];
@@ -268,6 +280,7 @@ function calcWeeklyStats(cellsByDate, dateKeys, standard) {
     for (var k = 0; k < 7; k++) t.qwDetail[k] += d.qwDetail[k];
     for (var k2 = 0; k2 < 7; k2++) t.gfpDetail[k2] += d.gfpDetail[k2];
     for (var k3 = 0; k3 < 5; k3++) t.procDetail[k3] += d.procDetail[k3];
+    for (var k4 = 0; k4 < 9; k4++) t.restDetail[k4] += d.restDetail[k4];
     t.checkTotal += d.checkTotal; t.checkLoss += d.checkLoss; t.checkInvest += d.checkInvest;
   }
   return { daily: daily, totals: t };
@@ -672,6 +685,30 @@ var syncClient = (function() {
       }
       _setState({ status: 'error', lastError: err.message || String(err) });
       throw err;
+    });
+  }
+
+  // v2.16.0：拉取服务端全部周（服务端批量迁移/重分类后，用它把历史周同步到本机）
+  // 串行拉取，避免并发请求压垮手机端；onProgress(done, total, item) 可选
+  function pullAllWeeks(onProgress) {
+    return _fetchJson('/weeks').then(function(r) {
+      var list = (r.json && r.json.weeks) || [];
+      var result = { total: list.length, applied: 0, failed: 0, firstError: null };
+      var chain = Promise.resolve();
+      list.forEach(function(item, i) {
+        chain = chain.then(function() {
+          return pullWeek(item.year, item.week).then(function(res) {
+            if (res && res.applied) result.applied++;
+          }).catch(function(err) {
+            result.failed++;
+            // v101：保留首个失败原因，便于在同步面板定位问题
+            if (!result.firstError) result.firstError = 'W' + item.week + ': ' + ((err && err.message) || String(err));
+          }).then(function() {
+            if (typeof onProgress === 'function') onProgress(i + 1, list.length, item);
+          });
+        });
+      });
+      return chain.then(function() { return result; });
     });
   }
 
@@ -1396,6 +1433,7 @@ var syncClient = (function() {
     buildUrls: buildUrls,
     testConnection: testConnection,
     pullWeek: pullWeek,
+    pullAllWeeks: pullAllWeeks,
     pushWeek: pushWeek,
     flushPendingPush: flushPendingPush,
     flushOfflineQueue: flushOfflineQueue, // v2.11.0：手动触发离线队列 flush

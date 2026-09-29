@@ -113,7 +113,8 @@ function authenticate(req, meta) {
   // 验证 X-Device-Token
   const token = req.headers['x-device-token'];
   if (!token) return false;
-  const dev = findDeviceByToken(token);
+  // v101：必须在同一份 data 里查找，否则改的是另一份副本，lastSyncAt 永远写不进磁盘
+  const dev = data.devices.find(d => d.token === token);
   if (!dev) return false;
   // 更新最后同步时间（节流：30s 内不重复写盘，用独立 Map 避免泄漏到 JSON）
   const now = Date.now();

@@ -402,7 +402,12 @@ class ReviewUI {
     // 从当前周的配置读取自定义名称
     const config = this.engine.AppCore.getConfig(this.currentYear, this.currentStartWeek);
 
-    if (code.startsWith('1.')) {
+    if (code.startsWith('0.')) {
+      // v2.16.0：休息细分
+      const idx = parseInt(code.substring(2)) - 1;
+      const restDefault = ['睡觉','吃喝','散步','出行','刷手机','卫生','游戏','社交','其他'];
+      return config.restNames?.[idx] || restDefault[idx] || `Rest ${code}`;
+    } else if (code.startsWith('1.')) {
       const idx = parseInt(code.substring(2)) - 1;
       return config.qwNames?.[idx] || `QW ${code}`;
     } else if (code.startsWith('2.')) {
@@ -643,7 +648,7 @@ class ReviewUI {
       { label: 'QW 时间', key: 'qw', format: v => v ? v.toFixed(1) + 'h' : '0h', hasDetail: true },
       { label: 'GFP 时间', key: 'gfp', format: v => v ? v.toFixed(1) + 'h' : '0h', hasDetail: true },
       { label: '拖延时间', key: 'proc', format: v => v ? v.toFixed(1) + 'h' : '0h', hasDetail: true },
-      { label: '休息时间', key: 'rest', format: v => v ? v.toFixed(1) + 'h' : '0h', hasDetail: false },
+      { label: '休息时间', key: 'rest', format: v => v ? v.toFixed(1) + 'h' : '0h', hasDetail: true },
       { label: 'MW 时间', key: 'mw', format: v => v ? v.toFixed(1) + 'h' : '0h', hasDetail: false }
     ];
 
@@ -712,6 +717,11 @@ class ReviewUI {
       names = config.procNames || [];
       detailKey = 'procDetail';
       codePrefix = '3';
+    } else if (parentRow.key === 'rest') {
+      // v2.16.0：休息细分；旧周配置无 restNames 时用默认名
+      names = config.restNames || window.AppCore.DEFAULT_CONFIG.restNames;
+      detailKey = 'restDetail';
+      codePrefix = '0';
     }
 
     names.forEach((name, idx) => {
@@ -991,7 +1001,14 @@ class ReviewUI {
         detailKeys: ['procDetail'],
         colorScheme: 'red'
       },
-      { label: '休息时间', key: 'rest', format: v => v ? v.toFixed(1) + 'h' : '0h' },
+      {
+        label: '休息时间',
+        key: 'rest',
+        format: v => v ? v.toFixed(1) + 'h' : '0h',
+        hasDetail: true,
+        detailKeys: ['restDetail'],
+        colorScheme: 'green'
+      },
       { label: 'MW 时间', key: 'mw', format: v => v ? v.toFixed(1) + 'h' : '0h' },
       { label: '凌晨工作次数', key: 'lateWorkCount', format: v => v || 0 }
     ];
@@ -1114,6 +1131,9 @@ class ReviewUI {
     } else if (parentRow.key === 'proc') {
       names = config.procNames || [];
       detailKey = 'procDetail';
+    } else if (parentRow.key === 'rest') {
+      names = config.restNames || window.AppCore.DEFAULT_CONFIG.restNames;
+      detailKey = 'restDetail';
     }
 
     // 确定分类代码前缀
@@ -1121,6 +1141,7 @@ class ReviewUI {
     if (parentRow.key === 'qw') codePrefix = '1';
     else if (parentRow.key === 'gfp') codePrefix = '2';
     else if (parentRow.key === 'proc') codePrefix = '3';
+    else if (parentRow.key === 'rest') codePrefix = '0';
 
     // 渲染每个子分类
     names.forEach((name, idx) => {

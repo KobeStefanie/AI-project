@@ -65,6 +65,7 @@ body { font-family: -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif; ba
 .lp-qw { background: var(--c-qw); color: #fff; }
 .lp-gfp { background: var(--c-gfp); color: #fff; }
 .lp-proc { background: var(--c-proc); color: #fff; }
+.lp-rest { background: var(--c-rest); color: #000; }
 
 /* ===== Table Container ===== */
 .table-container { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; }
@@ -148,6 +149,8 @@ body.frozen .main-table thead th.col-label { z-index: 30; }
 .detail-gfp td:not(.col-label) { background: var(--c-gfp-light); }
 .detail-proc td.col-label { background: #f8fafc !important; font-weight: 700; }
 .detail-proc td:not(.col-label) { background: var(--c-proc-light); }
+.detail-rest td.col-label { background: #f8fafc !important; font-weight: 700; }
+.detail-rest td:not(.col-label) { background: #dcfce7; }
 
 /* Valid invest / Invalid waste */
 .stat-invest td:not(.col-label) { background: var(--c-qw); color: #fff; }

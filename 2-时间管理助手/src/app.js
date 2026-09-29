@@ -192,7 +192,7 @@ function init() {
 // SW 注册 + 自动更新流：检测到新版本即让其立即激活，并在 controllerchange 时重载一次。
 // 首次安装（页面此前没有 controller）不触发 reload，避免空载场景下的循环刷新。
 // v2.11.2：新增 EXPECTED_CACHE_NAME 自检，若当前 SW 版本落后则强制注销+重载。
-var EXPECTED_CACHE_NAME = 'time-planner-v98';
+var EXPECTED_CACHE_NAME = 'time-planner-v101';
 
 function forceUpdateSW() {
   if (!('serviceWorker' in navigator)) return;
@@ -355,14 +355,36 @@ function renderAll() {
     var active = document.querySelector('.page-mobile.active');
     if (active && active.id === 'page-mobile-week') renderMobileWeek();
     else renderMobileDay();
-    return;
-  }
-  // v2.13.1：桌面端周表 / 月历视图切换
-  if (desktopView === 'month') {
+  } else if (desktopView === 'month') {
+    // v2.13.1：桌面端周表 / 月历视图切换
     renderMonthCalendar();
-    return;
+  } else {
+    renderDesktopAll();
   }
-  renderDesktopAll();
+  syncViewedWeek();
+}
+
+// v2.16.1：切换到别的周时，拉取该周服务端数据，并让心跳跟随当前查看的周
+// 修复前：只有启动时拉本周/上周，切到历史周看到的是本机旧副本
+var _lastViewedWeekKey = null;
+function syncViewedWeek() {
+  if (typeof syncClient === 'undefined' || !syncClient) return;
+  var key = state.year + '-' + state.week;
+  if (key === _lastViewedWeekKey) return;
+  var isFirst = _lastViewedWeekKey === null;
+  _lastViewedWeekKey = key;
+  // 首次渲染交给启动流程（先 flush 离线队列再拉取），这里不重复拉
+  if (isFirst) return;
+  syncClient.setCurrentWeek(state.year, state.week);
+  var cfg = syncClient.getSyncConfig();
+  if (!cfg.enabled || syncClient.buildUrls(cfg).length === 0) return;
+  var y = state.year, w = state.week;
+  syncClient.pullWeek(y, w).then(function(r) {
+    // 拉取期间用户又切走了就不刷新
+    if (r && r.applied && state.year === y && state.week === w) renderAll();
+  }).catch(function(err) {
+    if (typeof console !== 'undefined') console.warn('[sync] 切周拉取失败:', err.message);
+  });
 }
 
 // 清除因 startTime 变更等原因产生的过期 slot key 的 cell
@@ -557,6 +579,13 @@ function renderStatsRows(ws, config) {
   for (var wi = 0; wi < daily.length; wi++) h += dCell(wi, f(daily[wi].invalidWaste));
   h += tCell(f(totals.invalidWaste)) + '</tr>';
 
+  // v2.16.0：休息明细（0.1~0.9）
+  for (var rs = 0; rs < 9; rs++) {
+    h += '<tr class="stat-row detail-rest' + (rs === 0 ? ' sep-top' : '') + '"><td class="col-label">0.' + (rs+1) + '-' + config.restNames[rs] + '</td>';
+    for (var ri = 0; ri < daily.length; ri++) h += dCell(ri, f(daily[ri].restDetail[rs]));
+    h += tCell(f(totals.restDetail[rs])) + '</tr>';
+  }
+
   // 潜力/标准/可用
   h += '<tr class="stat-row stat-potential sep-top"><td class="col-label">潜力总数</td>';
   for (var pt = 0; pt < daily.length; pt++) h += dCell(pt, f(daily[pt].potential));
@@ -709,6 +738,10 @@ function renderLeftPanel(config, totals) {
   for (var k = 0; k < 5; k++) {
     h += '<div class="lp-item' + (totals.procDetail[k] > 0 ? '' : ' lp-zero') + '"><span>3.' + (k+1) + '-' + config.procNames[k] + '</span><span>' + fmt(totals.procDetail[k]) + '</span></div>';
   }
+  h += '<div class="lp-cat lp-rest"><span>Rest - 休息</span><span>' + totals.rest + '</span></div>';
+  for (var r = 0; r < 9; r++) {
+    h += '<div class="lp-item' + (totals.restDetail[r] > 0 ? '' : ' lp-zero') + '"><span>0.' + (r+1) + '-' + config.restNames[r] + '</span><span>' + fmt(totals.restDetail[r]) + '</span></div>';
+  }
   $('panel-left').innerHTML = h;
 }
 
@@ -792,20 +825,21 @@ var clipboard = null;             // 跨弹窗剪贴板：{ title, code }
 var selection = null;             // { startId, endId }（覆盖矩形选区）
 
 // 编码校验：
-//   合法 = 空字符串 | 0 | 4 | 1.1~1.7 | 2.1~2.7 | 3.1~3.5
+//   合法 = 空字符串 | 4 | 0.1~0.9 | 1.1~1.7 | 2.1~2.7 | 3.1~3.5
+//   v2.16.0：休息改为细分，纯 0 不再允许新录入（旧数据已迁移为 0.x）
 // 返回 { ok, value, msg }
 function validateCode(raw) {
   if (raw === '' || raw === null || raw === undefined) return { ok: true, value: '' };
   var s = String(raw).trim();
   if (s === '') return { ok: true, value: '' };
-  if (s === '0') return { ok: true, value: 0 };
+  if (s === '0') return { ok: false, msg: '休息请细分：0.1~0.9（睡觉/吃喝/散步/出行/刷手机/卫生/游戏/社交/其他）' };
   if (s === '4') return { ok: true, value: 4 };
-  // 主.子：主∈{1,2,3}；子是单个数字 1~9
-  var m = /^([123])\.([1-9])$/.exec(s);
-  if (!m) return { ok: false, msg: '编码格式错误：必须是 0、4、1.1~1.7、2.1~2.7 或 3.1~3.5' };
+  // 主.子：主∈{0,1,2,3}；子是单个数字 1~9
+  var m = /^([0123])\.([1-9])$/.exec(s);
+  if (!m) return { ok: false, msg: '编码格式错误：必须是 4、0.1~0.9、1.1~1.7、2.1~2.7 或 3.1~3.5' };
   var main = parseInt(m[1], 10);
   var sub = parseInt(m[2], 10);
-  var maxSub = main === 1 ? 7 : (main === 2 ? 7 : 5);
+  var maxSub = main === 0 ? 9 : (main === 1 ? 7 : (main === 2 ? 7 : 5));
   if (sub > maxSub) {
     var name = main === 1 ? 'QW 仅支持 1.1~1.7' : (main === 2 ? 'GFP 仅支持 2.1~2.7' : 'Proc 仅支持 3.1~3.5');
     return { ok: false, msg: '编码超出范围：' + name };
@@ -1268,7 +1302,7 @@ function openCellDialog(id) {
   $('inp-code').value = (cell.code !== undefined && cell.code !== null && cell.code !== '') ? cell.code : '';
   var config = getConfig(state.year, state.week);
   $('code-hint').innerHTML =
-    '允许编码：0=Rest · 4=MW · 1.1~1.7=QW(' + config.qwNames.join('/') + ')' +
+    '允许编码：0.1~0.9=Rest(' + config.restNames.join('/') + ') · 4=MW · 1.1~1.7=QW(' + config.qwNames.join('/') + ')' +
     ' · 2.1~2.7=GFP(' + config.gfpNames.join('/') + ')' +
     ' · 3.1~3.5=Proc(' + config.procNames.join('/') + ')';
   $('btn-paste-cell').disabled = !(clipboard && clipboard.kind === 'TS');
@@ -1560,6 +1594,15 @@ function renderWeekCompareContent() {
       { label: '3.4-无效/低效社交', key: 'procDetail', index: 3, configKey: 'procNames' },
       { label: '3.5-其他', key: 'procDetail', index: 4, configKey: 'procNames' },
       { label: 'Rest', key: 'rest', isCat: true, color: 'rest' },
+      { label: '0.1-睡觉', key: 'restDetail', index: 0, configKey: 'restNames' },
+      { label: '0.2-吃喝', key: 'restDetail', index: 1, configKey: 'restNames' },
+      { label: '0.3-散步', key: 'restDetail', index: 2, configKey: 'restNames' },
+      { label: '0.4-出行', key: 'restDetail', index: 3, configKey: 'restNames' },
+      { label: '0.5-刷手机', key: 'restDetail', index: 4, configKey: 'restNames' },
+      { label: '0.6-卫生', key: 'restDetail', index: 5, configKey: 'restNames' },
+      { label: '0.7-游戏', key: 'restDetail', index: 6, configKey: 'restNames' },
+      { label: '0.8-社交', key: 'restDetail', index: 7, configKey: 'restNames' },
+      { label: '0.9-其他', key: 'restDetail', index: 8, configKey: 'restNames' },
       { label: 'MW', key: 'mw', isCat: true, color: 'mw' }
     ];
 
@@ -1572,7 +1615,9 @@ function renderWeekCompareContent() {
       var labelDisplay = row.label;
       if (row.configKey && weeksData[0]) {
         var idx = row.index;
-        var configVal = weeksData[0].config[row.configKey][idx];
+        // 服务端旧配置可能没有 restNames，回退默认名
+        var nameArr = weeksData[0].config[row.configKey] || DEFAULT_CONFIG[row.configKey] || [];
+        var configVal = nameArr[idx] || row.label.split('-')[1];
         labelDisplay = labelDisplay.split('-')[0] + '-' + configVal;
       }
       html += '<td class="wcm-col-item' + (row.isCat ? ' wcm-item-bold' : '') + '">' + labelDisplay + '</td>';
@@ -1673,7 +1718,7 @@ function commitCurrentCell() {
     return { ok: false };
   }
   if (title !== '' && codeRaw === '') {
-    showToast('请填写分类编码（0=Rest · 4=MW · 1.x/2.x/3.x）');
+    showToast('请填写分类编码（0.x=Rest · 4=MW · 1.x/2.x/3.x）');
     var inpC = $('inp-code');
     inpC.classList.add('input-error');
     inpC.focus();
@@ -2032,6 +2077,7 @@ function doExport() {
   writeStatRow('Proc - Procrastination', totals.proc, PROC.fill, PROC.font, true);
   for (var pi = 0; pi < 5; pi++) writeStatRow('  3.' + (pi + 1) + '-' + config.procNames[pi], totals.procDetail[pi], PROC.fill, PROC.font);
   writeStatRow('Rest', totals.rest, REST.fill, REST.font, true);
+  for (var ri = 0; ri < 9; ri++) writeStatRow('  0.' + (ri + 1) + '-' + config.restNames[ri], totals.restDetail[ri], REST.fill, REST.font);
   writeStatRow('MW', totals.mw, MW.fill, MW.font, true);
   var STATS_END_ROW = rB - 1;
 
@@ -2152,6 +2198,10 @@ function renderConfig() {
 
   h += '<div class="config-section"><h3>系统参数</h3><p class="config-hint">标准数（每天标准休息格数，默认12）</p><input type="number" data-cfg="standard" value="' + configDraft.standard + '" style="width:80px;padding:6px;border:1px solid #d1d5db;border-radius:4px;"></div>';
 
+  h += '<div class="config-section"><h3>Rest 休息子类名称</h3><table class="config-table"><thead><tr><th>代码</th><th>子类名称</th></tr></thead><tbody>';
+  for (var ri = 0; ri < 9; ri++) h += '<tr><td>0.' + (ri+1) + '</td><td><input data-cfg="rest-' + ri + '" value="' + (configDraft.restNames[ri] || '').replace(/"/g,'&quot;') + '"></td></tr>';
+  h += '</tbody></table></div>';
+
   h += '<div class="config-section"><h3>Procrastination 子类（固定）</h3><table class="config-table"><tbody>';
   for (var k = 0; k < 5; k++) h += '<tr><td>3.' + (k+1) + '</td><td>' + configDraft.procNames[k] + '</td></tr>';
   h += '</tbody></table></div>';
@@ -2169,6 +2219,7 @@ function renderConfig() {
       }
       else if (key.indexOf('qw-') === 0) configDraft.qwNames[parseInt(key.split('-')[1])] = inp.value;
       else if (key.indexOf('gfp-') === 0) configDraft.gfpNames[parseInt(key.split('-')[1])] = inp.value;
+      else if (key.indexOf('rest-') === 0) configDraft.restNames[parseInt(key.split('-')[1])] = inp.value;
     });
   });
 }
@@ -2560,6 +2611,7 @@ function renderM_Details(stats, config) {
   h += group('QW 明细',   config.qwNames,   '1', stats.qwDetail,   stats.qw,   'cat-qw');
   h += group('GFP 明细',  config.gfpNames,  '2', stats.gfpDetail,  stats.gfp,  'cat-gfp');
   h += group('无效浪费',  config.procNames, '3', stats.procDetail, stats.proc, 'cat-proc');
+  h += group('休息明细',  config.restNames, '0', stats.restDetail, stats.rest, 'cat-rest');
   h += '</section>';
   return h;
 }
@@ -2688,6 +2740,7 @@ function renderMobileWeek() {
   h += detailGroup('QW 明细',   config.qwNames,   '1', t.qwDetail,   t.qw,   'cat-qw');
   h += detailGroup('GFP 明细',  config.gfpNames,  '2', t.gfpDetail,  t.gfp,  'cat-gfp');
   h += detailGroup('无效浪费',  config.procNames, '3', t.procDetail, t.proc, 'cat-proc');
+  h += detailGroup('休息明细',  config.restNames, '0', t.restDetail, t.rest, 'cat-rest');
   h += '</section>';
 
   // 汇总
@@ -2871,6 +2924,7 @@ function setupSyncUI() {
 
   if ($('btn-sync-test'))  $('btn-sync-test').onclick  = handleSyncTest;
   if ($('btn-sync-pull'))  $('btn-sync-pull').onclick  = handleSyncPull;
+  if ($('btn-sync-pull-all')) $('btn-sync-pull-all').onclick = handleSyncPullAll;
   if ($('btn-sync-push'))  $('btn-sync-push').onclick  = handleSyncPush;
   if ($('btn-sync-save'))  $('btn-sync-save').onclick  = handleSyncSaveBtn;
   // v2.13.3：「保存并连接」快捷按钮 — 手机换IP后直接在同步面板填IP即可
@@ -3258,6 +3312,28 @@ function handleSyncPull() {
   }).catch(function(err) {
     logSync('✗ 拉取失败: ' + (err.message || err), 'err');
     updateSyncStatusUI();
+  });
+}
+
+// v2.16.0：拉取服务端全部周（休息细分迁移后，各设备执行一次）
+function handleSyncPullAll() {
+  syncClient.saveSyncConfig(readSyncModalConfig());
+  var btn = $('btn-sync-pull-all');
+  if (btn) btn.disabled = true;
+  logSync('开始拉取服务器全部周...', 'info');
+  syncClient.pullAllWeeks(function(done, total, item) {
+    logSync('· ' + done + '/' + total + '  ' + item.year + '/W' + item.week, 'info');
+  }).then(function(r) {
+    logSync('✓ 全部周拉取完成：共 ' + r.total + ' 周，更新 ' + r.applied + ' 周' +
+            (r.failed ? '，失败 ' + r.failed + ' 周' : ''), r.failed ? 'err' : 'ok');
+    if (r.firstError) logSync('  首个失败原因：' + r.firstError, 'err');
+    renderAll();
+    updateSyncStatusUI();
+  }).catch(function(err) {
+    logSync('✗ 拉取全部周失败: ' + (err.message || err), 'err');
+    updateSyncStatusUI();
+  }).then(function() {
+    if (btn) btn.disabled = false;
   });
 }
 
@@ -3720,6 +3796,15 @@ function exportWeekCompareToExcel() {
       { label: '3.4-无效/低效社交', key: 'procDetail', index: 3, configKey: 'procNames' },
       { label: '3.5-其他', key: 'procDetail', index: 4, configKey: 'procNames' },
       { label: 'Rest', key: 'rest', isCat: true, color: colors.rest },
+      { label: '0.1-睡觉', key: 'restDetail', index: 0, configKey: 'restNames' },
+      { label: '0.2-吃喝', key: 'restDetail', index: 1, configKey: 'restNames' },
+      { label: '0.3-散步', key: 'restDetail', index: 2, configKey: 'restNames' },
+      { label: '0.4-出行', key: 'restDetail', index: 3, configKey: 'restNames' },
+      { label: '0.5-刷手机', key: 'restDetail', index: 4, configKey: 'restNames' },
+      { label: '0.6-卫生', key: 'restDetail', index: 5, configKey: 'restNames' },
+      { label: '0.7-游戏', key: 'restDetail', index: 6, configKey: 'restNames' },
+      { label: '0.8-社交', key: 'restDetail', index: 7, configKey: 'restNames' },
+      { label: '0.9-其他', key: 'restDetail', index: 8, configKey: 'restNames' },
       { label: 'MW', key: 'mw', isCat: true, color: colors.mw }
     ];
 
@@ -3729,7 +3814,7 @@ function exportWeekCompareToExcel() {
       gfp: { label: 'GFP - Guilt Free Play', values: [], rowIndex: 10 },
       proc: { label: 'Proc - Procrastination', values: [], rowIndex: 18 },
       rest: { label: 'Rest', values: [], rowIndex: 24 },
-      mw: { label: 'MW', values: [], rowIndex: 25 }
+      mw: { label: 'MW', values: [], rowIndex: 34 }
     };
 
     // 数据行
@@ -3739,7 +3824,9 @@ function exportWeekCompareToExcel() {
       var labelDisplay = row.label;
       if (row.configKey && weeksData[0]) {
         var idx = row.index;
-        var configVal = weeksData[0].config[row.configKey][idx];
+        // 服务端旧配置可能没有 restNames，回退默认名
+        var nameArr = weeksData[0].config[row.configKey] || DEFAULT_CONFIG[row.configKey] || [];
+        var configVal = nameArr[idx] || row.label.split('-')[1];
         labelDisplay = row.label.split('-')[0] + '-' + configVal;
       }
       var rowData = [labelDisplay];
