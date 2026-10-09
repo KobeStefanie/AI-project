@@ -20,8 +20,11 @@ class ReviewUI {
   async init() {
     this.loadGoals();
     this.loadHistory();
-    this.initWeekSelectors();
+    // 先算出默认周范围（当前周往前 3 周），再初始化输入框和日期提示，
+    // 否则日期提示会停留在构造函数里的旧默认值
     this.initQuickSelect();
+    this.initWeekSelectors();
+    this.initStageNav();
 
     // 检查 AI 是否可用
     const status = await this.engine.checkAIStatus();
@@ -42,6 +45,25 @@ class ReviewUI {
       banner.innerHTML = `✅ AI 已就绪（${status.model}）`;
       banner.style.display = 'block';
     }
+  }
+
+  // 顶部阶段按钮可点击：只能去已经有内容的阶段（切换不会清空任何数据）
+  initStageNav() {
+    document.querySelectorAll('.stage-btn').forEach(btn => {
+      btn.style.cursor = 'pointer';
+      btn.addEventListener('click', () => {
+        const s = parseInt(btn.dataset.stage);
+        if (s === 2 && this.chatMessages.length === 0) {
+          alert('还没有开始对话');
+          return;
+        }
+        if (s === 3 && !this.generatedReport) {
+          alert('还没有生成报告');
+          return;
+        }
+        this.switchStage(s);
+      });
+    });
   }
 
   // ===== 阶段切换 =====
@@ -164,8 +186,8 @@ class ReviewUI {
       return;
     }
 
-    // 切换到报告阶段并显示历史报告
-    this.switchStage(3);
+    // 历史报告用弹窗展示，不切换阶段、不碰 report-content，
+    // 否则会覆盖当前正在进行的对话/报告且无法返回
 
     // 简易 markdown 渲染（与 renderReport 相同的逻辑）
     let html = data.reportMarkdown || '<p>无报告内容</p>';
@@ -206,7 +228,7 @@ class ReviewUI {
       .replace(/<p><\/p>/g, '');
 
     // 显示历史报告内容（使用与生成报告相同的样式）
-    const reportContent = document.getElementById('report-content');
+    const reportContent = document.getElementById('history-view-content');
     reportContent.innerHTML = `
       <div style="padding: 20px; background: #fff3cd; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ffeeba;">
         <h3 style="margin: 0 0 12px 0; color: #856404;">📅 ${data.yearMonth} 第${data.weekRange[0]}-${data.weekRange[1]}周复盘</h3>
@@ -235,6 +257,12 @@ class ReviewUI {
         </details>
       `;
     }
+
+    document.getElementById('history-view-modal').classList.add('show');
+  }
+
+  closeHistoryModal() {
+    document.getElementById('history-view-modal').classList.remove('show');
   }
 
   // ===== 周选择器（改为手动输入）=====
@@ -367,7 +395,7 @@ class ReviewUI {
       // 生成二级分类明细
       let breakdownHtml = '';
       if (w.breakdown && Object.keys(w.breakdown).length > 0) {
-        const sortedCodes = Object.keys(w.breakdown).sort();
+        const sortedCodes = Object.keys(w.breakdown).sort(this.constructor.sortCodes);
         const items = sortedCodes.map(code => {
           const hours = Math.round(w.breakdown[code] * 10) / 10;
           const label = this.getCodeLabel(code);
@@ -401,23 +429,21 @@ class ReviewUI {
   getCodeLabel(code) {
     // 从当前周的配置读取自定义名称
     const config = this.engine.AppCore.getConfig(this.currentYear, this.currentStartWeek);
+    // v105：x.1~x.9 → 下标 0~8，x.0（或裸 0~3）→ 下标 9「其他」
+    const sub = window.AppCore.codeToSub(code);
+    if (!sub) return code;
+    const name = config[sub.cat + 'Names']?.[sub.idx];
+    return name || `${sub.cat.toUpperCase()} ${code}`;
+  }
 
-    if (code.startsWith('0.')) {
-      // v2.16.0：休息细分
-      const idx = parseInt(code.substring(2)) - 1;
-      const restDefault = ['睡觉','吃喝','散步','出行','刷手机','卫生','游戏','社交','其他'];
-      return config.restNames?.[idx] || restDefault[idx] || `Rest ${code}`;
-    } else if (code.startsWith('1.')) {
-      const idx = parseInt(code.substring(2)) - 1;
-      return config.qwNames?.[idx] || `QW ${code}`;
-    } else if (code.startsWith('2.')) {
-      const idx = parseInt(code.substring(2)) - 1;
-      return config.gfpNames?.[idx] || `GFP ${code}`;
-    } else if (code.startsWith('3.')) {
-      const idx = parseInt(code.substring(2)) - 1;
-      return config.procNames?.[idx] || `Proc ${code}`;
-    }
-    return code;
+  // breakdown 编码排序：按大类 1/2/3/0，同类内 x.1…x.9，x.0 其他排最后
+  static sortCodes(a, b) {
+    const rank = c => {
+      const s = window.AppCore.codeToSub(c);
+      if (!s) return 99;
+      return ({ qw: 0, gfp: 1, proc: 2, rest: 3 })[s.cat] * 10 + s.idx;
+    };
+    return rank(a) - rank(b);
   }
 
   // ===== 阶段2：对话 =====
@@ -549,7 +575,7 @@ class ReviewUI {
     let html = this.generatedReport
       // 标题
       .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-      .replace(/^## (.+)$/gm, '<h2>$2</h2>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
       // blockquote
       .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
       // 加粗
@@ -660,9 +686,10 @@ class ReviewUI {
       html += '<tr>';
       html += `<td style="padding: 10px; border: 1px solid #334155; background: #1e293b; color: #e2e8f0; font-weight: 500;">${row.label}</td>`;
 
+      // calcWeeklyStats 的 totals 是半小时格数，统一换算为小时（与明细行一致）
       const values = weeksData.map(wd => {
         if (!wd.hasData) return null;
-        return wd.stats.totals[row.key] || 0;
+        return (wd.stats.totals[row.key] || 0) * 0.5;
       });
 
       const maxValue = Math.max(...values.filter(v => v !== null && v > 0));
@@ -697,7 +724,7 @@ class ReviewUI {
     let config = {};
     try {
       const configStr = localStorage.getItem(configKey);
-      if (configStr) config = JSON.parse(configStr);
+      if (configStr) config = window.AppCore.normalizeConfigNames(JSON.parse(configStr));
     } catch (e) {
       console.error('读取配置失败:', e);
     }
@@ -735,10 +762,10 @@ class ReviewUI {
 
       const isEven = idx % 2 === 0;
       const rowBg = isEven ? 'white' : '#e0f2fe';
-      const codeLabel = `${codePrefix}.${idx + 1}`;
+      const codeLabel = window.AppCore.subCode(codePrefix, idx);
 
       html += '<tr>';
-      html += `<td style="padding: 8px 10px 8px 30px; border: 1px solid #334155; background: ${rowBg}; color: #475569; font-size: 14px;">└ ${codeLabel}-${name}</td>`;
+      html += `<td style="padding: 8px 10px 8px 30px; border: 1px solid #334155; background: ${rowBg}; color: #475569; font-size: 14px;">└ ${codeLabel}-${name || "(未命名)"}</td>`;
 
       const values = weeksData.map(wd => {
         if (!wd.hasData || !wd.stats.totals[detailKey]) return null;
@@ -871,7 +898,7 @@ class ReviewUI {
       const cellsStr = localStorage.getItem(cellsKey);
       if (cellsStr) cells = JSON.parse(cellsStr);
       const configStr = localStorage.getItem(configKey);
-      if (configStr) config = JSON.parse(configStr);
+      if (configStr) config = window.AppCore.normalizeConfigNames(JSON.parse(configStr));
     } catch (e) {
       console.error('读取本地数据失败:', e);
     }
@@ -1035,9 +1062,12 @@ class ReviewUI {
         html += `<td style="padding: 10px; border: 1px solid #334155; background: #1e293b; color: #e2e8f0; font-weight: 500;">${row.label}</td>`;
       }
 
+      // calcWeeklyStats 的 totals 是半小时格数，统一换算为小时（与明细行一致）
+      // 凌晨工作次数是次数，不换算
       const values = weeksData.map(wd => {
         if (!wd.hasData) return null;
-        return wd.stats.totals[row.key] || 0;
+        const raw = wd.stats.totals[row.key] || 0;
+        return row.key === 'lateWorkCount' ? raw : raw * 0.5;
       });
 
       // 找出最大值（用于大数字强调）
@@ -1114,7 +1144,7 @@ class ReviewUI {
     let config = {};
     try {
       const configStr = localStorage.getItem(configKey);
-      if (configStr) config = JSON.parse(configStr);
+      if (configStr) config = window.AppCore.normalizeConfigNames(JSON.parse(configStr));
     } catch (e) {
       console.error('读取配置失败:', e);
     }
@@ -1163,8 +1193,8 @@ class ReviewUI {
       html += `<tr id="${rowId}" style="display: none;">`;
 
       // 显示格式：└ 1.1-AI
-      const codeLabel = `${codePrefix}.${idx + 1}`;
-      html += `<td style="padding: 8px 10px 8px 30px; border: 1px solid #334155; background: ${rowBg}; color: #475569; font-size: 14px;">└ ${codeLabel}-${name}</td>`;
+      const codeLabel = window.AppCore.subCode(codePrefix, idx);
+      html += `<td style="padding: 8px 10px 8px 30px; border: 1px solid #334155; background: ${rowBg}; color: #475569; font-size: 14px;">└ ${codeLabel}-${name || "(未命名)"}</td>`;
 
       // 获取每周的值（数组索引对应子分类）
       const values = weeksData.map(wd => {

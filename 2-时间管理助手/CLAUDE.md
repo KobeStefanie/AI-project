@@ -6,17 +6,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 时间管理助手是一个仿 Excel 周计划表的 PWA 应用，支持 Windows 桌面 + iPhone + 华为安卓。核心是 7 天 × 34 半小时格的时间表，搭配分类代码系统（0.x=Rest, 1.x=QW, 2.x=GFP, 3.x=Proc, 4=MW）进行自动统计与着色。
 
-### 分类编码（v99 起）
+### 分类编码（v105 起：四大类统一 10 个子类）
 
 | 大类 | 编码 | 子类（配置字段） |
 |---|---|---|
-| Rest 休息 | 0.1~0.9 | 睡觉/吃喝/散步/出行/刷手机/卫生/游戏/社交/其他（`restNames`，9 项） |
-| QW | 1.1~1.7 | `qwNames`，7 项 |
-| GFP | 2.1~2.7 | `gfpNames`，7 项 |
-| Proc | 3.1~3.5 | `procNames`，5 项，固定 |
+| Rest 休息 | 0.1~0.9、0.0 | 睡觉/吃喝/散步/出行/刷手机/卫生/游戏/社交/发呆/放空 + 0.0 其他 |
+| QW | 1.1~1.9、1.0 | AI/心理咨询/**读书(1.3)**/**注会变现(1.4)**/投资/自我管理，1.7~1.9 空位停用，1.0 其他 |
+| GFP | 2.1~2.9、2.0 | 影片/运动/社交/旅行/游戏/小资/钢琴/演出（v108：2.1 演出改名影片，2.8 新增演出），2.9 空位停用，2.0 其他 |
+| Proc | 3.1~3.9、3.0 | 睡懒觉/刷手机/拖延/无效社交，3.5~3.9 空位停用，3.0 其他 |
 | MW | 4 | 无子类 |
 
-- 纯 `0` 不再允许新录入（`validateCode` 会提示细分）；统计仍兼容旧的纯 0（只计入 rest 总数，不进 `restDetail`）
+- 每类名称数组 `xNames` 固定 10 项，**下标 0~8 = x.1~x.9，下标 9 = x.0「其他」**；`xOn`（10 项布尔）为启用开关，下标 9 固定启用
+- x.0 **存为数字 `0/1/2/3`**，显示用 `subCode(prefix, 9)` / `fmtCode()` 补 `.0`；录入 `1` / `1.0` 都合法。数字存储下 1.0 就是 1，所以 4 永远是 MW、不存在 4.x
+- 停用只禁止新录入，历史格子照常统计；展示循环一律用 `visibleSubs(config, cat, detail)`，编码解析用 `codeToSub()`，不要再写死 7 / 8 / 9 / 5
+- 旧配置（任意长度）读取时由 `normalizeConfigNames()` 自动展开为 10 项并补 `xOn`，「其他」移到下标 9
+- **`DEFAULT_CONFIG` 必须与实际使用的配置一致**（v106 教训：旧默认 1.3 注会变现 / 1.4 读书与实际相反，回退默认时名称对调）。默认起始时间 9:00。用户改了子类名称时，同步改 `DEFAULT_CONFIG`
+- 改配置结构 / 编码格式时，必须用**上一版代码**拉一次新数据，确认旧客户端不会改坏本地（WORKFLOW 需求5 第 6 步）
+- v108 历史迁移（2026-10-09，`tools/migrate-v108-film-show.js`，13 格）：2.6 里的电影→2.1、w28 吃饭 2.1→2.3、去看电影 0.0→0.4，备份在 `backups/pre-v108-film-show-20261009-1922/`
+- v105 历史迁移（2026-10-09，`tools/migrate-v105-ten-subcats.js`，95 格）：1.7→1.0、2.8→2.0、3.5→3.0，备份在 `backups/pre-v105-ten-subcats-20261009-1606/`
+- v104：0.0 = 休息「其他」（存为 `0`）；不能用 0.10（会变成 0.1）
+- 历史数据已于 2026-10-09 用 `tools/migrate-v104-piano-daze.js` 迁移（2.6 含「琴」→2.7、2.7→2.8、0.9 非发呆→0.0），备份在 `backups/pre-gfp-piano-rest-daze-20261009-1216/`
 - 同名"刷手机"：`0.5` = 正常休息，`3.2` = 内耗，分析时必须区分
 - 历史 w22-w40 的 code=0 已于 2026-09-29 用 `tools/migrate-rest-subcat.js` 迁移，迁移前备份在 `backups/pre-rest-subcat-20260929-1300/`
 
@@ -67,7 +76,7 @@ node sync-server.js         # 同步服务：HTTP 6372 + HTTPS 6444
   - 常量（`WEEKDAYS`, `KEY_ROWS`, `TIME_SLOTS`, `DEFAULT_CONFIG`）
   - ISO 周计算（`getISOWeek`, `getWeekDates`, `getPrevWeek`, `getNextWeek`）
   - LocalStorage CRUD（`getCells/saveCells`, `getKeyItems/saveKeyItems`, `getConfig/saveConfig`, `getReview/saveReview`, `getKeyItemStatus/saveKeyItemStatus`）
-  - 统计计算（`calcDailyStats`, `calcWeeklyStats`），明细数组 `qwDetail[7]` / `gfpDetail[7]` / `procDetail[5]` / `restDetail[9]`
+  - 统计计算（`calcDailyStats`, `calcWeeklyStats`），明细数组 `qwDetail` / `gfpDetail` / `procDetail` / `restDetail` 均为 10 项（v105，下标 9 = x.0）
   - JSON 导出/导入（`exportAllData`, `importAllData`）
   - 同步客户端 `syncClient`：推送/拉取/心跳/WebSocket/离线队列/配对绑定；`pullAllWeeks()`（v99）串行拉取服务端全部周
   - `onSaveChange` 事件机制：每次 `save*` 后触发，syncClient 订阅以实现保存即推送
@@ -129,14 +138,16 @@ node sync-server.js         # 同步服务：HTTP 6372 + HTTPS 6444
 - 桌面端周配置（QW 名称、GFP 名称、起始时间、标准数）由 Windows 端确认，手机端只读共享
 - 颜色规则：HTML 用 CSS class（`cat-rest`/`cat-qw`/`cat-gfp`/`cat-proc`/`cat-mw`），Excel 导出直接写 RGB 值
 - **iOS 同步协议**（v2.13.2 修正）：iOS 不再强制 HTTP。页面用 HTTPS 访问时同步也走 HTTPS 6444 端口，避免 Mixed Content 阻塞。`getEffectiveProtocol()` 已改为跟随页面协议，新增网络请求时保持此逻辑
-- **新周配置继承**：`getConfig()` 在新周无配置时会自动从上一周继承并保存，无需用户手动复制
+- **新周配置继承**：`getConfig()` 在新周无配置时，用 `findLatestConfigBefore()` 沿用此前最近一个有配置的周（隔空周、跨年都能找到）并保存；本机一份配置都没有时才用 `DEFAULT_CONFIG`（v106）
 - **心跳自动拉取**：30s 心跳 ping `/info` 后会自动 pull 当前周数据（v2.13.1），作为 WebSocket 断开时的兜底
 - **切周自动拉取**（v100）：`renderAll()` 末尾的 `syncViewedWeek()` 在查看的周变化时 `setCurrentWeek` + `pullWeek`，心跳也随之跟随当前查看的周；首次渲染不拉，交给启动流程（先 flush 离线队列）
 - **改分类编码 / 批量改历史数据**：按 WORKFLOW.md 需求5 执行（备份 → dry-run → apply → 逐格对比 → 客户端拉取验证）。服务端改数据必须刷新 `cell.updatedAt` 和 `weekUpdatedAt`，否则客户端 LWW 合并会忽略
-- **新增编码的消费点**：`validateCode`、`calcDailyStats`、桌面统计表、左栏、移动端明细、配置页、Excel 导出、周对比（两处行列表）、`review-engine.calculateStats`、`review-ui.getCodeLabel` 与周对比明细，缺一处就会漏统计
+- **新增编码的消费点**：`validateCode`、`calcDailyStats`、桌面统计表、左栏、移动端明细、配置页、Excel 导出、周对比（两处行列表）、`review-engine.calculateStats` 与日程格事件汇总、`review-ui.getCodeLabel` 与周对比明细，缺一处就会漏统计。v105 起这些点都走 `codeToSub` / `visibleSubs` / `subCode`，改编码规则优先改这三个函数
 - **拉取数据变化判断**：`_applyServerWeekToLocal` 通过 `serverWeekUpdatedAt` 快速跳过无变化数据，返回 `false` 时不触发 UI 刷新，避免页面频繁重绘
 - **Cache-Control 与 SW 的互斥**（v2.13.2 重要教训）：`Cache-Control: no-store` 会阻止 Service Worker Cache API 存储响应（iOS Safari 严格遵守）。服务器必须用 `public, max-age=0` 才能让 SW 缓存正常工作。SW 中 `sanitizeForCache()` 额外剥离限制性头以防万一
 - **SW 拦截范围**（v101）：fetch 事件只接管同源静态资源和 `CDN_HOSTS` 白名单；同步 API（`SYNC_API_RE`：/weeks /info /devices /pair /events，或带 `X-Device-Token` 的请求）一律直连网络。`cache.put` 前必须 `resp.clone()`，因为 `sanitizeForCache` 会接管 body，不 clone 会让页面读不到响应。新增 CDN 依赖时要加进 `CDN_HOSTS`，否则离线不可用
+- **同步关闭也要打时间戳**（v102）：`_handleSaveChange` 不能因为 `!cfg.enabled` 提前 return，否则关闭期间的修改会带着旧 `updatedAt` 推上去，对端 LWW 判定“不新”后跳过。只有 `_schedulePush` 受开关控制
+- **lanIPs 顺序**（v103）：客户端把 `/info` 返回的 `lanIPs[0]` 存为 `lastIP`，`getLanIPs()` 必须保证真实局域网 IP 排第一（私有网段 + 物理网卡优先，VPN/虚拟网卡垫底，169.254 过滤）
 - **sync-server 鉴权里改设备字段**（v101）：必须在 `authenticate` 已加载的同一份 `data.devices` 中查找并修改，再 `saveDevices(data)`；`findDeviceByToken` 会重新读文件，只能用于只读查询
 
 ## 常见问题排查
@@ -149,6 +160,14 @@ node sync-server.js         # 同步服务：HTTP 6372 + HTTPS 6444
 5. 检查服务端数据：`curl http://127.0.0.1:6372/weeks`
 6. 检查 `sync-data/` 目录下 JSON 文件是否有数据
 7. **iPhone Mixed Content**：如果页面 HTTPS 但同步走 HTTP，Safari 会阻止——确保 `getEffectiveProtocol()` 跟随页面协议（v2.13.2 已修复）
+
+### iPhone 同一 Wi-Fi 下连不上（v103）
+先看手机日志的报错类型，两种原因排查方向不同：
+- **`timeout`**：地址不通。核对手机填的 IP 是不是 `ipconfig` 里 **WLAN** 那行。电脑装了 Radmin VPN（`26.104.213.44`），它不是局域网地址；v103 前 `/info` 的 lanIPs 会把 VPN 排第一，手机被自动回填成 VPN 地址
+- **`Load failed`**：证书不含该地址。查 SAN：`openssl x509 -in certs/leaf-cert-chain.pem -noout -text | grep -A1 "Subject Alternative"`；不含当前 IP 就跑 `node tools/gen-cert/gen-leaf.js`，再重启两个服务（CA 不变，iPhone 不用重装）
+- gen-leaf 只写**当前**网卡 IP，换回旧网络要重签
+- ⚠️ v103「保存并连接」成功后会记住电脑名，之后先试 `.local`；但 `_tryFetch` 不记成功的地址，iOS 解析不了 `.local` 时每次请求白等最多 8s。修复前（截至 v107 仍未修），手机直接填 IP，不点「保存并连接」（详见 BUG_FIX_LOG.md v103「已知隐患」）
+- 防火墙已有入站规则「时间管理助手」（TCP 6443/6444），一般不用再动
 
 ### 服务端数据已改，但历史周仍显示旧数据
 - 先确认版本 ≥ v100（v99 及以前切周不拉取，只有本周/上周会自动同步）

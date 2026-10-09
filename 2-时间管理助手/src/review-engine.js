@@ -91,10 +91,10 @@ class ReviewEngine {
         // 注意：不能写 !cell.code —— 代码 "0"（休息）是 falsy，会被整批漏掉
         if (!cell || cell.code === undefined || cell.code === null || cell.code === '') return;
 
-        const code = String(cell.code).trim();
-        // v2.16.0：休息细分 0.1~0.9；兼容旧数据纯 0（只计总数）
-        if (code === '0') totalRest += 0.5;
-        else if (code.startsWith('0.')) {
+        // v105：各大类「其他」存为裸 0/1/2/3，统一记为 x.0
+        const raw = String(cell.code).trim();
+        const code = /^[0-3]$/.test(raw) ? raw + '.0' : raw;
+        if (code.startsWith('0.')) {
           totalRest += 0.5;
           breakdown[code] = (breakdown[code] || 0) + 0.5;
         }
@@ -430,7 +430,10 @@ class ReviewEngine {
 
   // 保存复盘记录
   saveReviewRecord(year, month, data) {
-    const key = `tm_review_${year}_m${String(month).padStart(2, '0')}`;
+    // key 带上周范围：同一个月内多次复盘（如 35-38 周与 37-40 周）不会互相覆盖
+    // 旧格式 tm_review_YYYY_mMM 仍被 listReviewRecords 识别
+    const range = Array.isArray(data.weekRange) ? `_w${data.weekRange[0]}-${data.weekRange[1]}` : '';
+    const key = `tm_review_${year}_m${String(month).padStart(2, '0')}${range}`;
     localStorage.setItem(key, JSON.stringify({
       ...data,
       savedAt: new Date().toISOString()
@@ -506,6 +509,22 @@ class ReviewEngine {
         .filter(v => v && String(v).trim())
         .slice(0, 12);
 
+      // 日程格事件汇总：按「事件名 + 分类代码」累计小时数
+      // 旧版只给 AI 关键事项，日程格里的钢琴、读书等 AI 看不到，会误判"那周没做"
+      const eventMap = {};
+      Object.keys(w.cells || {}).forEach(k => {
+        const c = w.cells[k];
+        if (!c) return;
+        const title = String(c.title || '').trim();
+        if (!title) return;
+        const rawCode = c.code == null ? '' : String(c.code).trim();
+        const code = /^[0-3]$/.test(rawCode) ? rawCode + '.0' : rawCode;  // v105：裸 0~3 = x.0 其他
+        const id = `${title}|${code}`;
+        if (!eventMap[id]) eventMap[id] = { title, code, hours: 0 };
+        eventMap[id].hours += 0.5;
+      });
+      const events = Object.values(eventMap).sort((a, b) => b.hours - a.hours);
+
       // 计算该周的日期范围（供 AI 表述时间）
       let weekDateRange = '';
       try {
@@ -527,6 +546,7 @@ class ReviewEngine {
         rest: wStats.totalRest,
         mw: wStats.totalMW,
         keyItems: keyItemTexts,
+        events,  // 日程格事件汇总（完整，非摘录）
         breakdown: wStats.breakdown  // 新增：每周的二级分类明细
       };
     });
@@ -548,19 +568,31 @@ class ReviewEngine {
   // 改进2：找到本次之前最近一次复盘，用于对比
   getPreviousReview(year, startWeek) {
     const records = this.listReviewRecords();
-    // 只取结束周早于本次开始周的记录，取最近的一条
+    // 取开始周早于本次开始周的最近一条（允许周范围重叠，如上次 35-38、本次 37-40）
+    // 旧逻辑要求上次结束周 < 本次开始周，重叠的复盘会被漏掉，AI 误判为"第一次复盘"
     const earlier = records
-      .filter(r => Array.isArray(r.weekRange) && r.weekRange[1] < startWeek)
-      .sort((a, b) => b.weekRange[1] - a.weekRange[1]);
+      .filter(r => Array.isArray(r.weekRange) && r.weekRange[0] < startWeek)
+      .sort((a, b) => (b.weekRange[1] - a.weekRange[1]) || (b.weekRange[0] - a.weekRange[0]));
 
     if (earlier.length === 0) return null;
 
     const prev = earlier[0];
     const full = JSON.parse(localStorage.getItem(prev.key) || '{}');
+
+    // 上次对话里 AI 问过、用户答过的内容，避免本次重复提问
+    const log = Array.isArray(full.conversationLog) ? full.conversationLog : [];
+    const qaPairs = [];
+    for (let i = 0; i < log.length; i++) {
+      if (log[i].role === 'assistant' && log[i + 1] && log[i + 1].role === 'user') {
+        qaPairs.push({ q: String(log[i].content), a: String(log[i + 1].content) });
+      }
+    }
+
     return {
       weekRange: prev.weekRange,
       yearMonth: prev.yearMonth,
       conclusion: full.conclusion || '',
+      qaPairs,
       // 上次你自己怎么描述的（自由对话原文）
       userWords: full.userWords || full.feelings || '',
       keywords: full.keywords || [],
@@ -618,9 +650,16 @@ class ReviewEngine {
       const parts = [`第 ${w.week} 周`];
       if (w.dateRange) parts.push(w.dateRange);  // 新增：直接显示日期范围
       if (w.keyword) parts.push(`关键词：「${w.keyword}」`);
-      if (w.keyItems.length) parts.push(`做了：${w.keyItems.join('、')}`);
+      if (w.keyItems.length) parts.push(`关键事项（摘录）：${w.keyItems.join('、')}`);
       L.push(`- ${parts.join(' ｜ ')}`);
+      if (w.events && w.events.length) {
+        const evText = w.events
+          .map(e => `${e.title}${e.code ? `(${e.code})` : ''} ${e.hours}h`)
+          .join('、');
+        L.push(`  · 日程格全部事件（按时长）：${evText}`);
+      }
     });
+    L.push('⚠️ 判断某周"做没做某件事"必须以「日程格全部事件」为准，关键事项只是摘录；两处都没有才能说没做。');
     L.push('');
 
     L.push(`## 趋势判断`);
@@ -671,7 +710,16 @@ class ReviewEngine {
           L.push(`- 拖延相比上次：${procChange > 0 ? '明显增加' : '明显减少'}`);
         }
       }
-      if (p.userWords) {
+      if (p.conclusion) {
+        L.push(`- 上次结论：「${String(p.conclusion).slice(0, 200)}」`);
+      }
+      if (p.qaPairs && p.qaPairs.length) {
+        L.push(`- 上次对话中已问过并得到回答的问题（⚠️ 不要重复问；可以引用他当时的回答往下深入，或问"现在还是这样吗"）：`);
+        p.qaPairs.slice(-12).forEach(({ q, a }) => {
+          L.push(`  · 问：${q.slice(0, 150)}`);
+          L.push(`    答：${a.slice(0, 300)}`);
+        });
+      } else if (p.userWords) {
         L.push(`- 当时你自己说的话：「${String(p.userWords).slice(0, 500)}」`);
       }
       if (p.keywords && p.keywords.length) {

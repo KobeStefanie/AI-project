@@ -1,4 +1,4 @@
-// time-planner v101
+// time-planner v108
 // 缓存策略（v2.13.3 修复离线功能）：
 //   - 移除复盘中心文件缓存（桌面专用，不需离线）
 //   - SW fetch 事件跳过 review-center/engine/ui 请求
@@ -11,7 +11,7 @@
 //
 // 版本更新：浏览器周期性比对 service-worker.js 自身，
 // 配合 app.js 的 updatefound → SKIP_WAITING → controllerchange → reload 流。
-const CACHE_NAME = 'time-planner-v101';
+const CACHE_NAME = 'time-planner-v108';
 // 注意：中文路径用 encodeURI 处理，避免不同浏览器 URL 编码差异
 // 导致 cache.match 命中失败（iOS Safari 与 Chrome 行为不同）
 const HTML_FILE = './' + encodeURI('时间管理助手.html');
@@ -60,7 +60,7 @@ function sanitizeForCache(response) {
 
 // -------- install：逐个缓存，单文件失败不致命 --------
 self.addEventListener('install', event => {
-  console.log('[sw] install v101 开始，准备缓存', ASSETS.length, '个文件');
+  console.log('[sw] install v108 开始，准备缓存', ASSETS.length, '个文件');
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       const localAssets = ASSETS.filter(u => !u.startsWith('http'));

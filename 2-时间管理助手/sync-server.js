@@ -228,17 +228,29 @@ function listWeeks() {
 
 // -------- 工具：网络 --------
 
+// v103：真实局域网 IP 排第一。客户端把 lanIPs[0] 存为 lastIP，
+// 之前 Radmin VPN（26.x）排在 WLAN 前面，手机被回填成 VPN 地址后连不上
+const VIRTUAL_IFACE_RE = /vpn|radmin|vmware|virtualbox|vethernet|hyper-v|wsl|tailscale|zerotier|hamachi|loopback/i;
+
+function isPrivateIPv4(ip) {
+  return /^10\./.test(ip)
+    || /^192\.168\./.test(ip)
+    || /^172\.(1[6-9]|2\d|3[01])\./.test(ip);
+}
+
 function getLanIPs() {
   const ifaces = os.networkInterfaces();
   const ips = [];
   for (const name of Object.keys(ifaces)) {
     for (const ifc of ifaces[name]) {
-      if (ifc.family === 'IPv4' && !ifc.internal) {
-        ips.push({ ip: ifc.address, iface: name });
-      }
+      if (ifc.family !== 'IPv4' || ifc.internal) continue;
+      if (/^169\.254\./.test(ifc.address)) continue; // 链路本地地址，手机不可达
+      ips.push({ ip: ifc.address, iface: name });
     }
   }
-  return ips;
+  // 私有网段 + 物理网卡优先，VPN/虚拟网卡垫底
+  const rank = (x) => (isPrivateIPv4(x.ip) ? 0 : 2) + (VIRTUAL_IFACE_RE.test(x.iface) ? 1 : 0);
+  return ips.sort((a, b) => rank(a) - rank(b));
 }
 
 // -------- 合并逻辑（last-write-wins，按粒度比较 updatedAt）--------

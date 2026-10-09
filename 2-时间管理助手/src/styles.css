@@ -354,6 +354,11 @@ body.frozen .main-table thead th.col-label { z-index: 30; }
 .cell-form input.input-error { border-color: #dc2626; background: #fef2f2; }
 .cell-form input.input-error:focus { border-color: #dc2626; box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.18); }
 .code-hint { font-size: 10px; color: #64748b; line-height: 1.4; }
+/* v107：允许编码按大类分行 */
+.code-hint-title { margin-bottom: 2px; }
+.code-hint-row { display: flex; gap: 6px; padding: 2px 0; border-top: 1px dashed var(--c-border); }
+.code-hint-row b { flex: 0 0 34px; color: #334155; }
+.code-hint-row span { flex: 1; min-width: 0; }
 .kbd-hint { font-size: 10px; color: #94a3b8; line-height: 1.5; padding-top: 4px; border-top: 1px dashed var(--c-border); }
 .dialog-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px; }
 .mobile-paste-actions { display: none; border-top: 1px solid var(--c-border); padding-top: 8px; justify-content: flex-start; }

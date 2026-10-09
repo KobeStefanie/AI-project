@@ -584,6 +584,16 @@
     </div>
   </div>
 
+  <!-- 历史复盘查看模态框（弹窗展示，不覆盖当前对话/报告） -->
+  <div id="history-view-modal" class="modal" onclick="if (event.target === this) reviewUI.closeHistoryModal()">
+    <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow: auto;">
+      <div class="report-markdown" id="history-view-content"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="reviewUI.closeHistoryModal()">关闭，回到当前复盘</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 周期对比模态框 -->
   <div id="week-compare-modal" class="modal">
     <div class="modal-content" style="max-width: 90vw; max-height: 90vh; overflow: auto;">

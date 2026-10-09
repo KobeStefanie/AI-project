@@ -15,9 +15,9 @@ var KEY_ITEM_STATUS_VALUES = ['done','ongoing','todo'];
 // 示例：buildTimeSlots('7:00') → ['7:00-7:30', '7:30-8:00', ..., '23:30-0:00']
 // 输出与历史一致：小时不补零，分钟两位（'7:00-7:30' 而非 '07:00-07:30'）。
 function buildTimeSlots(startTime) {
-  var parts = String(startTime || '7:00').split(':');
+  var parts = String(startTime || '9:00').split(':');
   var sm = parseInt(parts[0], 10) * 60 + parseInt(parts[1] || '0', 10);
-  if (isNaN(sm)) sm = 7 * 60;
+  if (isNaN(sm)) sm = 9 * 60;
   sm = ((sm % 1440) + 1440) % 1440;
   function fmt(min) {
     var m = ((min % 1440) + 1440) % 1440;
@@ -33,18 +33,96 @@ function buildTimeSlots(startTime) {
   return slots;
 }
 
-// 默认时间表（起始 7:00；对应 7:00-0:00 共 17 小时 = 34 半小时格）
-var TIME_SLOTS = buildTimeSlots('7:00');
+// 默认时间表（v106 起始 9:00；对应 9:00-2:00 共 17 小时 = 34 半小时格）
+var TIME_SLOTS = buildTimeSlots('9:00');
 
+// v105：四大类统一 10 个子类。数组下标 0~8 对应 x.1~x.9，下标 9 对应 x.0「其他」
+//   x.0 存为数字 0/1/2/3（显示时补 .0），4 仍是 MW
+//   *On 为启用开关，空名的子类默认停用；下标 9（其他）固定启用
 var DEFAULT_CONFIG = {
-  qwNames: ['新媒体运营','心理咨询','注会变现','读书','投资','造音师','其他'],
-  gfpNames: ['演出','运动','约会','旅行','游戏','小资','其他'],
-  procNames: ['睡懒觉','刷手机','拖延','无效/低效社交','其他'],
-  // v2.16.0：休息细分（0.1~0.9），参照 QW 管理
-  restNames: ['睡觉','吃喝','散步','出行','刷手机','卫生','游戏','社交','其他'],
+  // v105：默认值与实际使用的配置一致（旧默认 1.3 注会变现 / 1.4 读书 与实际相反，回退默认时会显示错位）
+  qwNames:   ['AI','心理咨询','读书','注会变现','投资','自我管理','','','','其他'],
+  // v108：2.1 演出改名影片，2.8 新增演出
+  gfpNames:  ['影片','运动','社交','旅行','游戏','小资','钢琴','演出','','其他'],
+  procNames: ['睡懒觉','刷手机','拖延','无效/低效社交','','','','','','其他'],
+  restNames: ['睡觉','吃喝','散步','出行','刷手机','卫生','游戏','社交','发呆/放空','其他'],
+  qwOn:   [true,true,true,true,true,true,false,false,false,true],
+  gfpOn:  [true,true,true,true,true,true,true,true,false,true],
+  procOn: [true,true,true,true,false,false,false,false,false,true],
+  restOn: [true,true,true,true,true,true,true,true,true,true],
   standard: 12,
-  startTime: '7:00'
+  startTime: '9:00'
 };
+
+var SUB_N = 10;
+var CATS = ['qw', 'gfp', 'proc', 'rest'];
+var CAT_PREFIX = { rest: '0', qw: '1', gfp: '2', proc: '3' };
+var PREFIX_CAT = { '0': 'rest', '1': 'qw', '2': 'gfp', '3': 'proc' };
+// 兼容 v104 调用方
+var SUB_COUNT = { qw: SUB_N, gfp: SUB_N, proc: SUB_N, rest: SUB_N };
+
+// 子类编码文字：subCode('1', 9) → '1.0'，subCode('2', 6) → '2.7'
+function subCode(prefix, idx) {
+  if (idx === 9) return prefix + '.0';
+  return prefix + '.' + (idx + 1);
+}
+
+// 编码 → { cat, prefix, idx }；4（MW）、空值、非法值返回 null
+function codeToSub(code) {
+  if (code === null || code === undefined || code === '') return null;
+  var n = parseFloat(code);
+  if (isNaN(n)) return null;
+  var f = Math.floor(n);
+  if (f < 0 || f > 3) return null;
+  var dec = Math.round((n - f) * 10);
+  return { cat: PREFIX_CAT[f], prefix: String(f), idx: dec === 0 ? 9 : dec - 1 };
+}
+
+function isSubEnabled(config, cat, idx) {
+  var on = config && config[cat + 'On'];
+  return idx === 9 || !Array.isArray(on) || on[idx] !== false;
+}
+
+// 旧版 n 项（最后一项为「其他」）展开成 10 项：前 n-1 项从 x.1 排起，「其他」放到 x.0
+function expandTo10(arr) {
+  var out = arr.slice(0, arr.length - 1);
+  while (out.length < 9) out.push('');
+  out.length = 9;
+  out.push(arr[arr.length - 1] || '其他');
+  return out;
+}
+
+// 旧配置升级（保留用户自定义的名字，不回写），支持 v103 → v104 → v105 链式升级
+//   v104：gfp 7 项 → 插入「钢琴」，2.3「约会」改名「社交」；rest 9 项 → 0.9「发呆/放空」+ 0.0「其他」
+//   v105：qw 7 / gfp 8 / proc 5 项 → 展开为 10 项，「其他」移到 x.0；补齐 *On 开关
+function normalizeConfigNames(config) {
+  if (!config) return config;
+  if (Array.isArray(config.gfpNames) && config.gfpNames.length === 7) {
+    config.gfpNames = config.gfpNames.slice(0, 6).concat(['钢琴', config.gfpNames[6] || '其他']);
+    if (config.gfpNames[2] === '约会') config.gfpNames[2] = '社交';
+  }
+  if (Array.isArray(config.restNames) && config.restNames.length === 9) {
+    config.restNames = config.restNames.slice(0, 8).concat(['发呆/放空', config.restNames[8] || '其他']);
+  }
+  CATS.forEach(function(cat) {
+    var key = cat + 'Names';
+    var arr = config[key];
+    if (!Array.isArray(arr) || arr.length === 0) config[key] = DEFAULT_CONFIG[key].slice();
+    else if (arr.length < SUB_N) config[key] = expandTo10(arr);
+    else if (arr.length > SUB_N) config[key] = arr.slice(0, SUB_N);
+    var onKey = cat + 'On';
+    var on = config[onKey];
+    if (!Array.isArray(on) || on.length !== SUB_N) {
+      // 旧配置没有开关：名字非空即启用
+      on = config[key].map(function(n) { return !!(n && String(n).trim()); });
+    } else {
+      on = on.map(function(v) { return v !== false; });
+    }
+    on[9] = true;
+    config[onKey] = on;
+  });
+  return config;
+}
 
 function getISOWeek(date) {
   var d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -101,6 +179,23 @@ function _emitSaveChange(year, week, part, prev, next) {
   }
 }
 
+// v106：找 (year, week) 之前最近一个有配置的周，返回其配置对象；没有则返回 null
+var CONFIG_KEY_RE = /^tm_(\d{4})_w(\d{1,2})_config$/;
+function findLatestConfigBefore(year, week) {
+  var target = year * 100 + week, best = -1, bestRaw = null;
+  for (var i = 0; i < localStorage.length; i++) {
+    var m = CONFIG_KEY_RE.exec(localStorage.key(i) || '');
+    if (!m) continue;
+    var v = parseInt(m[1], 10) * 100 + parseInt(m[2], 10);
+    if (v < target && v > best) {
+      var raw = localStorage.getItem(m[0]);
+      if (raw) { best = v; bestRaw = raw; }
+    }
+  }
+  if (!bestRaw) return null;
+  try { return JSON.parse(bestRaw); } catch (e) { return null; }
+}
+
 function getConfig(year, week) {
   var raw = localStorage.getItem(sKey(year, week, 'config'));
   var config = null;
@@ -109,28 +204,15 @@ function getConfig(year, week) {
   }
   var inherited = false;
   if (!config) {
-    var prev = getPrevWeek(year, week);
-    var prevRaw = localStorage.getItem(sKey(prev.year, prev.week, 'config'));
-    if (prevRaw) { try { config = JSON.parse(prevRaw); } catch (e) {} }
+    // v106：沿用此前最近一个有配置的周（中间隔了空周也能找到），只有本机一份配置都没有时才用默认值
+    config = findLatestConfigBefore(year, week);
     inherited = true;
   }
   if (!config) {
     config = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
   }
-  // v2.11.2：防御性修复——确保数组长度正确（GFP=7, QW=7, Proc=5）
-  if (!Array.isArray(config.qwNames) || config.qwNames.length !== 7) {
-    config.qwNames = DEFAULT_CONFIG.qwNames.slice();
-  }
-  if (!Array.isArray(config.gfpNames) || config.gfpNames.length !== 7) {
-    config.gfpNames = DEFAULT_CONFIG.gfpNames.slice();
-  }
-  if (!Array.isArray(config.procNames) || config.procNames.length !== 5) {
-    config.procNames = DEFAULT_CONFIG.procNames.slice();
-  }
-  // v2.16.0：旧周配置没有 restNames，读取时补默认值（不回写，避免触发同步）
-  if (!Array.isArray(config.restNames) || config.restNames.length !== 9) {
-    config.restNames = DEFAULT_CONFIG.restNames.slice();
-  }
+  // 确保数组长度正确，旧配置自动升级（不回写，避免触发同步）
+  normalizeConfigNames(config);
   if (typeof config.standard !== 'number' || config.standard < 0) {
     config.standard = DEFAULT_CONFIG.standard;
   }
@@ -145,19 +227,7 @@ function getConfig(year, week) {
   return config;
 }
 function saveConfig(year, week, config) {
-  // v2.11.2：防御性修复——确保数组长度正确（GFP=7, QW=7, Proc=5）
-  if (config.qwNames && (!Array.isArray(config.qwNames) || config.qwNames.length !== 7)) {
-    config.qwNames = DEFAULT_CONFIG.qwNames.slice();
-  }
-  if (config.gfpNames && (!Array.isArray(config.gfpNames) || config.gfpNames.length !== 7)) {
-    config.gfpNames = DEFAULT_CONFIG.gfpNames.slice();
-  }
-  if (config.procNames && (!Array.isArray(config.procNames) || config.procNames.length !== 5)) {
-    config.procNames = DEFAULT_CONFIG.procNames.slice();
-  }
-  if (config.restNames && (!Array.isArray(config.restNames) || config.restNames.length !== 9)) {
-    config.restNames = DEFAULT_CONFIG.restNames.slice();
-  }
+  normalizeConfigNames(config);
   var prev = null;
   var raw = localStorage.getItem(sKey(year, week, 'config'));
   if (raw) { try { prev = JSON.parse(raw); } catch (e) {} }
@@ -226,10 +296,20 @@ function getCatClass(code) {
   return '';
 }
 
+function zeros10() { return [0,0,0,0,0,0,0,0,0,0]; }
+
+// v105：某大类在展示时出现的子类下标（启用的，或明细里有历史数据的），顺序 x.1…x.9、x.0
+function visibleSubs(config, cat, detail) {
+  var out = [];
+  for (var i = 0; i < SUB_N; i++) {
+    if (isSubEnabled(config, cat, i) || (detail && detail[i] > 0)) out.push(i);
+  }
+  return out;
+}
+
 function calcDailyStats(dayCells, standard) {
   var s = { gfp:0, rest:0, mw:0, qw:0, proc:0, filled:0,
-    qwDetail:[0,0,0,0,0,0,0], gfpDetail:[0,0,0,0,0,0,0], procDetail:[0,0,0,0,0],
-    restDetail:[0,0,0,0,0,0,0,0,0] };
+    qwDetail: zeros10(), gfpDetail: zeros10(), procDetail: zeros10(), restDetail: zeros10() };
 
   for (var slot in dayCells) {
     var cell = dayCells[slot];
@@ -237,14 +317,12 @@ function calcDailyStats(dayCells, standard) {
     var code = parseFloat(cell.code);
     if (isNaN(code)) continue;
     s.filled++;
-    var f = Math.floor(code);
-    var dec = Math.round((code - f) * 10);
-    // 旧数据的纯 0 只计入 rest 总数，不进细项
-    if (f === 0) { s.rest++; if (dec >= 1 && dec <= 9) s.restDetail[dec-1]++; }
-    else if (f === 1) { s.qw++; if (dec >= 1 && dec <= 7) s.qwDetail[dec-1]++; }
-    else if (f === 2) { s.gfp++; if (dec >= 1 && dec <= 7) s.gfpDetail[dec-1]++; }
-    else if (f === 3) { s.proc++; if (dec >= 1 && dec <= 5) s.procDetail[dec-1]++; }
-    else if (f === 4) s.mw++;
+    if (Math.floor(code) === 4) { s.mw++; continue; }
+    // v105：x.1~x.9 → 下标 0~8，x.0（存为 0/1/2/3）→ 下标 9；不分启用与否，历史数据照常计数
+    var sub = codeToSub(code);
+    if (!sub) continue;
+    s[sub.cat]++;
+    s[sub.cat + 'Detail'][sub.idx]++;
   }
 
   s.earned = s.qw + s.gfp;
@@ -268,8 +346,7 @@ function calcWeeklyStats(cellsByDate, dateKeys, standard) {
   }
   var t = { gfp:0, rest:0, mw:0, qw:0, proc:0, earned:0, lost:0, balance:0,
     validInvest:0, invalidWaste:0, potential:0, available:0, standard:0,
-    qwDetail:[0,0,0,0,0,0,0], gfpDetail:[0,0,0,0,0,0,0], procDetail:[0,0,0,0,0],
-    restDetail:[0,0,0,0,0,0,0,0,0],
+    qwDetail: zeros10(), gfpDetail: zeros10(), procDetail: zeros10(), restDetail: zeros10(),
     checkTotal:0, checkLoss:0, checkInvest:0 };
   for (var j = 0; j < daily.length; j++) {
     var d = daily[j];
@@ -277,10 +354,10 @@ function calcWeeklyStats(cellsByDate, dateKeys, standard) {
     t.earned += d.earned; t.lost += d.lost; t.balance += d.balance;
     t.validInvest += d.validInvest; t.invalidWaste += d.invalidWaste;
     t.potential += d.potential; t.available += d.available; t.standard += d.standard;
-    for (var k = 0; k < 7; k++) t.qwDetail[k] += d.qwDetail[k];
-    for (var k2 = 0; k2 < 7; k2++) t.gfpDetail[k2] += d.gfpDetail[k2];
-    for (var k3 = 0; k3 < 5; k3++) t.procDetail[k3] += d.procDetail[k3];
-    for (var k4 = 0; k4 < 9; k4++) t.restDetail[k4] += d.restDetail[k4];
+    for (var k = 0; k < SUB_N; k++) {
+      t.qwDetail[k] += d.qwDetail[k]; t.gfpDetail[k] += d.gfpDetail[k];
+      t.procDetail[k] += d.procDetail[k]; t.restDetail[k] += d.restDetail[k];
+    }
     t.checkTotal += d.checkTotal; t.checkLoss += d.checkLoss; t.checkInvest += d.checkInvest;
   }
   return { daily: daily, totals: t };
@@ -948,8 +1025,10 @@ var syncClient = (function() {
         _state.applyingPullForWeek.year === year &&
         _state.applyingPullForWeek.week === week) return;
 
+    // v102：同步关闭时也要给变更打时间戳，只是不推送。
+    // 否则关闭期间的修改在重新开启后带着旧 updatedAt 推上去，
+    // 与其他端时间戳相等，对方拉取时判定"不比本地新"而跳过。
     var cfg = getSyncConfig();
-    if (!cfg.enabled) return;
 
     var now = Date.now();
     var meta = _getMeta(year, week);
@@ -991,7 +1070,7 @@ var syncClient = (function() {
 
     _saveMeta(year, week, meta);
 
-    if (cfg.autoSync) _schedulePush(year, week);
+    if (cfg.enabled && cfg.autoSync) _schedulePush(year, week);
   }
 
   // ----- 离线变更队列（v2.11.0） -----
@@ -1464,6 +1543,15 @@ global.AppCore = {
   TIME_SLOTS: TIME_SLOTS,
   buildTimeSlots: buildTimeSlots,
   DEFAULT_CONFIG: DEFAULT_CONFIG,
+  SUB_COUNT: SUB_COUNT,
+  SUB_N: SUB_N,
+  CATS: CATS,
+  CAT_PREFIX: CAT_PREFIX,
+  subCode: subCode,
+  codeToSub: codeToSub,
+  isSubEnabled: isSubEnabled,
+  visibleSubs: visibleSubs,
+  normalizeConfigNames: normalizeConfigNames,
   getISOWeek: getISOWeek,
   getWeekDates: getWeekDates,
   formatDate: formatDate,

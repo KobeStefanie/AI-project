@@ -15,9 +15,53 @@ var buildTimeSlots = AppCore.buildTimeSlots;
 // 当前周的 34 时段字符串数组（每次 renderAll/doExport 前根据本周配置重算）
 function refreshTimeSlots() {
   var cfg = getConfig(state.year, state.week);
-  TIME_SLOTS = buildTimeSlots(cfg.startTime || '7:00');
+  TIME_SLOTS = buildTimeSlots(cfg.startTime || '9:00');
 }
 var DEFAULT_CONFIG = AppCore.DEFAULT_CONFIG;
+var subCode = AppCore.subCode;
+var normalizeConfigNames = AppCore.normalizeConfigNames;
+var codeToSub = AppCore.codeToSub;
+var isSubEnabled = AppCore.isSubEnabled;
+var visibleSubs = AppCore.visibleSubs;
+var CAT_PREFIX = AppCore.CAT_PREFIX;
+// v105：各大类「其他」存为数字 0/1/2/3，显示为 x.0（4 = MW 不变）
+function fmtCode(code) {
+  if (code === '' || code === null || code === undefined) return '';
+  var s = String(code).trim();
+  return (s === '0' || s === '1' || s === '2' || s === '3') ? s + '.0' : code;
+}
+// 子类显示名：「1.3-读书」；启用但没起名的显示「(未命名)」
+function subName(config, cat, idx) {
+  var n = config[cat + 'Names'] && config[cat + 'Names'][idx];
+  return (n && String(n).trim()) ? n : '(未命名)';
+}
+function subLabel(config, cat, idx, sep) {
+  return subCode(CAT_PREFIX[cat], idx) + (sep === undefined ? '-' : sep) + subName(config, cat, idx);
+}
+// v105：周对比（弹窗 + 导出）的行定义。子类行出现条件：任一周启用，或任一周有数据
+//   名称取 weeksData[0] 的配置（与 v104 前一致）；colors 为五大类的颜色值
+function buildCompareRows(weeksData, colors) {
+  var CAT_TITLE = { qw: 'QW - Quality Work', gfp: 'GFP - Guilt Free Play', proc: 'Proc - Procrastination', rest: 'Rest' };
+  var nameCfg = (weeksData[0] && weeksData[0].config) || normalizeConfigNames(JSON.parse(JSON.stringify(DEFAULT_CONFIG)));
+  var rows = [];
+  ['qw', 'gfp', 'proc', 'rest'].forEach(function(cat) {
+    rows.push({ label: CAT_TITLE[cat], key: cat, isCat: true, color: colors[cat] });
+    for (var i = 0; i < AppCore.SUB_N; i++) {
+      var show = weeksData.some(function(wd) {
+        var det = wd.stats && wd.stats.totals && wd.stats.totals[cat + 'Detail'];
+        return (wd.config && isSubEnabled(wd.config, cat, i)) || (Array.isArray(det) && det[i] > 0);
+      });
+      if (show) rows.push({ label: subLabel(nameCfg, cat, i), key: cat + 'Detail', index: i });
+    }
+  });
+  rows.push({ label: 'MW', key: 'mw', isCat: true, color: colors.mw });
+  return rows;
+}
+
+// 编码提示：只列启用的子类，如「1.1 AI / 1.2 心理咨询 / … / 1.0 其他」
+function enabledCodeList(config, cat) {
+  return visibleSubs(config, cat, null).map(function(i) { return subLabel(config, cat, i, ' '); }).join(' / ');
+}
 var getISOWeek = AppCore.getISOWeek;
 var getWeekDates = AppCore.getWeekDates;
 var formatDate = AppCore.formatDate;
@@ -192,7 +236,7 @@ function init() {
 // SW 注册 + 自动更新流：检测到新版本即让其立即激活，并在 controllerchange 时重载一次。
 // 首次安装（页面此前没有 controller）不触发 reload，避免空载场景下的循环刷新。
 // v2.11.2：新增 EXPECTED_CACHE_NAME 自检，若当前 SW 版本落后则强制注销+重载。
-var EXPECTED_CACHE_NAME = 'time-planner-v101';
+var EXPECTED_CACHE_NAME = 'time-planner-v108';
 
 function forceUpdateSW() {
   if (!('serviceWorker' in navigator)) return;
@@ -481,7 +525,7 @@ function renderTbody(dates, dateKeys, cellsByDate, keyItems, kiStatus, config, w
       var code = cell ? cell.code : '';
       var catCls = getCatClass(code);
       html += '<td class="cell-event ' + catCls + '" data-cell="' + cid + '">' + title + '</td>';
-      html += '<td class="cell-code ' + catCls + '">' + (code !== '' && code !== null && code !== undefined ? code : '') + '</td>';
+      html += '<td class="cell-code ' + catCls + '">' + fmtCode(code) + '</td>';
     }
     html += '<td></td></tr>';
   }
@@ -548,19 +592,22 @@ function renderStatsRows(ws, config) {
   var tc = totals.balance >= 0 ? 'bal-pos' : 'bal-neg';
   h += tCell(totals.balance, tc) + '</tr>';
 
-  // QW明细（项目投入）
-  for (var q = 0; q < 7; q++) {
-    h += '<tr class="stat-row detail-qw' + (q === 0 ? ' sep-top' : '') + '"><td class="col-label">1.' + (q+1) + '-' + config.qwNames[q] + '</td>';
-    for (var qi = 0; qi < daily.length; qi++) h += dCell(qi, f(daily[qi].qwDetail[q]));
-    h += tCell(f(totals.qwDetail[q])) + '</tr>';
+  // v105：子类明细行——启用的 + 有历史数据的停用项，顺序 x.1…x.9、x.0
+  function detailRows(cat) {
+    var out = '';
+    visibleSubs(config, cat, totals[cat + 'Detail']).forEach(function(idx, n) {
+      out += '<tr class="stat-row detail-' + cat + (n === 0 ? ' sep-top' : '') + '"><td class="col-label">' + subLabel(config, cat, idx) + '</td>';
+      for (var di = 0; di < daily.length; di++) out += dCell(di, f(daily[di][cat + 'Detail'][idx]));
+      out += tCell(f(totals[cat + 'Detail'][idx])) + '</tr>';
+    });
+    return out;
   }
 
+  // QW明细（项目投入）
+  h += detailRows('qw');
+
   // GFP明细
-  for (var g = 0; g < 7; g++) {
-    h += '<tr class="stat-row detail-gfp' + (g === 0 ? ' sep-top' : '') + '"><td class="col-label">2.' + (g+1) + '-' + config.gfpNames[g] + '</td>';
-    for (var gi = 0; gi < daily.length; gi++) h += dCell(gi, f(daily[gi].gfpDetail[g]));
-    h += tCell(f(totals.gfpDetail[g])) + '</tr>';
-  }
+  h += detailRows('gfp');
 
   // 有效投资
   h += '<tr class="stat-row stat-invest"><td class="col-label">有效投资</td>';
@@ -568,23 +615,15 @@ function renderStatsRows(ws, config) {
   h += tCell(f(totals.validInvest)) + '</tr>';
 
   // 无效浪费明细
-  for (var p = 0; p < 5; p++) {
-    h += '<tr class="stat-row detail-proc' + (p === 0 ? ' sep-top' : '') + '"><td class="col-label">3.' + (p+1) + '-' + config.procNames[p] + '</td>';
-    for (var pi = 0; pi < daily.length; pi++) h += dCell(pi, f(daily[pi].procDetail[p]));
-    h += tCell(f(totals.procDetail[p])) + '</tr>';
-  }
+  h += detailRows('proc');
 
   // 无效浪费
   h += '<tr class="stat-row stat-waste"><td class="col-label">无效浪费</td>';
   for (var wi = 0; wi < daily.length; wi++) h += dCell(wi, f(daily[wi].invalidWaste));
   h += tCell(f(totals.invalidWaste)) + '</tr>';
 
-  // v2.16.0：休息明细（0.1~0.9）
-  for (var rs = 0; rs < 9; rs++) {
-    h += '<tr class="stat-row detail-rest' + (rs === 0 ? ' sep-top' : '') + '"><td class="col-label">0.' + (rs+1) + '-' + config.restNames[rs] + '</td>';
-    for (var ri = 0; ri < daily.length; ri++) h += dCell(ri, f(daily[ri].restDetail[rs]));
-    h += tCell(f(totals.restDetail[rs])) + '</tr>';
-  }
+  // 休息明细（0.1~0.9 + 0.0 其他）
+  h += detailRows('rest');
 
   // 潜力/标准/可用
   h += '<tr class="stat-row stat-potential sep-top"><td class="col-label">潜力总数</td>';
@@ -726,22 +765,17 @@ function renderLeftPanel(config, totals) {
   var fmt = function(v) { return v > 0 ? v : '-'; };
   var h = '<h4>本周累计</h4>';
   // 分类合计行：与明细行同样的 flex 布局，合计数右对齐
-  h += '<div class="lp-cat lp-qw"><span>QW - Quality Work</span><span>' + totals.qw + '</span></div>';
-  for (var i = 0; i < 7; i++) {
-    h += '<div class="lp-item' + (totals.qwDetail[i] > 0 ? '' : ' lp-zero') + '"><span>1.' + (i+1) + '-' + config.qwNames[i] + '</span><span>' + fmt(totals.qwDetail[i]) + '</span></div>';
+  // v105：只列启用的子类 + 有历史数据的停用项
+  function items(cat) {
+    var detail = totals[cat + 'Detail'];
+    return visibleSubs(config, cat, detail).map(function(i) {
+      return '<div class="lp-item' + (detail[i] > 0 ? '' : ' lp-zero') + '"><span>' + escapeHtml(subLabel(config, cat, i)) + '</span><span>' + fmt(detail[i]) + '</span></div>';
+    }).join('');
   }
-  h += '<div class="lp-cat lp-gfp"><span>GFP - Guilt Free Play</span><span>' + totals.gfp + '</span></div>';
-  for (var j = 0; j < 7; j++) {
-    h += '<div class="lp-item' + (totals.gfpDetail[j] > 0 ? '' : ' lp-zero') + '"><span>2.' + (j+1) + '-' + config.gfpNames[j] + '</span><span>' + fmt(totals.gfpDetail[j]) + '</span></div>';
-  }
-  h += '<div class="lp-cat lp-proc"><span>Proc - Procrastination</span><span>' + totals.proc + '</span></div>';
-  for (var k = 0; k < 5; k++) {
-    h += '<div class="lp-item' + (totals.procDetail[k] > 0 ? '' : ' lp-zero') + '"><span>3.' + (k+1) + '-' + config.procNames[k] + '</span><span>' + fmt(totals.procDetail[k]) + '</span></div>';
-  }
-  h += '<div class="lp-cat lp-rest"><span>Rest - 休息</span><span>' + totals.rest + '</span></div>';
-  for (var r = 0; r < 9; r++) {
-    h += '<div class="lp-item' + (totals.restDetail[r] > 0 ? '' : ' lp-zero') + '"><span>0.' + (r+1) + '-' + config.restNames[r] + '</span><span>' + fmt(totals.restDetail[r]) + '</span></div>';
-  }
+  h += '<div class="lp-cat lp-qw"><span>QW - Quality Work</span><span>' + totals.qw + '</span></div>' + items('qw');
+  h += '<div class="lp-cat lp-gfp"><span>GFP - Guilt Free Play</span><span>' + totals.gfp + '</span></div>' + items('gfp');
+  h += '<div class="lp-cat lp-proc"><span>Proc - Procrastination</span><span>' + totals.proc + '</span></div>' + items('proc');
+  h += '<div class="lp-cat lp-rest"><span>Rest - 休息</span><span>' + totals.rest + '</span></div>' + items('rest');
   $('panel-left').innerHTML = h;
 }
 
@@ -825,26 +859,28 @@ var clipboard = null;             // 跨弹窗剪贴板：{ title, code }
 var selection = null;             // { startId, endId }（覆盖矩形选区）
 
 // 编码校验：
-//   合法 = 空字符串 | 4 | 0.1~0.9 | 1.1~1.7 | 2.1~2.7 | 3.1~3.5
-//   v2.16.0：休息改为细分，纯 0 不再允许新录入（旧数据已迁移为 0.x）
+//   合法 = 空字符串 | 4 | x.0~x.9（x ∈ 0/1/2/3，且该子类在本周配置中已启用）
+//   v105：x.0 = 各大类「其他」，可写 1 或 1.0，存为数字 1；停用的子类不能录入
+//   config 不传时只校验格式（例如跨周粘贴前的预检）
+//   keepCode：编辑已有格子时传入原编码，原编码即使已停用也允许原样保存
 // 返回 { ok, value, msg }
-function validateCode(raw) {
+function validateCode(raw, config, keepCode) {
   if (raw === '' || raw === null || raw === undefined) return { ok: true, value: '' };
   var s = String(raw).trim();
   if (s === '') return { ok: true, value: '' };
-  if (s === '0') return { ok: false, msg: '休息请细分：0.1~0.9（睡觉/吃喝/散步/出行/刷手机/卫生/游戏/社交/其他）' };
   if (s === '4') return { ok: true, value: 4 };
-  // 主.子：主∈{0,1,2,3}；子是单个数字 1~9
-  var m = /^([0123])\.([1-9])$/.exec(s);
-  if (!m) return { ok: false, msg: '编码格式错误：必须是 4、0.1~0.9、1.1~1.7、2.1~2.7 或 3.1~3.5' };
-  var main = parseInt(m[1], 10);
-  var sub = parseInt(m[2], 10);
-  var maxSub = main === 0 ? 9 : (main === 1 ? 7 : (main === 2 ? 7 : 5));
-  if (sub > maxSub) {
-    var name = main === 1 ? 'QW 仅支持 1.1~1.7' : (main === 2 ? 'GFP 仅支持 2.1~2.7' : 'Proc 仅支持 3.1~3.5');
-    return { ok: false, msg: '编码超出范围：' + name };
+  // 主.子：主∈{0,1,2,3}；子是单个数字 0~9；也接受裸 0~3（= x.0）
+  var m = /^([0123])(?:\.([0-9]))?$/.exec(s);
+  if (!m) return { ok: false, msg: '编码格式错误：必须是 4，或 0.0~0.9、1.0~1.9、2.0~2.9、3.0~3.9' };
+  var value = parseFloat(m[1] + '.' + (m[2] || '0'));
+  if (config) {
+    var sub = codeToSub(value);
+    var keep = keepCode !== undefined && keepCode !== '' && keepCode !== null && parseFloat(keepCode) === value;
+    if (!keep && !isSubEnabled(config, sub.cat, sub.idx)) {
+      return { ok: false, msg: subCode(sub.prefix, sub.idx) + ' 未启用，可在「⚙ 配置」中开启。可用：' + enabledCodeList(config, sub.cat) };
+    }
   }
-  return { ok: true, value: parseFloat(s) };
+  return { ok: true, value: value };
 }
 
 // ===== 撤销 / 重做 栈（仅日程 cells；keyitems / review 暂不入栈） =====
@@ -1151,7 +1187,7 @@ function copySelectionToClipboard() {
   if (v.kind === 'KI') {
     hint = v.value || '';
   } else {
-    hint = (v.value.title || '') + (v.value.code !== '' && v.value.code !== undefined ? '  ' + v.value.code : '');
+    hint = (v.value.title || '') + (v.value.code !== '' && v.value.code !== undefined ? '  ' + fmtCode(v.value.code) : '');
   }
   showToast(hint ? '已复制：' + hint : '已复制（空格）');
 }
@@ -1160,7 +1196,7 @@ function pasteClipboardToSelection() {
   if (!selection || !clipboard) { showToast('请先 Ctrl+C 复制'); return; }
   // TS 剪贴板需校验 code
   if (clipboard.kind === 'TS') {
-    var cv = validateCode(clipboard.value && clipboard.value.code);
+    var cv = validateCode(clipboard.value && clipboard.value.code, getConfig(state.year, state.week));
     if (!cv.ok) { showToast('剪贴板编码非法：' + cv.msg); return; }
   }
   pushUndoSnapshot();
@@ -1299,12 +1335,15 @@ function openCellDialog(id) {
   var p = parseCellId(id);
   $('cell-dialog-title').textContent = (p.slot || '') + '   ' + (p.date || '');
   $('inp-title').value = cell.title || '';
-  $('inp-code').value = (cell.code !== undefined && cell.code !== null && cell.code !== '') ? cell.code : '';
+  $('inp-code').value = fmtCode(cell.code);
   var config = getConfig(state.year, state.week);
-  $('code-hint').innerHTML =
-    '允许编码：0.1~0.9=Rest(' + config.restNames.join('/') + ') · 4=MW · 1.1~1.7=QW(' + config.qwNames.join('/') + ')' +
-    ' · 2.1~2.7=GFP(' + config.gfpNames.join('/') + ')' +
-    ' · 3.1~3.5=Proc(' + config.procNames.join('/') + ')';
+  // v105：只列本周启用的子类（x.0 = 其他，可写 1 或 1.0）
+  // v107：按大类分行显示，手机上更容易找到编码
+  var hintRows = [['QW', enabledCodeList(config, 'qw')], ['GFP', enabledCodeList(config, 'gfp')],
+    ['Proc', enabledCodeList(config, 'proc')], ['Rest', enabledCodeList(config, 'rest')], ['MW', '4']];
+  $('code-hint').innerHTML = '<div class="code-hint-title">允许编码</div>' + hintRows.map(function(r) {
+    return '<div class="code-hint-row"><b>' + r[0] + '</b><span>' + escapeHtml(r[1]) + '</span></div>';
+  }).join('');
   $('btn-paste-cell').disabled = !(clipboard && clipboard.kind === 'TS');
   openModal('cell-modal');
   setTimeout(function() { $('inp-title').focus(); $('inp-title').select(); }, 50);
@@ -1327,7 +1366,7 @@ function openCellDialog(id) {
   $('inp-code').onkeydown = modalKeyHandler;
   // 实时校验：输入错就标红，正确则恢复
   $('inp-code').oninput = function() {
-    var v = validateCode($('inp-code').value);
+    var v = validateCode($('inp-code').value, config, cell.code);
     $('inp-code').classList.toggle('input-error', !v.ok);
   };
   $('inp-code').classList.remove('input-error');
@@ -1342,7 +1381,7 @@ function fillFromPrevSlot() {
   var prev = cells[prevId];
   if (!prev) return;
   $('inp-title').value = prev.title || '';
-  $('inp-code').value = (prev.code !== undefined && prev.code !== null && prev.code !== '') ? prev.code : '';
+  $('inp-code').value = fmtCode(prev.code);
   $('inp-code').focus();
   $('inp-code').select();
 }
@@ -1501,7 +1540,7 @@ function renderWeekCompareContent() {
         if (data && data.cells) {
           var dates = getWeekDates(w.year, w.week);
           var dateKeys = dates.map(dateKey);
-          var config = data.config || getConfig(w.year, w.week);
+          var config = data.config ? normalizeConfigNames(JSON.parse(JSON.stringify(data.config))) : getConfig(w.year, w.week);
 
           var cellsByDate = {};
           for (var j = 0; j < dateKeys.length; j++) cellsByDate[dateKeys[j]] = {};
@@ -1569,42 +1608,8 @@ function renderWeekCompareContent() {
 
     html += '</tr></thead><tbody>';
 
-    // 数据行
-    var rows = [
-      { label: 'QW - Quality Work', key: 'qw', isCat: true, color: 'qw' },
-      { label: '1.1-AI', key: 'qwDetail', index: 0, configKey: 'qwNames' },
-      { label: '1.2-心理咨询', key: 'qwDetail', index: 1, configKey: 'qwNames' },
-      { label: '1.3-读书', key: 'qwDetail', index: 2, configKey: 'qwNames' },
-      { label: '1.4-注会变现', key: 'qwDetail', index: 3, configKey: 'qwNames' },
-      { label: '1.5-投资', key: 'qwDetail', index: 4, configKey: 'qwNames' },
-      { label: '1.6-自我管理', key: 'qwDetail', index: 5, configKey: 'qwNames' },
-      { label: '1.7-其他', key: 'qwDetail', index: 6, configKey: 'qwNames' },
-      { label: 'GFP - Guilt Free Play', key: 'gfp', isCat: true, color: 'gfp' },
-      { label: '2.1-演出', key: 'gfpDetail', index: 0, configKey: 'gfpNames' },
-      { label: '2.2-运动', key: 'gfpDetail', index: 1, configKey: 'gfpNames' },
-      { label: '2.3-约会', key: 'gfpDetail', index: 2, configKey: 'gfpNames' },
-      { label: '2.4-旅行', key: 'gfpDetail', index: 3, configKey: 'gfpNames' },
-      { label: '2.5-游戏', key: 'gfpDetail', index: 4, configKey: 'gfpNames' },
-      { label: '2.6-小资', key: 'gfpDetail', index: 5, configKey: 'gfpNames' },
-      { label: '2.7-其他', key: 'gfpDetail', index: 6, configKey: 'gfpNames' },
-      { label: 'Proc - Procrastination', key: 'proc', isCat: true, color: 'proc' },
-      { label: '3.1-睡懒觉', key: 'procDetail', index: 0, configKey: 'procNames' },
-      { label: '3.2-刷手机', key: 'procDetail', index: 1, configKey: 'procNames' },
-      { label: '3.3-拖延', key: 'procDetail', index: 2, configKey: 'procNames' },
-      { label: '3.4-无效/低效社交', key: 'procDetail', index: 3, configKey: 'procNames' },
-      { label: '3.5-其他', key: 'procDetail', index: 4, configKey: 'procNames' },
-      { label: 'Rest', key: 'rest', isCat: true, color: 'rest' },
-      { label: '0.1-睡觉', key: 'restDetail', index: 0, configKey: 'restNames' },
-      { label: '0.2-吃喝', key: 'restDetail', index: 1, configKey: 'restNames' },
-      { label: '0.3-散步', key: 'restDetail', index: 2, configKey: 'restNames' },
-      { label: '0.4-出行', key: 'restDetail', index: 3, configKey: 'restNames' },
-      { label: '0.5-刷手机', key: 'restDetail', index: 4, configKey: 'restNames' },
-      { label: '0.6-卫生', key: 'restDetail', index: 5, configKey: 'restNames' },
-      { label: '0.7-游戏', key: 'restDetail', index: 6, configKey: 'restNames' },
-      { label: '0.8-社交', key: 'restDetail', index: 7, configKey: 'restNames' },
-      { label: '0.9-其他', key: 'restDetail', index: 8, configKey: 'restNames' },
-      { label: 'MW', key: 'mw', isCat: true, color: 'mw' }
-    ];
+    // 数据行（v105：按配置生成，见 buildCompareRows）
+    var rows = buildCompareRows(weeksData, { qw: 'qw', gfp: 'gfp', proc: 'proc', rest: 'rest', mw: 'mw' });
 
     for (var r = 0; r < rows.length; r++) {
       var row = rows[r];
@@ -1612,14 +1617,7 @@ function renderWeekCompareContent() {
       html += '<tr class="' + colorClass + '">';
 
       // 项目名称
-      var labelDisplay = row.label;
-      if (row.configKey && weeksData[0]) {
-        var idx = row.index;
-        // 服务端旧配置可能没有 restNames，回退默认名
-        var nameArr = weeksData[0].config[row.configKey] || DEFAULT_CONFIG[row.configKey] || [];
-        var configVal = nameArr[idx] || row.label.split('-')[1];
-        labelDisplay = labelDisplay.split('-')[0] + '-' + configVal;
-      }
+      var labelDisplay = escapeHtml(row.label);
       html += '<td class="wcm-col-item' + (row.isCat ? ' wcm-item-bold' : '') + '">' + labelDisplay + '</td>';
 
       // 各周数据
@@ -1701,7 +1699,7 @@ function pasteCellFromModal() {
   if (!editingCell || !clipboard || clipboard.kind !== 'TS') return;
   var v = clipboard.value || {};
   $('inp-title').value = v.title || '';
-  $('inp-code').value = (v.code !== undefined && v.code !== null && v.code !== '') ? v.code : '';
+  $('inp-code').value = fmtCode(v.code);
 }
 
 // 保存当前弹窗内容到 editingCell，返回 { ok, payload } 或 { ok:false }
@@ -1718,13 +1716,16 @@ function commitCurrentCell() {
     return { ok: false };
   }
   if (title !== '' && codeRaw === '') {
-    showToast('请填写分类编码（0.x=Rest · 4=MW · 1.x/2.x/3.x）');
+    showToast('请填写分类编码（1.x=QW · 2.x=GFP · 3.x=Proc · 0.x=Rest · 4=MW，x.0=其他）');
     var inpC = $('inp-code');
     inpC.classList.add('input-error');
     inpC.focus();
     return { ok: false };
   }
-  var v = validateCode(codeRaw);
+  var cellsNow = getCells(state.year, state.week);
+  var oldCode = cellsNow[editingCell] ? cellsNow[editingCell].code : undefined;
+  // 原格子的编码即使已停用也允许原样保存（只改事件名的场景）
+  var v = validateCode(codeRaw, getConfig(state.year, state.week), oldCode);
   if (!v.ok) {
     showToast(v.msg);
     var inp = $('inp-code');
@@ -2045,7 +2046,7 @@ function doExport() {
       var color = EXCEL_CAT_COLOR[cls];
       var st = color ? makeStyle({ fill: color.fill, font: color.font }) : makeStyle();
       placeCell(ws, rTs, 1 + c2 * 2, cell ? (cell.title || '') : '', st);
-      var codeVal = (cell && cell.code !== '' && cell.code !== undefined && cell.code !== null) ? cell.code : '';
+      var codeVal = cell ? fmtCode(cell.code) : '';
       placeCell(ws, rTs, 1 + c2 * 2 + 1, codeVal, st);
     }
   }
@@ -2070,14 +2071,20 @@ function doExport() {
   var REST = EXCEL_CAT_COLOR['cat-rest'];
   var MW = EXCEL_CAT_COLOR['cat-mw'];
 
+  // v105：只导出启用的子类 + 有历史数据的停用项
+  function writeSubRows(cat, color) {
+    visibleSubs(config, cat, totals[cat + 'Detail']).forEach(function(i) {
+      writeStatRow('  ' + subLabel(config, cat, i), totals[cat + 'Detail'][i], color.fill, color.font);
+    });
+  }
   writeStatRow('QW - Quality Work', totals.qw, QW.fill, QW.font, true);
-  for (var qi = 0; qi < 7; qi++) writeStatRow('  1.' + (qi + 1) + '-' + config.qwNames[qi], totals.qwDetail[qi], QW.fill, QW.font);
+  writeSubRows('qw', QW);
   writeStatRow('GFP - Guilt Free Play', totals.gfp, GFP.fill, GFP.font, true);
-  for (var gi = 0; gi < 7; gi++) writeStatRow('  2.' + (gi + 1) + '-' + config.gfpNames[gi], totals.gfpDetail[gi], GFP.fill, GFP.font);
+  writeSubRows('gfp', GFP);
   writeStatRow('Proc - Procrastination', totals.proc, PROC.fill, PROC.font, true);
-  for (var pi = 0; pi < 5; pi++) writeStatRow('  3.' + (pi + 1) + '-' + config.procNames[pi], totals.procDetail[pi], PROC.fill, PROC.font);
+  writeSubRows('proc', PROC);
   writeStatRow('Rest', totals.rest, REST.fill, REST.font, true);
-  for (var ri = 0; ri < 9; ri++) writeStatRow('  0.' + (ri + 1) + '-' + config.restNames[ri], totals.restDetail[ri], REST.fill, REST.font);
+  writeSubRows('rest', REST);
   writeStatRow('MW', totals.mw, MW.fill, MW.font, true);
   var STATS_END_ROW = rB - 1;
 
@@ -2180,16 +2187,27 @@ function renderConfig() {
   var h = '';
   h += '<div class="config-hint" style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:8px 12px;border-radius:6px;margin-bottom:12px;">⚠ 此处修改为草稿，需点「← 返回」时选择「保存」才会真正生效。</div>';
 
-  h += '<div class="config-section"><h3>Quality Work 项目名称</h3><p class="config-hint">切换新周时默认继承上周配置</p><table class="config-table"><thead><tr><th>代码</th><th>项目名称</th></tr></thead><tbody>';
-  for (var i = 0; i < 7; i++) h += '<tr><td>1.' + (i+1) + '</td><td><input data-cfg="qw-' + i + '" value="' + (configDraft.qwNames[i] || '').replace(/"/g,'&quot;') + '"></td></tr>';
-  h += '</tbody></table></div>';
+  // v105：四大类各 10 个子类，勾选「启用」后才能录入；x.0「其他」固定启用
+  function subTable(cat, title, hint) {
+    var names = configDraft[cat + 'Names'], on = configDraft[cat + 'On'];
+    var t = '<div class="config-section"><h3>' + title + '</h3>' + (hint ? '<p class="config-hint">' + hint + '</p>' : '') +
+      '<table class="config-table"><thead><tr><th>代码</th><th>启用</th><th>名称</th></tr></thead><tbody>';
+    for (var i = 0; i < names.length; i++) {
+      var code = subCode(CAT_PREFIX[cat], i);
+      var fixed = i === 9;
+      t += '<tr' + (on[i] ? '' : ' style="opacity:.55"') + '><td>' + code + '</td>' +
+        '<td><input type="checkbox" data-cfg-on="' + cat + '-' + i + '"' + (on[i] ? ' checked' : '') + (fixed ? ' disabled title="其他固定启用"' : '') +
+        ' aria-label="启用 ' + code + '"></td>' +
+        '<td><input data-cfg="' + cat + '-' + i + '" value="' + escapeHtml(names[i] || '') + '" placeholder="（未命名）" aria-label="' + code + ' 名称"></td></tr>';
+    }
+    return t + '</tbody></table></div>';
+  }
 
-  h += '<div class="config-section"><h3>Guilt Free Play 子类名称</h3><table class="config-table"><thead><tr><th>代码</th><th>子类名称</th></tr></thead><tbody>';
-  for (var j = 0; j < 7; j++) h += '<tr><td>2.' + (j+1) + '</td><td><input data-cfg="gfp-' + j + '" value="' + (configDraft.gfpNames[j] || '').replace(/"/g,'&quot;') + '"></td></tr>';
-  h += '</tbody></table></div>';
+  h += subTable('qw', 'Quality Work 项目', '切换新周时默认继承上周配置。停用的子类不能录入，统计里也不显示（历史数据照常计数）');
+  h += subTable('gfp', 'Guilt Free Play 子类');
 
   // 时段配置：仅设置起始时间，34 格 × 30 分钟自动展开
-  if (!configDraft.startTime) configDraft.startTime = '7:00';
+  if (!configDraft.startTime) configDraft.startTime = '9:00';
   h += '<div class="config-section"><h3>时段起始时间</h3>';
   h += '<p class="config-hint">总 34 格、每格 30 分钟不变；填写起始时间后自动生成全部时段。</p>';
   h += '<input type="time" data-cfg="startTime" value="' + normalizeHHMM(configDraft.startTime) + '" style="padding:6px;border:1px solid #d1d5db;border-radius:4px;font-size:14px;">';
@@ -2198,13 +2216,8 @@ function renderConfig() {
 
   h += '<div class="config-section"><h3>系统参数</h3><p class="config-hint">标准数（每天标准休息格数，默认12）</p><input type="number" data-cfg="standard" value="' + configDraft.standard + '" style="width:80px;padding:6px;border:1px solid #d1d5db;border-radius:4px;"></div>';
 
-  h += '<div class="config-section"><h3>Rest 休息子类名称</h3><table class="config-table"><thead><tr><th>代码</th><th>子类名称</th></tr></thead><tbody>';
-  for (var ri = 0; ri < 9; ri++) h += '<tr><td>0.' + (ri+1) + '</td><td><input data-cfg="rest-' + ri + '" value="' + (configDraft.restNames[ri] || '').replace(/"/g,'&quot;') + '"></td></tr>';
-  h += '</tbody></table></div>';
-
-  h += '<div class="config-section"><h3>Procrastination 子类（固定）</h3><table class="config-table"><tbody>';
-  for (var k = 0; k < 5; k++) h += '<tr><td>3.' + (k+1) + '</td><td>' + configDraft.procNames[k] + '</td></tr>';
-  h += '</tbody></table></div>';
+  h += subTable('rest', 'Rest 休息子类');
+  h += subTable('proc', 'Procrastination 子类');
 
   $('config-body').innerHTML = h;
   refreshSlotPreview();
@@ -2212,21 +2225,60 @@ function renderConfig() {
   $('config-body').querySelectorAll('[data-cfg]').forEach(function(inp) {
     inp.addEventListener('input', function() {
       var key = inp.dataset.cfg;
-      if (key === 'standard') configDraft.standard = parseInt(inp.value) || 12;
-      else if (key === 'startTime') {
+      if (key === 'standard') { configDraft.standard = parseInt(inp.value) || 12; return; }
+      if (key === 'startTime') {
         configDraft.startTime = denormalizeHHMM(inp.value);
         refreshSlotPreview();
+        return;
       }
-      else if (key.indexOf('qw-') === 0) configDraft.qwNames[parseInt(key.split('-')[1])] = inp.value;
-      else if (key.indexOf('gfp-') === 0) configDraft.gfpNames[parseInt(key.split('-')[1])] = inp.value;
-      else if (key.indexOf('rest-') === 0) configDraft.restNames[parseInt(key.split('-')[1])] = inp.value;
+      var p = key.split('-');   // 'qw-3' → 名称
+      if (configDraft[p[0] + 'Names']) configDraft[p[0] + 'Names'][parseInt(p[1], 10)] = inp.value;
+    });
+  });
+  $('config-body').querySelectorAll('[data-cfg-on]').forEach(function(cb) {
+    cb.addEventListener('change', function() {
+      var p = cb.dataset.cfgOn.split('-');
+      configDraft[p[0] + 'On'][parseInt(p[1], 10)] = cb.checked;
+      cb.closest('tr').style.opacity = cb.checked ? '' : '.55';
     });
   });
 }
 
+// v105：保存配置前，找出本周里「刚被停用」且有格子在用的子类，询问是否改为 x.0 其他
+//   返回改动的格数；用户选「保留」则只停用，历史格子照常计数和显示
+function reclassifyDisabledSubs(year, week, orig, draft) {
+  var cells = getCells(year, week);
+  var hits = [];   // { cat, idx, ids[] }
+  ['qw', 'gfp', 'proc', 'rest'].forEach(function(cat) {
+    for (var i = 0; i < 9; i++) {
+      if (!isSubEnabled(orig, cat, i) || isSubEnabled(draft, cat, i)) continue;
+      var ids = Object.keys(cells).filter(function(id) {
+        var s = codeToSub(cells[id] && cells[id].code);
+        return s && s.cat === cat && s.idx === i;
+      });
+      if (ids.length) hits.push({ cat: cat, idx: i, ids: ids });
+    }
+  });
+  if (!hits.length) return 0;
+  var lines = hits.map(function(x) {
+    return '· ' + subLabel(orig, x.cat, x.idx) + '：' + x.ids.length + ' 格 → ' + subLabel(draft, x.cat, 9);
+  });
+  var ok = confirm('本周有格子正在使用要停用的子类：\n\n' + lines.join('\n') +
+    '\n\n点「确定」把这些格子改为对应的「其他」(x.0)\n点「取消」保留原编码（照常计入统计，只是不能再新录入）');
+  if (!ok) return 0;
+  pushUndoSnapshot();
+  var n = 0;
+  hits.forEach(function(x) {
+    var other = parseInt(CAT_PREFIX[x.cat], 10);   // x.0 存为数字 0/1/2/3
+    x.ids.forEach(function(id) { cells[id] = { title: cells[id].title || '', code: other }; n++; });
+  });
+  saveCells(year, week, cells);
+  return n;
+}
+
 // HTML <input type="time"> 需要 'HH:MM' 两位小时；core 内部允许 '7:00' 这种一位小时
 function normalizeHHMM(s) {
-  var p = String(s || '7:00').split(':');
+  var p = String(s || '9:00').split(':');
   var h = parseInt(p[0], 10) || 0;
   var m = parseInt(p[1] || '0', 10) || 0;
   return (h < 10 ? '0' + h : '' + h) + ':' + (m < 10 ? '0' + m : '' + m);
@@ -2242,7 +2294,7 @@ function denormalizeHHMM(s) {
 function refreshSlotPreview() {
   var el = document.getElementById('config-slot-preview');
   if (!el) return;
-  var slots = buildTimeSlots(configDraft.startTime || '7:00');
+  var slots = buildTimeSlots(configDraft.startTime || '9:00');
   el.innerHTML = '<b>共 ' + slots.length + ' 格：</b>' +
     slots[0] + ' / ' + slots[1] + ' / … / ' + slots[slots.length - 2] + ' / <b>' + slots[slots.length - 1] + '</b>';
 }
@@ -2281,8 +2333,10 @@ function remapCellsForStartTimeChange(year, week, oldStartTime, newStartTime) {
 function persistConfigDraft() {
   var orig = JSON.parse(configOriginal);
   var yw = configYearWeek;
-  var moved = remapCellsForStartTimeChange(yw.year, yw.week, orig.startTime || '7:00', configDraft.startTime || '7:00');
+  var moved = remapCellsForStartTimeChange(yw.year, yw.week, orig.startTime || '9:00', configDraft.startTime || '9:00');
+  var reclassified = reclassifyDisabledSubs(yw.year, yw.week, orig, configDraft);
   saveConfig(yw.year, yw.week, configDraft);
+  if (reclassified > 0) showToast('已把 ' + reclassified + ' 格改为「其他」');
   return moved;
 }
 
@@ -2553,7 +2607,7 @@ function renderM_Schedule(date, cellsToday) {
     var empty = true;
     if (cell && (cell.code !== '' || cell.title)) {
       cls = getCatClass(cell.code);
-      code = (cell.code === '' || cell.code == null) ? '' : cell.code;
+      code = fmtCode(cell.code);
       title = cell.title || '';
       empty = false;
     }
@@ -2595,23 +2649,25 @@ function renderM_Earnings(stats) {
 }
 
 function renderM_Details(stats, config) {
-  function group(title, names, prefix, detail, totalVal, catClass) {
+  // v105：只列启用的子类 + 当日有数据的停用项
+  function group(title, cat, totalVal, catClass) {
+    var detail = stats[cat + 'Detail'];
     var h = '<div class="m-detail-group">';
     h += '<div class="m-detail-head ' + catClass + '"><span>' + title + '</span><span>小计 ' + totalVal + '</span></div>';
-    for (var i = 0; i < names.length; i++) {
+    visibleSubs(config, cat, detail).forEach(function(i) {
       var v = detail[i] || 0;
       h += '<div class="m-detail-row' + (v === 0 ? ' lp-zero' : '') + '">' +
-        '<span class="m-row-label">' + prefix + '.' + (i + 1) + ' ' + escapeHtml(names[i]) + '</span>' +
+        '<span class="m-row-label">' + escapeHtml(subLabel(config, cat, i, ' ')) + '</span>' +
         '<span class="m-row-value">' + v + '</span></div>';
-    }
+    });
     h += '</div>';
     return h;
   }
   var h = '<section class="m-section"><div class="m-section-title">当日明细</div>';
-  h += group('QW 明细',   config.qwNames,   '1', stats.qwDetail,   stats.qw,   'cat-qw');
-  h += group('GFP 明细',  config.gfpNames,  '2', stats.gfpDetail,  stats.gfp,  'cat-gfp');
-  h += group('无效浪费',  config.procNames, '3', stats.procDetail, stats.proc, 'cat-proc');
-  h += group('休息明细',  config.restNames, '0', stats.restDetail, stats.rest, 'cat-rest');
+  h += group('QW 明细',  'qw',   stats.qw,   'cat-qw');
+  h += group('GFP 明细', 'gfp',  stats.gfp,  'cat-gfp');
+  h += group('无效浪费', 'proc', stats.proc, 'cat-proc');
+  h += group('休息明细', 'rest', stats.rest, 'cat-rest');
   h += '</section>';
   return h;
 }
@@ -2723,24 +2779,26 @@ function renderMobileWeek() {
     '</section>';
 
   // 明细 + 占比
-  function detailGroup(title, names, prefix, detail, totalVal, catClass) {
+  // v105：只列启用的子类 + 本周有数据的停用项
+  function detailGroup(title, cat, totalVal, catClass) {
+    var detail = t[cat + 'Detail'];
     var h = '<div class="m-detail-group">';
     h += '<div class="m-detail-head ' + catClass + '"><span>' + title + '</span><span>小计 ' + totalVal + '</span></div>';
-    for (var i = 0; i < names.length; i++) {
+    visibleSubs(config, cat, detail).forEach(function(i) {
       var v = detail[i] || 0;
       var pct = totalVal === 0 ? 0 : Math.round(v / totalVal * 100);
       h += '<div class="m-detail-row' + (v === 0 ? ' lp-zero' : '') + '">' +
-        '<span class="m-row-label">' + prefix + '.' + (i + 1) + ' ' + escapeHtml(names[i]) + '</span>' +
+        '<span class="m-row-label">' + escapeHtml(subLabel(config, cat, i, ' ')) + '</span>' +
         '<span class="m-row-value">' + v + ' (' + pct + '%)</span></div>';
-    }
+    });
     h += '</div>';
     return h;
   }
   h += '<section class="m-section"><div class="m-section-title">本周明细 · 占比</div>';
-  h += detailGroup('QW 明细',   config.qwNames,   '1', t.qwDetail,   t.qw,   'cat-qw');
-  h += detailGroup('GFP 明细',  config.gfpNames,  '2', t.gfpDetail,  t.gfp,  'cat-gfp');
-  h += detailGroup('无效浪费',  config.procNames, '3', t.procDetail, t.proc, 'cat-proc');
-  h += detailGroup('休息明细',  config.restNames, '0', t.restDetail, t.rest, 'cat-rest');
+  h += detailGroup('QW 明细',  'qw',   t.qw,   'cat-qw');
+  h += detailGroup('GFP 明细', 'gfp',  t.gfp,  'cat-gfp');
+  h += detailGroup('无效浪费', 'proc', t.proc, 'cat-proc');
+  h += detailGroup('休息明细', 'rest', t.rest, 'cat-rest');
   h += '</section>';
 
   // 汇总
@@ -3257,6 +3315,16 @@ function handleApplyIP() {
       syncClient.saveSyncConfig({ lastIP: info.lanIPs[0].ip });
       if ($('sync-lastip')) $('sync-lastip').value = info.lanIPs[0].ip;
     }
+    // v2.13.4：连通后把 IP 升级为电脑名（hostname.local），这样换 Wi-Fi 后
+    // buildUrls 优先走 mDNS，不再依赖硬存的 IP
+    if (info.hostname) {
+      var hn = info.hostname;
+      syncClient.saveSyncConfig({ hostname: hn, lastIP: (info.lanIPs && info.lanIPs[0]) ? info.lanIPs[0].ip : '' });
+      $('sync-hostname').value = hn;
+      if ($('sync-manual-ip')) $('sync-manual-ip').value = hn;
+      updateSyncUrlPreview();
+      logSync('  已记住电脑名「' + hn + '」，下次换 Wi-Fi 无需重填 IP', 'info');
+    }
     updateSyncStatusUI();
     updateSyncDot(syncClient.getState());
     // 连通后自动拉取当前周
@@ -3716,7 +3784,7 @@ function exportWeekCompareToExcel() {
         if (data && data.cells) {
           var dates = getWeekDates(w.year, w.week);
           var dateKeys = dates.map(dateKey);
-          var config = data.config || getConfig(w.year, w.week);
+          var config = data.config ? normalizeConfigNames(JSON.parse(JSON.stringify(data.config))) : getConfig(w.year, w.week);
 
           var cellsByDate = {};
           for (var j = 0; j < dateKeys.length; j++) cellsByDate[dateKeys[j]] = {};
@@ -3771,64 +3839,24 @@ function exportWeekCompareToExcel() {
     headerRowObj.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E8F0' } };
     headerRowObj.alignment = { horizontal: 'center', vertical: 'middle' };
 
-    // 定义数据行
-    var rows = [
-      { label: 'QW - Quality Work', key: 'qw', isCat: true, color: colors.qw },
-      { label: '1.1-AI', key: 'qwDetail', index: 0, configKey: 'qwNames' },
-      { label: '1.2-心理咨询', key: 'qwDetail', index: 1, configKey: 'qwNames' },
-      { label: '1.3-读书', key: 'qwDetail', index: 2, configKey: 'qwNames' },
-      { label: '1.4-注会变现', key: 'qwDetail', index: 3, configKey: 'qwNames' },
-      { label: '1.5-投资', key: 'qwDetail', index: 4, configKey: 'qwNames' },
-      { label: '1.6-自我管理', key: 'qwDetail', index: 5, configKey: 'qwNames' },
-      { label: '1.7-其他', key: 'qwDetail', index: 6, configKey: 'qwNames' },
-      { label: 'GFP - Guilt Free Play', key: 'gfp', isCat: true, color: colors.gfp },
-      { label: '2.1-演出', key: 'gfpDetail', index: 0, configKey: 'gfpNames' },
-      { label: '2.2-运动', key: 'gfpDetail', index: 1, configKey: 'gfpNames' },
-      { label: '2.3-约会', key: 'gfpDetail', index: 2, configKey: 'gfpNames' },
-      { label: '2.4-旅行', key: 'gfpDetail', index: 3, configKey: 'gfpNames' },
-      { label: '2.5-游戏', key: 'gfpDetail', index: 4, configKey: 'gfpNames' },
-      { label: '2.6-小资', key: 'gfpDetail', index: 5, configKey: 'gfpNames' },
-      { label: '2.7-其他', key: 'gfpDetail', index: 6, configKey: 'gfpNames' },
-      { label: 'Proc - Procrastination', key: 'proc', isCat: true, color: colors.proc },
-      { label: '3.1-睡懒觉', key: 'procDetail', index: 0, configKey: 'procNames' },
-      { label: '3.2-刷手机', key: 'procDetail', index: 1, configKey: 'procNames' },
-      { label: '3.3-拖延', key: 'procDetail', index: 2, configKey: 'procNames' },
-      { label: '3.4-无效/低效社交', key: 'procDetail', index: 3, configKey: 'procNames' },
-      { label: '3.5-其他', key: 'procDetail', index: 4, configKey: 'procNames' },
-      { label: 'Rest', key: 'rest', isCat: true, color: colors.rest },
-      { label: '0.1-睡觉', key: 'restDetail', index: 0, configKey: 'restNames' },
-      { label: '0.2-吃喝', key: 'restDetail', index: 1, configKey: 'restNames' },
-      { label: '0.3-散步', key: 'restDetail', index: 2, configKey: 'restNames' },
-      { label: '0.4-出行', key: 'restDetail', index: 3, configKey: 'restNames' },
-      { label: '0.5-刷手机', key: 'restDetail', index: 4, configKey: 'restNames' },
-      { label: '0.6-卫生', key: 'restDetail', index: 5, configKey: 'restNames' },
-      { label: '0.7-游戏', key: 'restDetail', index: 6, configKey: 'restNames' },
-      { label: '0.8-社交', key: 'restDetail', index: 7, configKey: 'restNames' },
-      { label: '0.9-其他', key: 'restDetail', index: 8, configKey: 'restNames' },
-      { label: 'MW', key: 'mw', isCat: true, color: colors.mw }
-    ];
+    // 定义数据行（v105：按配置生成，见 buildCompareRows）
+    var rows = buildCompareRows(weeksData, colors);
 
-    // 用于图表的五大类数据
+    // 用于图表的五大类数据（rowIndex = 该大类在表中的行号，表头为第 1 行）
     var chartData = {
-      qw: { label: 'QW - Quality Work', values: [], rowIndex: 2 },
-      gfp: { label: 'GFP - Guilt Free Play', values: [], rowIndex: 10 },
-      proc: { label: 'Proc - Procrastination', values: [], rowIndex: 18 },
-      rest: { label: 'Rest', values: [], rowIndex: 24 },
-      mw: { label: 'MW', values: [], rowIndex: 34 }
+      qw: { label: 'QW - Quality Work', values: [], rowIndex: 0 },
+      gfp: { label: 'GFP - Guilt Free Play', values: [], rowIndex: 0 },
+      proc: { label: 'Proc - Procrastination', values: [], rowIndex: 0 },
+      rest: { label: 'Rest', values: [], rowIndex: 0 },
+      mw: { label: 'MW', values: [], rowIndex: 0 }
     };
+    rows.forEach(function(row, i) { if (row.isCat && chartData[row.key]) chartData[row.key].rowIndex = i + 2; });
 
     // 数据行
     var currentRow = 2;
     rows.forEach(function(row) {
       // 项目名称
       var labelDisplay = row.label;
-      if (row.configKey && weeksData[0]) {
-        var idx = row.index;
-        // 服务端旧配置可能没有 restNames，回退默认名
-        var nameArr = weeksData[0].config[row.configKey] || DEFAULT_CONFIG[row.configKey] || [];
-        var configVal = nameArr[idx] || row.label.split('-')[1];
-        labelDisplay = row.label.split('-')[0] + '-' + configVal;
-      }
       var rowData = [labelDisplay];
       var values = [];
 
