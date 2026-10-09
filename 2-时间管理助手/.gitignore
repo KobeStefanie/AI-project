@@ -9,8 +9,9 @@ ai-config.json
 # 工具内 node_modules
 tools/**/node_modules/
 
-# 同步数据（按需）
-# sync-data/
+# 同步数据：个人时间记录 + 设备令牌，不再入库（2026-10-09）
+# 历史版本保留在 sync-data-history/<日期>/（令牌已遮蔽），不要删除
+sync-data/
 
 # 系统/编辑器
 .DS_Store

@@ -98,6 +98,7 @@ node sync-server.js         # 同步服务：HTTP 6372 + HTTPS 6444
   - `POST /pair/start`, `/pair/confirm`, `/pair/register-desktop` — 设备配对绑定
   - `GET /devices`, `DELETE /devices/:id` — 设备管理
   - 数据持久化到 `sync-data/<year>/wNN.json`，原子写入（先 `.tmp` 再 rename）
+  - `sync-data/` 不入库（个人数据 + 设备令牌，见 .gitignore）；`sync-data-history/<日期>/` 是入库的历史版本，**不要删除**，新增历史快照时按日期另建目录并遮蔽 `devices.json` 令牌
 
 ### 数据流
 
