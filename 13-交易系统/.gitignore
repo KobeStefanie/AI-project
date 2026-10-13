@@ -1,0 +1,22 @@
+# 密钥和环境变量
+config/.env
+config/*.env
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.Python
+
+# 临时文件
+*.tmp
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# 手机同步：证书私钥、设备令牌哈希
+certs/
+data/mobile/

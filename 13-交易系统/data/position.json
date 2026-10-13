@@ -1,0 +1,20 @@
+{
+  "_说明": "持仓记录。null 表示待用户提供，脚本不会猜测。每次买卖后更新 trades；thesis/invalidation 由个股访谈填写（用户原话）。",
+  "000977": {
+    "name": "浪潮信息",
+    "capital": 20000.0,
+    "first_buy_price": 63.06,
+    "first_buy_date": "2026-10-09",
+    "thesis": "先入场，属于AI基建工程之一，整体变动不大，可以长期持有，减少盯盘时间",
+    "invalidation": null,
+    "trades": [
+      {
+        "date": "2026-10-09",
+        "side": "buy",
+        "price": 63.06,
+        "shares": 100,
+        "note": "底仓首次买入"
+      }
+    ]
+  }
+}

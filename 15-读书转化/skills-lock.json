@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "skill-builder": {
+      "source": "jwynia/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/general/meta/skill-builder/SKILL.md",
+      "computedHash": "51d86ec99cdf6cfaca9a8551cf84e7702ef6b4124b36041813282357f22fbb79"
+    },
+    "skill-from-book": {
+      "source": "bmad-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/skill-from-book/SKILL.md",
+      "computedHash": "fa9e2481c502ec84eb670f4d1ba81528df4901e945b5fbbbf20b0ae9a59b67e2"
+    }
+  }
+}

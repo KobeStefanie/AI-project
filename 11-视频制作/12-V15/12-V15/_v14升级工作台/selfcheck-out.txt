@@ -1,0 +1,38 @@
+﻿扫描 127 个 md
+
+[1] 源库路径残留（应零）
+  OK 00-bible: 零
+  OK 01-script/: 零
+  OK 02-breakdown: 零
+  OK 03-shots: 零
+  OK 04-assets: 零
+  OK 05-control-prompts: 零
+  OK 06-motion-prompts: 零
+  OK 07-continuity: 零
+  OK film-reviewer: 零
+  OK 废才: 零
+
+[2] v13 旧口径（应零，examples 带头注的除外）
+  OK 三块散文: 零
+  OK 均分≥8: 零
+  OK 评分制放行: 零
+  OK 02-seedance: 零
+
+[3] agent skills 可达
+  (无输出=全绿)
+
+[4] 跨文件章节引用
+  OK 全部命中
+
+[5] 缺口关键词在位
+  OK assets/reference-index.template.md 
+  OK .claude/skills/art-design-skill/SKILL.md 
+  OK .claude/skills/_shared/user-messages.md 
+  OK .claude/ARCHITECTURE.md 
+  OK .claude/templates/file-index.template.md 
+  OK CHANGELOG.md 
+  OK README.md 
+  OK USAGE.md 
+
+[6] V14-FEATURE-SUMMARY 存在: True / V13 已删: True
+[7] CLAUDE.md 行数: 233

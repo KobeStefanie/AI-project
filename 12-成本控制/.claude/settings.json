@@ -1,0 +1,8 @@
+{
+  "hooks": {
+    "startup": {
+      "script": "node .claude/hooks/startup.js",
+      "description": "读取三大件并汇报项目状态"
+    }
+  }
+}

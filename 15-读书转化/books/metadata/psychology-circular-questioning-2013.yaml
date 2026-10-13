@@ -1,0 +1,130 @@
+# 书籍元信息：循环提问 系统式治疗案例教程
+
+book_id: psychology-circular-questioning-2013
+title: "循环提问 系统式治疗案例教程"
+title_en: "Circular Questioning: Systemic Therapy Case Tutorial"
+
+# 出版信息
+author: "（德）西蒙，（德）莱西-西蒙 著；于雪梅 译"
+author_original: "Fritz B. Simon, Christel Rech-Simon"
+publisher: "商务印书馆"
+year: 2013
+pages: 347
+isbn: "7-100-09756-7"
+
+# 目的类型（5选1）
+purpose: skill  # skill | knowledge | practice | reference | thinking
+
+# 目的类型选择理由
+purpose_reason: |
+  书籍以"循环提问技术"为核心，包含明确的操作步骤、会谈流程、干预方法，
+  目标是让读者学会使用循环提问这一可操作的咨询技术。
+  书中有大量案例对话示例、技术操作步骤，符合"技能学习"类特征。
+
+# 领域标签（多个）
+domains:
+  - 心理学
+  - 系统式治疗
+  - 家庭治疗
+  - 循环提问技术
+
+# 目标用户（多个）
+target_users:
+  - 心理咨询师
+  - 家庭治疗师
+  - 心理学研究者
+  - 社会工作者
+
+# 难度等级
+difficulty: professional  # beginner | intermediate | professional | expert
+
+# 前置要求
+prerequisites:
+  - 基础心理学知识
+  - 咨询实践经验
+  - 对系统式治疗有基本了解
+
+# 关联关系
+relationships:
+  # 前置书籍（建议先读的书）
+  prerequisites_books: []
+
+  # 主题关联书籍（同一主题）
+  topic_related:
+    - psychology-systemic-therapy
+    - psychology-family-therapy
+
+  # 互补书籍（理论+实践配套）
+  complementary: []
+
+# 技能结构设计（基于目的类型）
+skill_structure:
+  type: skill  # 技能学习类
+
+  # 必需目录
+  required:
+    - workflows/        # 操作流程
+    - references/       # 知识库
+
+  # 可选目录
+  optional:
+    - checklists/       # 检查清单
+
+  # workflows/ 内容规划
+  workflows:
+    - session-preparation.md      # 会谈准备流程
+    - circular-questioning.md     # 循环提问实施流程
+    - case-supervision.md         # 案例督导流程
+    - intervention-design.md      # 干预设计流程
+    - self-reflection.md          # 治疗师自我反思流程
+
+  # references/ 分类规划
+  references:
+    - core-concepts/              # 核心概念
+    - circular-questioning/       # 循环提问技术
+    - therapeutic-techniques/     # 治疗技术
+    - session-structure/          # 会谈结构
+    - case-patterns/              # 案例模式
+    - intervention-strategies/    # 干预策略
+    - supervision/                # 督导内容
+    - practice-exercises/         # 练习材料
+
+# 转化信息
+conversion:
+  status: in_progress  # pending | in_progress | completed | paused | failed
+  skill_path: .agents/skills/skill-psychology-circular-questioning/
+  started_at: "2026-09-22"
+  current_phase: "Phase 1 完成，架构重构完成，准备Phase 2"
+  progress_percent: 20
+  completed_at: null
+  quality_score: null
+
+# 文件位置
+files:
+  pdf_original: "循环提问  系统式治疗案例教程_13374365(1).pdf"
+  extracted_content: "book_content.md"
+  extracted_toc: "toc.json"
+  metadata: "books/metadata/psychology-circular-questioning-2013.yaml"
+
+# 质量指标
+quality:
+  pdf_extraction: success     # success | failed
+  encoding_quality: good      # good | acceptable | poor
+  toc_completeness: complete  # complete | partial | missing
+  content_completeness: pending  # complete | partial | pending
+
+# 备注
+notes: |
+  - 第一本转化书籍，用于验证通用架构的可行性
+  - 特别关注：循环提问技术的提取质量
+  - 书籍特点：大量案例对话、技术操作步骤详细
+  - 转化重点：提取可操作的技术步骤和workflow
+
+# 标签（用于检索）
+tags:
+  - 心理治疗
+  - 系统式治疗
+  - 循环提问
+  - 家庭治疗
+  - 案例教程
+  - 操作技术

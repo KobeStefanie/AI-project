@@ -1,0 +1,30 @@
+{
+  "project_name": "小孩视角",
+  "involvement_mode": "key_node",
+  "content_type": "narrative",
+  "loadout": "lite",
+  "skip_music_episodes": [],
+  "storyboard_overrides": { "global": "single-shot" },
+  "storyboard_style": null,
+  "video_model_config": {
+    "primary_model": "即梦/Seedance",
+    "max_seconds": 10,
+    "min_seconds": 4,
+    "supports_image_ref": true,
+    "supports_video_ref": true,
+    "supports_audio_ref": false,
+    "supports_full_context": false
+  },
+  "image_model_config": {
+    "primary_model": "gpt_image_2.5_flare",
+    "grid_mode": "single"
+  },
+  "image_pipeline": {
+    "mode": "single",
+    "style_model": "midjourney_v8.2",
+    "refine_model": "gpt_image_2.5_sunburst",
+    "single_model": "gpt_image_2.5_flare"
+  },
+  "target_duration": "60-120s",
+  "created": "2026-10-08"
+}

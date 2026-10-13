@@ -1,0 +1,135 @@
+
+所有Sheet列表（共31个）：
+ 1. 字典                             -     78行 x  15列
+ 2. 成本核算                           -     62行 x  79列
+ 3. 工艺单                            -    431行 x  38列
+ 4. 原纱汇总_库                         -     72行 x  19列
+ 5. 原纱明细_库                         -    731行 x  18列
+ 6. 原纱_ERP                         -     45行 x  13列
+ 7. 账面_物料                          -    185行 x  87列
+ 8. 账面_加工                          -    185行 x  87列
+ 9. 原纱账面差异                         -     45行 x  11列
+10. 胚布明细_库                         -    584行 x  15列
+11. 胚布汇总_库                         -     25行 x  14列
+12. 胚布_ERP                         -     30行 x  20列
+13. 原纱入库_ERP                       -    140行 x  23列
+14. 原纱出库_ERP                       -    209行 x  22列
+15. 胚布入库_财务                        -    251行 x  14列
+16. 胚布入库_ERP                       -  33603行 x  39列
+17. 胚布出库_财务                        -    106行 x 244列
+18. 胚布出入库_财务                       -     27行 x  24列
+19. 工资表汇总                          -    279行 x  25列
+20. 直接人工分配比例                       -    127行 x  13列
+21. 挡车工_织造                         -    869行 x  19列
+22. 验布工_织造                         -    102行 x  13列
+23. 挡车工_小圆筒                        -     66行 x  68列
+24. 验布工_小圆筒                        -     38行 x  12列
+25. 织造部                            -    354行 x 16384列
+26. 小圆机                            -     43行 x  27列
+27. 财务_制造                          -     38行 x  10列
+28. 财务_其他                          -     14行 x  13列
+29. 过渡表_原版                         -     54行 x  21列
+30. 织造人工-原                         -    633行 x  16列
+31. 小圆筒挡车                          -     66行 x  36列
+
+================================================================================
+Sheet: 字典
+================================================================================
+
+前5行完整内容：
+  Row1: Col1:财务编码 | Col2: | Col3: | Col4: | Col5: | Col6: | Col7: | Col8: | Col9: | Col10: | Col11: | Col12: | Col13: | Col14: | Col15:
+  Row2: Col1:商品编码 | Col2:商品名称 | Col3:规格型号 | Col4:基本单位 | Col5:物料编码 | Col6:物料名称 | Col7:纱支编号 | Col8:纱支名称 | Col9:理论损耗率 | Col10: | Col11: | Col12: | Col13: | Col14:损耗 | Col15:占比
+  Row3: Col1:SP00001 | Col2:棉纱 | Col3:16S | Col4:kg | Col5: | Col6: | Col7: | Col8: | Col9:=IFERROR(_xlfn.XLOOK... | Col10: | Col11: | Col12: | Col13: | Col14:棉纱 | Col15:0.04
+  Row4: Col1:SP00002 | Col2:棉纱 | Col3:19.5S | Col4:kg | Col5: | Col6: | Col7: | Col8: | Col9:=IFERROR(_xlfn.XLOOK... | Col10:工艺单：纱支编号与物料编码是什么关系；
+... | Col11: | Col12: | Col13: | Col14:氨纶 | Col15:0
+  Row5: Col1:SP00003 | Col2:棉纱 | Col3:20S | Col4:kg | Col5:023 | Col6:20s棉纱 | Col7:1035 | Col8:20s棉纱 | Col9:=IFERROR(_xlfn.XLOOK... | Col10: | Col11: | Col12: | Col13: | Col14:涤纶 | Col15:0
+
+================================================================================
+Sheet: 成本核算
+================================================================================
+
+前5行完整内容：
+  Row1: Col1:序号 | Col2:生产车间 | Col3:物料名称_ERP | Col4:物料编号_ERP | Col5:类型 | Col6:规格_财务 | Col7:物料编号_财务 | Col8:单位 | Col9:生产入库 | Col10: | Col11:工艺单 | Col12: | Col13: | Col14: | Col15: | Col16: | Col17: | Col18: | Col19: | Col20:
+  Row2: Col1: | Col2: | Col3: | Col4: | Col5: | Col6: | Col7: | Col8: | Col9:实收数量 | Col10:重量 | Col11:纱支编号1 | Col12:纱支名称1 | Col13:比例%-1 | Col14:原纱物料编码-1 | Col15:理论织损率-1 | Col16:标准用纱-1 | Col17:实际出库-1 | Col18:财务物料编码-1 | Col19:出库单价-1 | Col20:理论出库金额-1
+  Row3: Col1:1 | Col2:织造车间 | Col3:=TRIM(MID(SUBSTITUTE... | Col4:=TRIM(MID(SUBSTITUTE... | Col5:=TRIM(MID(SUBSTITUTE... | Col6:=_xlfn.XLOOKUP(D3,字典... | Col7:=_xlfn.XLOOKUP(D3,字典... | Col8:KG | Col9:=SUMIFS(胚布入库_ERP!$Y:... | Col10:=SUMIFS(胚布入库_ERP!$Z:... | Col11:=_xlfn.XLOOKUP($D3,工... | Col12:=_xlfn.XLOOKUP($D3,工... | Col13:=_xlfn.XLOOKUP($D3,工... | Col14:=IF(K3=0,"",_xlfn.XL... | Col15:=IF(R3="","",_xlfn.X... | Col16:=IF(R3="","",($J3*M3... | Col17:=IFERROR(SUMIFS($G$3... | Col18:=IF(N3="","",_xlfn.X... | Col19:=IF(N3="","",IF($E3=... | Col20:=IF(N3="","",P3*S3)
+  Row4: Col1:2 | Col2:织造车间 | Col3:=TRIM(MID(SUBSTITUTE... | Col4:=TRIM(MID(SUBSTITUTE... | Col5:=TRIM(MID(SUBSTITUTE... | Col6:=_xlfn.XLOOKUP(D4,字典... | Col7:=_xlfn.XLOOKUP(D4,字典... | Col8:KG | Col9:=SUMIFS(胚布入库_ERP!$Y:... | Col10:=SUMIFS(胚布入库_ERP!$Z:... | Col11:=_xlfn.XLOOKUP($D4,工... | Col12:=_xlfn.XLOOKUP($D4,工... | Col13:=_xlfn.XLOOKUP($D4,工... | Col14:=IF(K4=0,"",_xlfn.XL... | Col15:=IF(R4="","",_xlfn.X... | Col16:=IF(R4="","",($J4*M4... | Col17:=IFERROR(SUMIFS($G$3... | Col18:=IF(N4="","",_xlfn.X... | Col19:=IF(N4="","",IF($E4=... | Col20:=IF(N4="","",P4*S4)
+  Row5: Col1:3 | Col2:织造车间 | Col3:=TRIM(MID(SUBSTITUTE... | Col4:=TRIM(MID(SUBSTITUTE... | Col5:=TRIM(MID(SUBSTITUTE... | Col6:=_xlfn.XLOOKUP(D5,字典... | Col7:=_xlfn.XLOOKUP(D5,字典... | Col8:KG | Col9:=SUMIFS(胚布入库_ERP!$Y:... | Col10:=SUMIFS(胚布入库_ERP!$Z:... | Col11:=_xlfn.XLOOKUP($D5,工... | Col12:=_xlfn.XLOOKUP($D5,工... | Col13:=_xlfn.XLOOKUP($D5,工... | Col14:=IF(K5=0,"",_xlfn.XL... | Col15:=IF(R5="","",_xlfn.X... | Col16:=IF(R5="","",($J5*M5... | Col17:=IFERROR(SUMIFS($G$3... | Col18:=IF(N5="","",_xlfn.X... | Col19:=IF(N5="","",IF($E5=... | Col20:=IF(N5="","",P5*S5)
+
+关键列的公式示例（第3行）：
+  Col9 (生产入库/实收数量)
+    公式: =SUMIFS(胚布入库_ERP!$Y:$Y,胚布入库_ERP!$AL:$AL,CA3,胚布入库_ERP!$F:$F,字典!$O$8)
+    数据: =SUMIFS(胚布入库_ERP!$Y:$Y,胚布入库_ERP!$AL:$AL,CA3,胚布入库_ERP!$F:$F,字典!$O$8)
+  Col47 (/实际金额小计)
+    公式: =SUM(U3,AF3,AQ3)
+    数据: =SUM(U3,AF3,AQ3)
+  Col54 (小圆机/挡车工比例)
+    公式: (无公式)
+    数据: 空
+  Col65 (/水电费)
+    公式: =$BI3*_xlfn.XLOOKUP("4101007_BM00003",财务_制造!$A:$A,财务_制造!$E:$E)
+    数据: =$BI3*_xlfn.XLOOKUP("4101007_BM00003",财务_制造!$A:$A,财务_制造!$E:$E)
+  Col67 (/社保费)
+    公式: =$BI3*_xlfn.XLOOKUP("4101010_BM00003",财务_制造!$A:$A,财务_制造!$E:$E)
+    数据: =$BI3*_xlfn.XLOOKUP("4101010_BM00003",财务_制造!$A:$A,财务_制造!$E:$E)
+  Col69 (/其他)
+    公式: =$BI3*_xlfn.XLOOKUP("4101099_BM00003",财务_制造!$A:$A,财务_制造!$E:$E)
+    数据: =$BI3*_xlfn.XLOOKUP("4101099_BM00003",财务_制造!$A:$A,财务_制造!$E:$E)
+  Col70 (/宿舍费用
+【含水电】)
+    公式: =$BI3*-(财务_其他!$I$8+财务_其他!$I$9)
+    数据: =$BI3*-(财务_其他!$I$8+财务_其他!$I$9)
+
+================================================================================
+Sheet: 工艺单
+================================================================================
+
+前5行完整内容：
+  Row1: Col1:序号 | Col2:状态 | Col3:工艺单号 | Col4:工艺类型 | Col5:订单号 | Col6:客户 | Col7:物料编码 | Col8:物料名称 | Col9:物料类型 | Col10:色系 | Col11:机型 | Col12:加工方式 | Col13:胚布门幅 | Col14:胚布克重 | Col15:胚重 | Col16:针数 | Col17:寸数 | Col18:总针数 | Col19:损耗 | Col20:工艺员
+  Row2: Col1:1 | Col2:审核 | Col3:A26080702 | Col4:大货 | Col5: | Col6: | Col7:XYT#018 | Col8:18S纯涤 | Col9:纯涤布 | Col10: | Col11:小圆机 | Col12: | Col13: | Col14: | Col15: | Col16: | Col17: | Col18: | Col19: | Col20:
+  Row3: Col1:2 | Col2:审核 | Col3:A26080202 | Col4:大货 | Col5: | Col6: | Col7:XLW#0020 | Col8:20S小罗纹 | Col9:全棉 | Col10: | Col11:小圆机 | Col12: | Col13: | Col14: | Col15: | Col16: | Col17: | Col18: | Col19: | Col20:
+  Row4: Col1:3 | Col2:审核 | Col3:A26071002 | Col4:大货 | Col5: | Col6: | Col7:XYT#JJS20 | Col8:20s精紧赛小圆筒 | Col9:小圆筒 | Col10: | Col11:小圆机 | Col12: | Col13: | Col14: | Col15: | Col16: | Col17: | Col18: | Col19: | Col20:
+  Row5: Col1:4 | Col2:审核 | Col3:A26062702 | Col4:大货 | Col5: | Col6:废布出库 | Col7:1 | Col8:35支+30D棉拉架 | Col9:棉拉架 | Col10: | Col11:大圆机 | Col12: | Col13: | Col14: | Col15: | Col16: | Col17: | Col18: | Col19: | Col20:
+
+================================================================================
+Sheet: 胚布入库_ERP
+================================================================================
+
+前5行完整内容：
+  Row1: Col1: | Col2: | Col3:状态 | Col4:生产车间 | Col5:布票号 | Col6:等级 | Col7:入库时间 | Col8:审核单号 | Col9:验布工 | Col10:已出库 | Col11:客户 | Col12:生产单号 | Col13:物料编号 | Col14:物料名称 | Col15:颜色 | Col16:部位 | Col17:规格尺码 | Col18:针数 | Col19:寸数 | Col20:坯布门幅
+  Row2: Col1:1 | Col2:否 | Col3:1 | Col4:小圆筒 | Col5:S260731010-B11-00020... | Col6:A | Col7:2026-07-31 19:01:22 | Col8:260731120 | Col9:阿不都黑西尔·木沙 | Col10:是 | Col11:华祥印染 | Col12:S260731010 | Col13:XYT#JJS20 | Col14:20支精紧赛小圆筒 | Col15:正常 | Col16: | Col17:18寸 | Col18:24 | Col19:18 | Col20:
+  Row3: Col1:2 | Col2:否 | Col3:1 | Col4:小圆筒 | Col5:S260731010-B11-00020... | Col6:A | Col7:2026-07-31 19:01:07 | Col8:260731120 | Col9:阿不都黑西尔·木沙 | Col10:是 | Col11:华祥印染 | Col12:S260731010 | Col13:XYT#JJS20 | Col14:20支精紧赛小圆筒 | Col15:正常 | Col16: | Col17:18寸 | Col18:24 | Col19:18 | Col20:
+  Row4: Col1:3 | Col2:否 | Col3:1 | Col4:小圆筒 | Col5:S260731010-B11-00026... | Col6:A | Col7:2026-07-31 19:00:50 | Col8:260731120 | Col9:阿不都黑西尔·木沙 | Col10:是 | Col11:华祥印染 | Col12:S260731010 | Col13:XYT#JJS20 | Col14:20支精紧赛小圆筒 | Col15:正常 | Col16: | Col17:18寸 | Col18:24 | Col19:18 | Col20:
+  Row5: Col1:4 | Col2:否 | Col3:1 | Col4:小圆筒 | Col5:S260731010-B11-00026... | Col6:A | Col7:2026-07-31 19:00:27 | Col8:260731120 | Col9:阿不都黑西尔·木沙 | Col10:是 | Col11:华祥印染 | Col12:S260731010 | Col13:XYT#JJS20 | Col14:20支精紧赛小圆筒 | Col15:正常 | Col16: | Col17:18寸 | Col18:24 | Col19:18 | Col20:
+
+================================================================================
+Sheet: 挡车工_织造
+================================================================================
+
+前5行完整内容：
+  Row1: Col1:日期 | Col2:品种 | Col3:物料代码 | Col4:规格 | Col5:总转数 | Col6:公斤 | Col7:万转/公斤 | Col8:条数 | Col9:条/公斤 | Col10:开机台数 | Col11:台/条 | Col12:万转/吨 | Col13:元/万转 | Col14:工资  元/吨 | Col15:人数/人 | Col16:废布/公斤 | Col17:备注 | Col18:<openpyxl.worksheet.formula.ArrayFormula object at 0x0000012E572F61B0> | Col19:
+  Row2: Col1:7月1日 | Col2:40S棉+40D罗纹拉架 | Col3:11012 | Col4:38寸18针、40S棉QH+40D氨纶 | Col5: | Col6: | Col7:=IF(F2=0,0,F2/E2*100... | Col8: | Col9:=IF(H2=0,0,F2/H2) | Col10: | Col11:=IF(J2=0,0,H2/J2) | Col12:=IF(F2=0,0,E2/F2*100... | Col13:45 | Col14:=L2*M2 | Col15: | Col16: | Col17: | Col18:11012 | Col19:=SUMIF($C:$C,R2,F:F)
+  Row3: Col1:7月1日 | Col2:40S棉+30D罗纹拉架 | Col3:11011 | Col4:34寸18针、40S棉QH+30D氨纶 | Col5: | Col6: | Col7:=IF(F3=0,0,F3/E3*100... | Col8: | Col9:=IF(H3=0,0,F3/H3) | Col10: | Col11:=IF(J3=0,0,H3/J3) | Col12:=IF(F3=0,0,E3/F3*100... | Col13:45 | Col14:=L3*M3 | Col15: | Col16: | Col17:云纺 | Col18:11011 | Col19:=SUMIF($C:$C,R3,F:F)
+  Row4: Col1:7月1日 | Col2:40S棉+20D平纹拉架 | Col3:340085 | Col4:34寸30针、40S棉CR+20D氨纶 | Col5: | Col6: | Col7:=IF(F4=0,0,F4/E4*100... | Col8: | Col9:=IF(H4=0,0,F4/H4) | Col10: | Col11:=IF(J4=0,0,H4/J4) | Col12:=IF(F4=0,0,E4/F4*100... | Col13:45 | Col14:=L4*M4 | Col15: | Col16: | Col17: | Col18:340085 | Col19:=SUMIF($C:$C,R4,F:F)
+  Row5: Col1:7月1日 | Col2:50S棉+25D平纹拉架 | Col3:350334 | Col4:34寸30针、50S棉CR+25D氨纶 | Col5: | Col6: | Col7:=IF(F5=0,0,F5/E5*100... | Col8: | Col9:=IF(H5=0,0,F5/H5) | Col10: | Col11:=IF(J5=0,0,H5/J5) | Col12:=IF(F5=0,0,E5/F5*100... | Col13:45 | Col14:=L5*M5 | Col15: | Col16: | Col17: | Col18:350334 | Col19:=SUMIF($C:$C,R5,F:F)
+
+================================================================================
+Sheet: 验布工_织造
+================================================================================
+
+前5行完整内容：
+  Row1: Col1: | Col2:账号 | Col3:名字 | Col4:称重时间 | Col5:物料编号 | Col6:物料名称 | Col7:匹数 | Col8:总量 | Col9:单价 | Col10:合计金额 | Col11:织造 | Col12:<openpyxl.worksheet.formula.ArrayFormula object at 0x0000012E522A5970> | Col13:
+  Row2: Col1:1 | Col2:17001 | Col3:丁云林 | Col4:2026-07-20 10:06:25 | Col5:11012 | Col6:40D1*1罗纹 | Col7:2 | Col8:14 | Col9:2 | Col10:4 | Col11: | Col12:11012 | Col13:
+  Row3: Col1:2 | Col2:17001 | Col3:丁云林 | Col4:2026-07-18 20:11:21 | Col5:GF#1832 | Col6:32S棉+75D+118D | Col7:1 | Col8:3.3 | Col9: | Col10: | Col11: | Col12:GF#1832 | Col13:
+  Row4: Col1:3 | Col2:A012 | Col3:麦吾拉·衣明 | Col4:2026-07-17 16:30:55 | Col5:D21086 | Col6:华棉118D | Col7:1 | Col8:25.2 | Col9:1.8 | Col10:1.8 | Col11: | Col12:D21086 | Col13:
+  Row5: Col1:4 | Col2:B001 | Col3:曾基庆 | Col4:2026-07-22 20:05:03 | Col5:D21086 | Col6:华棉118D | Col7:2 | Col8:24.7 | Col9:1.8 | Col10:3.6 | Col11: | Col12:C21086 | Col13:
+
+================================================================================
+Sheet: 财务_制造
+================================================================================
+
+前5行完整内容：
+  Row1: Col1:科目余额表 | Col2: | Col3: | Col4: | Col5: | Col6: | Col7: | Col8: | Col9: | Col10:
+  Row2: Col1:公司名称：新疆华盛智能织造制衣有限公司 | Col2: | Col3: | Col4: | Col5: | Col6:期间：202607-202607 | Col7: | Col8: | Col9: | Col10:
+  Row3: Col1: | Col2: | Col3: | Col4: | Col5: | Col6:币别：综合本位币 | Col7: | Col8: | Col9: | Col10:
+  Row4: Col1:科目编码 | Col2:科目名称 | Col3:期初余额 | Col4: | Col5:本期发生 | Col6: | Col7:本年累计 | Col8: | Col9:期末余额 | Col10:
+  Row5: Col1: | Col2: | Col3:借方 | Col4:贷方 | Col5:借方 | Col6:贷方 | Col7:借方 | Col8:贷方 | Col9:借方 | Col10:贷方

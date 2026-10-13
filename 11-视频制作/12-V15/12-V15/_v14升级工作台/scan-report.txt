@@ -1,0 +1,112 @@
+扫描 128 个 md
+
+=== ./.claude/skills/_shared/audience-engagement-guide.md
+    REP-LINE   '| 维度 | 参数 |' x8
+    REP-LINE   '|------|------|' x8
+=== ./.claude/skills/_shared/creative-brief-guide.md
+    DUP-SEC    '[全片视觉风格基准]' x3  行 [74, 97, 135]
+=== ./.claude/skills/_shared/episode-tagging.md
+    DUP-HEAD   '# ===== ep01 =====' x2  行 [33, 44]
+    REP-LINE   '```markdown' x6
+=== ./.claude/skills/art-design-skill/examples/scene-prompt-examples.md
+    DUP-HEAD   '### Panel Breakdown（场景拆解）' x2  行 [26, 72]
+    DUP-HEAD   '### 宫格布局' x2  行 [23, 69]
+    DUP-HEAD   '### 视觉规范' x2  行 [18, 64]
+=== ./.claude/skills/art-design-skill/references/director-index.md
+    REP-LINE   '| ID | 导演 | 地区 | 一句话风格 | 适配题材 |' x17
+    REP-LINE   '|---|---|---|---|---|' x17
+=== ./.claude/skills/art-design-skill/templates/art-design-template.md
+    DUP-SEC    '[...]' x2  行 [37, 82]
+=== ./.claude/skills/bianju-skill/references/character-deep-design.md
+    REP-LINE   '**特征**：' x5
+=== ./.claude/skills/bianju-skill/references/dialogue-10-principles.md
+    REP-LINE   '**对照**：' x5
+=== ./.claude/skills/bianju-skill/references/format-templates.md
+    DUP-HEAD   '### 关键特征' x4  行 [85, 137, 194, 259]
+    DUP-HEAD   '### 创作重心' x3  行 [93, 145, 203]
+    REP-LINE   '<!-- AGENT-NOTE' x6
+    REP-LINE   '注释版追加：' x5
+=== ./.claude/skills/blocking/examples/blocking-example.md
+    REP-LINE   '为什么这么编：' x5
+=== ./.claude/skills/camera/examples/camera-clause-library.md
+    REP-LINE   '为什么这么编：' x20
+=== ./.claude/skills/continuity/references/state-machine-12.md
+    REP-LINE   '典型例子：' x12
+    REP-LINE   '怎么认：' x12
+    REP-LINE   '认错长什么样：' x12
+=== ./.claude/skills/director-skill/references/script-doctor.md
+    REP-LINE   '**症状**：' x12
+    REP-LINE   '**给编剧的建议方向**：' x5
+    REP-LINE   '**诊断方法**：' x11
+=== ./.claude/skills/director-skill/templates/director-analysis-template.md
+    DUP-HEAD   '## 人物清单' x2  行 [70, 77]
+    DUP-HEAD   '## 关键道具清单' x3  行 [111, 118, 126]
+    DUP-HEAD   '## 场景清单' x2  行 [94, 99]
+    REP-LINE   '```markdown' x6
+=== ./.claude/skills/lighting/references/light-lock-blocks.md
+    REP-LINE   '典型例子：' x6
+    REP-LINE   '怎么认：' x6
+    REP-LINE   '认错长什么样：' x6
+=== ./.claude/skills/lighting/references/physics-lock.md
+    REP-LINE   '典型例子：' x6
+    REP-LINE   '怎么认：' x6
+    REP-LINE   '认错长什么样：' x6
+=== ./.claude/skills/music-design-skill/references/parody-adaptation.md
+    DUP-SEC    '[Verse 1]' x2  行 [149, 205]
+=== ./.claude/skills/music-design-skill/references/suno-advanced-tags.md
+    REP-LINE   '| 标签 | 含义 |' x5
+    REP-LINE   '|------|------|' x7
+    TBL-DUPKEY 表@行148  首列 'Chorus' x2
+    TBL-DUPKEY 表@行148  首列 'Pre-Chorus' x2
+=== ./.claude/skills/music-design-skill/references/vocal-pronunciation-tricks.md
+    DUP-HEAD   '#### 中文示例' x3  行 [43, 92, 131]
+    DUP-HEAD   '#### 英文示例' x3  行 [31, 82, 123]
+    DUP-SEC    '[Verse 1]' x2  行 [163, 173]
+    TBL-DUPKEY 表@行54  首列 '数字' x2
+    TBL-DUPKEY 表@行54  首列 '缩写词' x2
+=== ./.claude/skills/performance/references/acting-task-method.md
+    REP-LINE   '典型例子：' x15
+    REP-LINE   '怎么认：' x15
+    REP-LINE   '认错长什么样：' x15
+=== ./.claude/skills/performance/references/master-profile-guide.md
+    REP-LINE   '典型例子：' x6
+    REP-LINE   '怎么认：' x8
+    REP-LINE   '认错长什么样：' x8
+=== ./.claude/skills/retake/references/video-edit-syntax.md
+    REP-LINE   '怎么认：' x5
+    REP-LINE   '认错长什么样：' x5
+=== ./.claude/skills/seedance-storyboard-skill/examples/universal-storyboard-example-animation.md
+    REP-LINE   '对白：（无）' x6
+=== ./.claude/skills/seedance-storyboard-skill/examples/universal-storyboard-example-cinematic.md
+    REP-LINE   '对白：（无）' x5
+=== ./.claude/skills/seedance-storyboard-skill/examples/universal-storyboard-example-commercial.md
+    REP-LINE   '对白：（无）' x8
+=== ./.claude/skills/seedance-storyboard-skill/references/animation-12-principles.md
+    DUP-SEC    '[画面通用描述]' x2  行 [203, 213]
+    REP-LINE   '**示例**：' x12
+=== ./.claude/skills/seedance-storyboard-skill/references/storyboard-style-decision-tree.md
+    REP-LINE   '**典型项目**：' x5
+    REP-LINE   '**画面特征**：' x5
+=== ./.claude/skills/seedance-storyboard-skill/references/universal-storyboard-methodology.md
+    REP-LINE   '**示例**：' x5
+    REP-LINE   '|---|---|---|' x5
+=== ./.claude/skills/shot-design/examples/shot-table-example.md
+    REP-LINE   '- 导演意图：' x12
+    REP-LINE   '- 控制等级：L1' x7
+    REP-LINE   '为什么这么编：' x9
+=== ./.claude/skills/shot-design/references/shot-table-method.md
+    REP-LINE   '典型例子：' x11
+    REP-LINE   '怎么认：' x10
+    REP-LINE   '认错长什么样：' x13
+=== ./.claude/skills/sound-writing/references/sound-lexicon.md
+    REP-LINE   '典型例子：' x6
+    REP-LINE   '怎么认：' x6
+    REP-LINE   '认错长什么样：' x7
+=== ./CHANGELOG.md
+    DUP-HEAD   '### ✨ 新增能力' x7  行 [176, 525, 669, 725, 760, 775, 793]
+    DUP-HEAD   '### 📂 文件清单' x3  行 [563, 640, 696]
+    DUP-HEAD   '### 🔧 修复' x3  行 [214, 743, 782]
+    DUP-HEAD   '### 🔧 联动修改' x2  行 [410, 553]
+    REP-LINE   '### ✨ 新增能力' x7
+=== ./assets/reference-index.template.md
+    TBL-DUPKEY 表@行49  首列 'prop-[道具名].png' x2

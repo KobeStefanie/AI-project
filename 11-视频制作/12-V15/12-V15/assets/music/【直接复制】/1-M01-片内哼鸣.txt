@@ -1,0 +1,27 @@
+Style: 无词氛围人声，只哼不唱字，二十岁上下的中性年轻嗓音，未受过训练，贴麦气声哼鸣，中低音区，簧风琴极低持续音，微弱的夜间房间底噪，自由速度约56 BPM，D多利亚调式，不解决不推进，中途第二个声音在下方三度加入一次随后一起淡出，深夜
+
+Exclude Styles: 鼓, 打击乐, 钢琴, 弦乐, 管弦乐, 合唱, 童声合唱, 摇篮曲, 歌词, 励志, 大调解决, 电音修音, 大混响, 电子舞曲
+
+Lyrics:
+[Intro]
+[Breathy]
+mm——
+
+[Verse]
+[Humming, whispered]
+mm—— hm——
+mm——
+
+[Low Energy]
+oo——
+mm——
+
+[Bridge]
+[Harmonies]
+oo—— oo——
+
+[Soft Outro]
+[Harmonium only]
+mm——
+
+[End]
